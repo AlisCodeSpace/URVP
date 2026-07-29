@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!-- Nested class libraries live under this host folder; keep them out of the Web project's compile set. -->
+  <ItemGroup>
+    <Compile Remove="FEA.URVP.Api\**" />
+    <Compile Remove="FEA.URVP.Application\**" />
+    <Compile Remove="FEA.URVP.Domain\**" />
+    <Compile Remove="FEA.URVP.Infrastructure\**" />
+    <Content Remove="FEA.URVP.Api\**" />
+    <Content Remove="FEA.URVP.Application\**" />
+    <Content Remove="FEA.URVP.Domain\**" />
+    <Content Remove="FEA.URVP.Infrastructure\**" />
+    <EmbeddedResource Remove="FEA.URVP.Api\**" />
+    <EmbeddedResource Remove="FEA.URVP.Application\**" />
+    <EmbeddedResource Remove="FEA.URVP.Domain\**" />
+    <EmbeddedResource Remove="FEA.URVP.Infrastructure\**" />
+    <None Remove="FEA.URVP.Api\**" />
+    <None Remove="FEA.URVP.Application\**" />
+    <None Remove="FEA.URVP.Domain\**" />
+    <None Remove="FEA.URVP.Infrastructure\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="FEA.URVP.Api\FEA.URVP.Api.csproj" />
+    <ProjectReference Include="FEA.URVP.Infrastructure\FEA.URVP.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
