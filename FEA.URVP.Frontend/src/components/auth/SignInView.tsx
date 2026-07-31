@@ -2,11 +2,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heading, Text } from "@radix-ui/themes";
 import { LOGO_SRC } from "@/components/ui/Logo";
+import { authErrorMessage } from "@/lib/auth";
 
-export function SignInView() {
+type SignInViewProps = {
+  signInUrl: string;
+  error?: string;
+};
+
+export function SignInView({ signInUrl, error }: SignInViewProps) {
+  const errorText = authErrorMessage(error);
+
   return (
     <main className="sign-in-shell flex h-dvh min-h-0 flex-1 flex-col lg:flex-row">
-      {/* Brand panel */}
       <section className="sign-in-brand relative flex min-h-0 flex-[0.48] flex-col overflow-hidden px-7 py-7 sm:px-8 lg:flex-[0.52] lg:px-12 lg:py-9 xl:flex-[0.54] xl:px-14">
         <div className="sign-in-brand-grid absolute inset-0" aria-hidden />
         <div
@@ -58,7 +65,6 @@ export function SignInView() {
         </Text>
       </section>
 
-      {/* Sign-in panel */}
       <section className="flex min-h-0 flex-1 items-center justify-center px-6 py-7 sm:px-8 lg:px-10">
         <div className="sign-in-enter w-full max-w-[24rem]">
           <div className="sign-in-card overflow-hidden">
@@ -82,9 +88,20 @@ export function SignInView() {
                 Sign in
               </Heading>
 
-              {/* SSO redirect will be wired later */}
-              <button
-                type="button"
+              {errorText ? (
+                <Text
+                  as="p"
+                  size="2"
+                  mt="4"
+                  role="alert"
+                  className="rounded-md bg-red-50 px-3 py-2 !leading-relaxed !text-red-800"
+                >
+                  {errorText}
+                </Text>
+              ) : null}
+
+              <a
+                href={signInUrl}
                 className="btn btn-primary btn-lg mt-6 w-full gap-3"
                 aria-label="Sign in with AUB"
               >
@@ -97,7 +114,7 @@ export function SignInView() {
                   unoptimized
                 />
                 Continue with AUB
-              </button>
+              </a>
 
               <Text
                 as="p"

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/Button";
-import { PageHero } from "@/components/layout/PageHero";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { WorkshopsList } from "@/components/workshops/WorkshopsList";
 import { workshopsIntro } from "@/lib/workshops";
 
@@ -13,15 +12,9 @@ export const metadata: Metadata = {
 export default function WorkshopsPage() {
   return (
     <main className="flex-1 bg-background">
-      <PageHero
+      <PageHeader
         title="Workshops"
-        headline="Prepare to match. Thrive once you join a team."
         description={workshopsIntro}
-        actions={
-          <Button href="#workshops-list" variant="secondary" size="lg">
-            View schedule
-          </Button>
-        }
       />
 
       <section

@@ -5,6 +5,7 @@ export type ButtonVariant =
   | "primary"
   | "secondary"
   | "outline"
+  | "outline-secondary"
   | "outline-light"
   | "filled"
   | "ghost";
@@ -15,6 +16,7 @@ const variantClass: Record<ButtonVariant, string> = {
   primary: "btn-primary",
   secondary: "btn-secondary",
   outline: "btn-outline",
+  "outline-secondary": "btn-outline-secondary",
   "outline-light": "btn-outline-light",
   filled: "btn-filled",
   ghost: "btn-ghost",

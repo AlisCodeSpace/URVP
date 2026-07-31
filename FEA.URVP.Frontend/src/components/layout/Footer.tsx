@@ -97,14 +97,7 @@ export function Footer() {
           <ul className="mt-5 flex flex-col gap-5">
             {contacts.map((contact) => (
               <li key={contact.email} className="flex flex-col">
-                <Text
-                  as="p"
-                  size="1"
-                  className="!uppercase !tracking-wider !text-white/45"
-                >
-                  {contact.shortProgram}
-                </Text>
-                <Text as="p" size="2" mt="1" className="!text-white/85">
+                <Text as="p" size="2" className="!text-white/85">
                   {contact.name}
                 </Text>
                 <a

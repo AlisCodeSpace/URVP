@@ -50,4 +50,4 @@ export const workshops: Workshop[] = [
 ];
 
 export const workshopsIntro =
-  "Short sessions to help you build a strong profile and thrive once you join a research team. Schedules are confirmed at the beginning of each semester — registration opens when each session is announced.";
+  "Build a strong profile and thrive on a research team. Schedules confirmed each semester; register when sessions open.";

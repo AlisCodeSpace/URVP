@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Flex, Heading, Text } from "@radix-ui/themes";
 
 type PageHeroProps = {
-  /** Large display title — matches Home “URVP” treatment */
+  /** Large display title — brand-level on Home, page titles elsewhere */
   title: string;
   /** Primary headline under the display title */
   headline: string;
@@ -11,7 +11,7 @@ type PageHeroProps = {
   /** Optional CTAs (same slot as Home Apply / Browse) */
   actions?: ReactNode;
   /**
-   * `brand` — Home-scale display (short marks like URVP).
+   * `brand` — Home-scale display for the full program name.
    * `page` — slightly tighter for multi-word page titles.
    */
   titleScale?: "brand" | "page";
@@ -19,7 +19,7 @@ type PageHeroProps = {
 
 const titleScaleClass = {
   brand:
-    "text-[clamp(4.5rem,18vw,11rem)]",
+    "max-w-5xl text-[clamp(2.5rem,7.5vw,4.75rem)] !leading-[0.95]",
   page:
     "text-[clamp(3.25rem,12vw,7.5rem)]",
 } as const;

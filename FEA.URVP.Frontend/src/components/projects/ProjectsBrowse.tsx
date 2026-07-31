@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Heading, Text } from "@radix-ui/themes";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
+import { ApiError } from "@/lib/api";
 import {
-  catalogProjects,
   openingsLeft,
   researchActivityTypes,
   researchAreas,
   type CatalogProject,
 } from "@/lib/projects";
+import { listProjects, toCatalogProject } from "@/lib/projects-api";
 
 type SortKey = "newest" | "openings" | "title";
 type StatusFilter = "all" | "available" | "open" | "matching" | "closed";
@@ -36,6 +38,13 @@ const sortOptions: { value: SortKey; label: string }[] = [
   { value: "title", label: "Title A–Z" },
 ];
 
+function listValues(joined: string): string[] {
+  return joined
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
 function matchesStatus(project: CatalogProject, filter: StatusFilter) {
   if (filter === "all") return true;
   if (filter === "available") {
@@ -47,6 +56,8 @@ function matchesStatus(project: CatalogProject, filter: StatusFilter) {
 function ProjectCard({ project }: { project: CatalogProject }) {
   const open = openingsLeft(project);
   const isClosed = project.status === "Closed" || open === 0;
+  const areaChips = listValues(project.researchArea).slice(0, 2);
+  const activityChips = listValues(project.activityType).slice(0, 2);
 
   return (
     <li>
@@ -102,8 +113,16 @@ function ProjectCard({ project }: { project: CatalogProject }) {
         </Text>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <span className="project-chip">{project.researchArea}</span>
-          <span className="project-chip">{project.activityType}</span>
+          {areaChips.map((chip) => (
+            <span key={`area-${chip}`} className="project-chip">
+              {chip}
+            </span>
+          ))}
+          {activityChips.map((chip) => (
+            <span key={`activity-${chip}`} className="project-chip">
+              {chip}
+            </span>
+          ))}
         </div>
 
         <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-secondary-deep transition group-hover:gap-3">
@@ -115,26 +134,62 @@ function ProjectCard({ project }: { project: CatalogProject }) {
   );
 }
 
-export function ProjectsBrowse({
-  projects = catalogProjects,
-}: {
-  projects?: CatalogProject[];
-}) {
+export function ProjectsBrowse() {
+  const { status, loading: authLoading } = useAuth();
+  const isSignedIn = Boolean(status?.isAuthenticated);
+
+  const [projects, setProjects] = useState<CatalogProject[] | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [area, setArea] = useState("All areas");
   const [activity, setActivity] = useState("All activities");
-  const [status, setStatus] = useState<StatusFilter>("available");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("available");
   const [sort, setSort] = useState<SortKey>("newest");
 
+  useEffect(() => {
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const items = await listProjects();
+        if (cancelled) return;
+        setProjects(items.map(toCatalogProject));
+        setLoadError(null);
+      } catch (err) {
+        if (cancelled) return;
+        setProjects([]);
+        setLoadError(
+          err instanceof ApiError
+            ? err.message
+            : "Could not load projects.",
+        );
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const filtered = useMemo(() => {
+    if (!projects) return [];
+
     const q = query.trim().toLowerCase();
 
     const next = projects.filter((project) => {
-      if (area !== "All areas" && project.researchArea !== area) return false;
-      if (activity !== "All activities" && project.activityType !== activity) {
+      if (
+        area !== "All areas" &&
+        !listValues(project.researchArea).includes(area)
+      ) {
         return false;
       }
-      if (!matchesStatus(project, status)) return false;
+      if (
+        activity !== "All activities" &&
+        !listValues(project.activityType).includes(activity)
+      ) {
+        return false;
+      }
+      if (!matchesStatus(project, statusFilter)) return false;
       if (!q) return true;
 
       const haystack = [
@@ -159,20 +214,20 @@ export function ProjectsBrowse({
     });
 
     return next;
-  }, [projects, query, area, activity, status, sort]);
+  }, [projects, query, area, activity, statusFilter, sort]);
 
   const hasActiveFilters =
     query.trim() !== "" ||
     area !== "All areas" ||
     activity !== "All activities" ||
-    status !== "available" ||
+    statusFilter !== "available" ||
     sort !== "newest";
 
   function clearFilters() {
     setQuery("");
     setArea("All areas");
     setActivity("All activities");
-    setStatus("available");
+    setStatusFilter("available");
     setSort("newest");
   }
 
@@ -240,8 +295,8 @@ export function ProjectsBrowse({
               name="projectStatus"
               placeholder="Has openings"
               options={statusFilterOptions}
-              value={status}
-              onValueChange={(value) => setStatus(value as StatusFilter)}
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as StatusFilter)}
             />
           </div>
 
@@ -283,16 +338,30 @@ export function ProjectsBrowse({
               Open opportunities
             </Heading>
             <Text as="p" size="2" mt="1" className="!text-muted">
-              {filtered.length} result{filtered.length === 1 ? "" : "s"}
+              {projects == null
+                ? "Loading…"
+                : `${filtered.length} result${filtered.length === 1 ? "" : "s"}`}
               {query.trim() ? ` for “${query.trim()}”` : null}
             </Text>
           </div>
-          <Button href="/sign-in" variant="outline" size="sm">
-            Sign in to apply
-          </Button>
+          {!authLoading && !isSignedIn ? (
+            <Button href="/sign-in" variant="outline" size="sm">
+              Sign in to apply
+            </Button>
+          ) : null}
         </div>
 
-        {filtered.length === 0 ? (
+        {loadError ? (
+          <div className="mt-10 rounded-lg border border-dashed border-red-200 px-6 py-10 text-center">
+            <Text as="p" size="3" className="!text-red-800">
+              {loadError}
+            </Text>
+          </div>
+        ) : projects == null ? (
+          <Text as="p" size="3" mt="8" className="!text-muted">
+            Loading projects…
+          </Text>
+        ) : filtered.length === 0 ? (
           <div className="mt-10 rounded-lg border border-dashed border-primary/20 px-6 py-16 text-center">
             <Heading
               as="h3"
@@ -311,7 +380,12 @@ export function ProjectsBrowse({
               Try a broader search or clear filters to see the full catalog.
             </Text>
             <div className="mt-6 flex justify-center">
-              <Button type="button" variant="secondary" size="md" onClick={clearFilters}>
+              <Button
+                type="button"
+                variant="secondary"
+                size="md"
+                onClick={clearFilters}
+              >
                 Clear filters
               </Button>
             </div>

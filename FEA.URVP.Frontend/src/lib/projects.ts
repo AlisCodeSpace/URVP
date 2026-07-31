@@ -7,8 +7,8 @@ import {
 export type CatalogProject = {
   id: string;
   title: string;
-  researchArea: (typeof researchAreas)[number];
-  activityType: (typeof researchActivityTypes)[number];
+  researchArea: string;
+  activityType: string;
   volunteersRequired: number;
   volunteersFilled: number;
   status: MyProjectStatus;

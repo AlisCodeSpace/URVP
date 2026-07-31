@@ -1,0 +1,45 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { RequireAuth } from "@/components/auth/RequireAuth";
+import { PostProjectForm } from "@/components/projects/PostProjectForm";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { myProjectsHref } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "Post a Project | URVP",
+  description:
+    "Post a new research project for undergraduate volunteers in the URVP portal.",
+};
+
+type NewProjectPageProps = {
+  params: Promise<{ userId: string }>;
+};
+
+export default async function NewProjectPage({ params }: NewProjectPageProps) {
+  const { userId } = await params;
+
+  return (
+    <RequireAuth userId={userId}>
+      <main className="flex-1 bg-background">
+        <PageHeader
+          eyebrow="New listing"
+          title="Post a project"
+          description="Share a research opportunity across AUB faculties, centers, and institutes for undergraduate matching."
+          maxWidth="3xl"
+        >
+          <Link
+            href={myProjectsHref(userId)}
+            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+          >
+            <span aria-hidden>←</span>
+            Back to my projects
+          </Link>
+        </PageHeader>
+
+        <section className="mx-auto max-w-3xl px-6 py-12 sm:py-16">
+          <PostProjectForm userId={userId} />
+        </section>
+      </main>
+    </RequireAuth>
+  );
+}

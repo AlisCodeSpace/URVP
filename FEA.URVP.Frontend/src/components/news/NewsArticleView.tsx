@@ -11,7 +11,7 @@ export function NewsArticleView({ article }: { article: NewsArticle }) {
     <article className="flex-1 bg-background">
       <header className="news-article-hero relative overflow-hidden text-white">
         <div className="news-article-hero-grid absolute inset-0" aria-hidden />
-        <div className="relative z-10 mx-auto max-w-3xl px-6 py-16 sm:py-20">
+        <div className="relative z-10 mx-auto max-w-3xl px-6 pb-16 pt-28 sm:pb-20 sm:pt-32">
           <Link
             href="/news"
             className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"

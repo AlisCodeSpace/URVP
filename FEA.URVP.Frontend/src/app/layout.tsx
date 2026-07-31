@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Exo } from "next/font/google";
 import { Theme } from "@radix-ui/themes";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 import "./globals.css";
 
 const exo = Exo({
@@ -31,7 +32,7 @@ export default function RootLayout({
           scaling="100%"
           appearance="light"
         >
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </Theme>
       </body>
     </html>

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/Button";
-import { PageHero } from "@/components/layout/PageHero";
+import { PageHeader } from "@/components/layout/PageHeader";
 import {
   FacebookIcon,
   InstagramIcon,
@@ -15,7 +14,7 @@ import { contacts, socialLinks } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Contact | URVP",
   description:
-    "Contact the URVP program coordinator at the American University of Beirut.",
+    "Contact the program coordinator at the American University of Beirut.",
 };
 
 const socialIcons = {
@@ -30,15 +29,9 @@ const socialIcons = {
 export default function ContactPage() {
   return (
     <main className="flex-1 bg-background">
-      <PageHero
+      <PageHeader
         title="Contact"
-        headline="Questions about cycles, eligibility, or matching."
-        description="Reach the URVP coordinator at the American University of Beirut. We’re here to help students and faculty navigate the program."
-        actions={
-          <Button href="#contact-details" variant="secondary" size="lg">
-            View contacts
-          </Button>
-        }
+        description="Questions about cycles, eligibility, or matching. Reach the program coordinator at AUB."
       />
 
       <section
@@ -58,7 +51,7 @@ export default function ContactPage() {
                   weight="medium"
                   className="!uppercase !tracking-[0.16em] !text-secondary-deep"
                 >
-                  {contact.program}
+                  {contact.role}
                 </Text>
                 <Heading
                   as="h2"

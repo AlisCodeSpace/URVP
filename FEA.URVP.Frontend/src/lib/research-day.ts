@@ -5,7 +5,7 @@ export const researchDayBanner = {
   eyebrow: "Annual showcase · AY 2025–26",
   title: "Research Day",
   subtitle:
-    "Celebrate undergraduate research, hear from mentors and volunteers, and stay ready for the next URVP cycle.",
+    "Celebrate undergraduate research and look ahead to the next cycle.",
   dateLabel: "Date to be announced",
   locationLabel: "American University of Beirut",
 } as const;

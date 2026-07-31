@@ -1,4 +1,7 @@
 using FEA.URVP.Application.Abstractions.Persistence;
+using FEA.URVP.Domain.Entities.Projects;
+using FEA.URVP.Domain.Entities.Users;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -7,12 +10,18 @@ namespace FEA.URVP.Infrastructure.Data.Context;
 /// <summary>
 /// Application database context. Entity sets are added as features are implemented.
 /// </summary>
-public class AppDbContext : DbContext, IUnitOfWork
+public class AppDbContext : DbContext, IUnitOfWork, IDataProtectionKeyContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
     }
+
+    public DbSet<User> Users => Set<User>();
+
+    public DbSet<Project> Projects => Set<Project>();
+
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

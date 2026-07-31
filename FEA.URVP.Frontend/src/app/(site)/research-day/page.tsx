@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/Button";
-import { PageHero } from "@/components/layout/PageHero";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { ResearchDayContent } from "@/components/research-day/ResearchDayView";
 import { researchDayBanner } from "@/lib/research-day";
 
@@ -13,24 +12,9 @@ export const metadata: Metadata = {
 export default function ResearchDayPage() {
   return (
     <main className="flex-1 bg-background">
-      <PageHero
+      <PageHeader
         title="Research Day"
-        headline={researchDayBanner.subtitle}
-        description="Date to be announced · American University of Beirut. Application forms and deadlines are listed below."
-        actions={
-          <>
-            <Button href="#research-day-forms" variant="secondary" size="lg">
-              Application &amp; forms
-            </Button>
-            <Button
-              href="#research-day-deadlines"
-              variant="outline-light"
-              size="lg"
-            >
-              View deadlines
-            </Button>
-          </>
-        }
+        description={`${researchDayBanner.subtitle} Date TBA · American University of Beirut.`}
       />
       <ResearchDayContent />
     </main>

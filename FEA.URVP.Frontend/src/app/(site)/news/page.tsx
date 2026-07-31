@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Button } from "@/components/ui/Button";
-import { PageHero } from "@/components/layout/PageHero";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { NewsList } from "@/components/news/NewsList";
 import { newsIntro } from "@/lib/news";
 
@@ -21,15 +20,9 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
 
   return (
     <main className="flex-1 bg-background">
-      <PageHero
+      <PageHeader
         title="News"
-        headline="Deadlines, milestones, and program updates."
         description={newsIntro}
-        actions={
-          <Button href="#news-list" variant="secondary" size="lg">
-            Latest stories
-          </Button>
-        }
       />
 
       <div id="news-list" className="scroll-mt-24">

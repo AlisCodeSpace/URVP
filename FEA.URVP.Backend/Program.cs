@@ -3,7 +3,7 @@ using FEA.URVP.Backend;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.ConfigureAllServices(builder.Configuration);
+builder.Services.ConfigureAllServices(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 

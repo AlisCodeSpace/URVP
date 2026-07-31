@@ -1,3 +1,4 @@
+using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Middleware;
 
 namespace FEA.URVP.Api.Configuration;
@@ -25,6 +26,10 @@ public static class MiddlewareConfiguration
         }
 
         app.UseRouting();
+        app.UseCookiePolicy();
+        app.UseCors(CorsConfiguration.PolicyName);
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.MapControllers();
 
         return app;

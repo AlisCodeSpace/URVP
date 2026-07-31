@@ -41,8 +41,7 @@ export const socialLinks = [
 
 export const contacts = [
   {
-    program: "University Research Volunteer Program (URVP)",
-    shortProgram: "URVP",
+    role: "Program coordinator",
     name: "Joseph Costantine",
     title: "Professor",
     affiliation: "Institute for Academic Innovations and Development",

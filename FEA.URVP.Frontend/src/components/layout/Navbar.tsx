@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { UserMenu } from "@/components/auth/UserMenu";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { navLinks } from "@/lib/site";
@@ -10,19 +12,23 @@ import { navLinks } from "@/lib/site";
 export function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const heroPages = new Set([
-    "/",
-    "/workshops",
-    "/research-day",
-    "/news",
-    "/contact",
-  ]);
-  const onHeroPage = heroPages.has(pathname);
+  const { status, loading } = useAuth();
+  const isSignedIn = Boolean(status?.isAuthenticated);
+
+  const overlayNav =
+    pathname === "/" ||
+    pathname === "/workshops" ||
+    pathname === "/research-day" ||
+    pathname === "/news" ||
+    pathname === "/contact" ||
+    pathname === "/projects" ||
+    pathname.startsWith("/my-projects") ||
+    pathname.startsWith("/news/");
 
   return (
     <header
       className={
-        onHeroPage
+        overlayNav
           ? "absolute inset-x-0 top-0 z-50"
           : "sticky top-0 z-50 border-b border-primary/10 bg-primary-deep/95 backdrop-blur-md"
       }
@@ -64,10 +70,14 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden lg:block">
-          <Button href="/sign-in" variant="secondary" size="sm">
-            Sign in
-          </Button>
+        <div className="hidden items-center gap-3 lg:flex">
+          {loading ? null : isSignedIn && status ? (
+            <UserMenu status={status} />
+          ) : (
+            <Button href="/sign-in" variant="secondary" size="sm">
+              Sign in
+            </Button>
+          )}
         </div>
 
         <button
@@ -118,15 +128,23 @@ export function Navbar() {
             ))}
           </nav>
           <div className="mt-4">
-            <Button
-              href="/sign-in"
-              variant="secondary"
-              size="md"
-              className="w-full"
-              onClick={() => setOpen(false)}
-            >
-              Sign in
-            </Button>
+            {loading ? null : isSignedIn && status ? (
+              <UserMenu
+                status={status}
+                variant="mobile"
+                onNavigate={() => setOpen(false)}
+              />
+            ) : (
+              <Button
+                href="/sign-in"
+                variant="secondary"
+                size="md"
+                className="w-full"
+                onClick={() => setOpen(false)}
+              >
+                Sign in
+              </Button>
+            )}
           </div>
         </div>
       ) : null}
