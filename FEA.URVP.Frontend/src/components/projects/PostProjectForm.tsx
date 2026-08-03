@@ -271,7 +271,7 @@ export function PostProjectForm({
                 name="irbStage"
                 placeholder="Choose from list"
                 options={irbStageOptions}
-                value={values.irbStage || undefined}
+                value={values.irbStage}
                 onValueChange={(v) => setField("irbStage", v)}
               />
             </Field>
