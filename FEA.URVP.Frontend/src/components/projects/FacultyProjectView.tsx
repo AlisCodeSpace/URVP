@@ -7,7 +7,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { FacultyProjectReadonly } from "@/components/projects/FacultyProjectReadonly";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApiError } from "@/lib/api";
-import { myProjectsHref } from "@/lib/auth";
+import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
 import { getProject, type ProjectDto } from "@/lib/projects-api";
 
 export function FacultyProjectView({
@@ -46,7 +46,7 @@ export function FacultyProjectView({
   }, [projectId, userId]);
 
   return (
-    <RequireAuth userId={userId}>
+    <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
       <main className="flex-1 bg-background">
         <PageHeader
           eyebrow="Faculty portal"

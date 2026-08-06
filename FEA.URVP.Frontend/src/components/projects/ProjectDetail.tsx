@@ -1,10 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { ExpressInterestModal } from "@/components/projects/ExpressInterestModal";
 import { Button } from "@/components/ui/Button";
+import {
+  isResearchTopicMatch,
+  useStudentResearchTopics,
+} from "@/hooks/useStudentResearchTopics";
+import { isStudent } from "@/lib/auth";
 import { openingsLeft, type CatalogProject } from "@/lib/projects";
 
 function DetailFact({
@@ -27,6 +33,43 @@ function DetailFact({
       <Text as="p" size="3" mt="2" className="!leading-snug !text-primary">
         {value}
       </Text>
+    </div>
+  );
+}
+
+function DetailChips({
+  label,
+  items,
+  studentTopics,
+}: {
+  label: string;
+  items: string[];
+  studentTopics?: ReadonlySet<string>;
+}) {
+  return (
+    <div className="project-detail-fact">
+      <Text
+        as="p"
+        size="1"
+        weight="bold"
+        className="!uppercase !tracking-[0.16em] !text-muted"
+      >
+        {label}
+      </Text>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {items.map((item) => (
+          <span
+            key={item}
+            className={`project-chip${
+              studentTopics && isResearchTopicMatch(item, studentTopics)
+                ? " is-match"
+                : ""
+            }`}
+          >
+            {item}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -64,11 +107,23 @@ function DetailSection({
   );
 }
 
+function splitJoined(value: string): string[] {
+  return value
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
 export function ProjectDetail({ project }: { project: CatalogProject }) {
   const { status } = useAuth();
   const isSignedIn = Boolean(status?.isAuthenticated);
+  const canRank = isSignedIn && isStudent(status?.role);
+  const studentTopics = useStudentResearchTopics();
   const open = openingsLeft(project);
   const isClosed = project.status === "Closed" || open === 0;
+  const [rankOpen, setRankOpen] = useState(false);
+  const researchAreas = splitJoined(project.researchArea);
+  const activityTypes = splitJoined(project.activityType);
 
   return (
     <article>
@@ -137,8 +192,12 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
           </div>
 
           <dl className="project-detail-facts mt-8">
-            <DetailFact label="Research area" value={project.researchArea} />
-            <DetailFact label="Activity type" value={project.activityType} />
+            <DetailChips
+              label="Research area"
+              items={researchAreas}
+              studentTopics={canRank ? studentTopics : undefined}
+            />
+            <DetailChips label="Activity type" items={activityTypes} />
             <DetailFact label="IRB stage" value={project.irbStage} />
             <DetailFact
               label="Volunteer seats"
@@ -204,9 +263,11 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
           <Text as="p" size="2" mt="3" className="!leading-relaxed !text-muted">
             {isClosed
               ? "This listing is not accepting new volunteers right now."
-              : isSignedIn
-                ? "Matching is managed by the program team. Express interest to be considered for this project."
-                : "Sign in with your AUB account to express interest. Matching is managed by the program team."}
+              : canRank
+                ? "Matching is managed by the program team. Rank this project as one of your top 3 choices."
+                : isSignedIn
+                  ? "Only student accounts can express interest in projects."
+                  : "Sign in with your AUB account to express interest. Matching is managed by the program team."}
           </Text>
 
           <div className="mt-6 flex flex-col gap-2">
@@ -214,9 +275,18 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
               <Button type="button" variant="outline" size="md" disabled>
                 Applications closed
               </Button>
-            ) : isSignedIn ? (
-              <Button type="button" variant="primary" size="md">
+            ) : canRank ? (
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                onClick={() => setRankOpen(true)}
+              >
                 Express interest
+              </Button>
+            ) : isSignedIn ? (
+              <Button type="button" variant="outline" size="md" disabled>
+                Students only
               </Button>
             ) : (
               <Button href="/sign-in" variant="primary" size="md">
@@ -229,6 +299,13 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
           </div>
         </aside>
       </div>
+
+      <ExpressInterestModal
+        open={rankOpen}
+        onClose={() => setRankOpen(false)}
+        projectId={project.id}
+        projectTitle={project.title}
+      />
     </article>
   );
 }

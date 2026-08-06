@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Text } from "@radix-ui/themes";
-import { fetchAuthStatus } from "@/lib/auth";
+import { fetchAuthStatus, portalHref } from "@/lib/auth";
 
 export function AuthCallbackView() {
   const router = useRouter();
@@ -22,6 +22,11 @@ export function AuthCallbackView() {
       try {
         const status = await fetchAuthStatus();
         if (cancelled) return;
+
+        if (status.isAuthenticated) {
+          router.replace(portalHref(status.role, status.userId));
+          return;
+        }
       } catch (err) {
         console.error("[auth/callback] /api/auth/status failed:", err);
         if (cancelled) return;

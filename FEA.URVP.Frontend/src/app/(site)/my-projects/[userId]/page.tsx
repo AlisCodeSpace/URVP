@@ -3,7 +3,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { MyProjectsList } from "@/components/projects/MyProjectsList";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { newProjectHref } from "@/lib/auth";
+import { FACULTY_PORTAL_ROLES, newProjectHref } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "My Projects | URVP",
@@ -19,7 +19,7 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
   const { userId } = await params;
 
   return (
-    <RequireAuth userId={userId}>
+    <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
       <main className="flex-1 bg-background">
         <PageHeader
           eyebrow="Faculty portal"

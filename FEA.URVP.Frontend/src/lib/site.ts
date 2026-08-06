@@ -7,7 +7,7 @@ export const navLinks = [
 
 /** Home “Explore the portal” tiles — includes Application & Projects. */
 export const portalLinks = [
-  { href: "/application", label: "Application" },
+  { href: "/student/profile", label: "Application" },
   { href: "/projects", label: "Projects" },
   ...navLinks,
 ] as const;

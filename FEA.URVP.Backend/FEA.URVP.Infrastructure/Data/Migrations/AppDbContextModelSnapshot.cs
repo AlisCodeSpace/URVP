@@ -22,6 +22,115 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Files.FileStorage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varbinary(32)");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FileCategory")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UploadedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentHash")
+                        .HasDatabaseName("IX_FileStorage_ContentHash")
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("EntityType", "EntityId", "FileCategory", "IsDeleted")
+                        .HasDatabaseName("IX_FileStorage_Entity")
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("FileStorage", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_FileStorage_EntityType", "[EntityType] IN ('StudentProfile')");
+
+                            t.HasCheckConstraint("CK_FileStorage_FileSize", "([FileCategory] IN ('Transcript', 'CitiCertification') AND [FileSize] <= 10485760)");
+                        });
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.ProjectRankings.ProjectRanking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte>("Rank")
+                        .HasColumnType("tinyint");
+
+                    b.Property<Guid>("StudentUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("ProjectId", "Rank");
+
+                    b.HasIndex("StudentUserId", "ProjectId")
+                        .IsUnique();
+
+                    b.HasIndex("StudentUserId", "Rank")
+                        .IsUnique();
+
+                    b.ToTable("ProjectRankings", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ProjectRankings_Rank", "[Rank] >= 1 AND [Rank] <= 3");
+                        });
+                });
+
             modelBuilder.Entity("FEA.URVP.Domain.Entities.Projects.Project", b =>
                 {
                     b.Property<Guid>("Id")
@@ -110,6 +219,80 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.StudentProfiles.StudentProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Availability")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("CitiFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("CompletedCredits")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("CumulativeAverage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<string>("Degree")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("ExpectedGraduationYear")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("Languages")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("MobileNumber")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("OtherLanguages")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Publications")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("ResearchTopics")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid?>("TranscriptFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("StudentProfiles", (string)null);
+                });
+
             modelBuilder.Entity("FEA.URVP.Domain.Entities.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -179,6 +362,25 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.ToTable("DataProtectionKeys");
                 });
 
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.ProjectRankings.ProjectRanking", b =>
+                {
+                    b.HasOne("FEA.URVP.Domain.Entities.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FEA.URVP.Domain.Entities.Users.User", "StudentUser")
+                        .WithMany()
+                        .HasForeignKey("StudentUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("StudentUser");
+                });
+
             modelBuilder.Entity("FEA.URVP.Domain.Entities.Projects.Project", b =>
                 {
                     b.HasOne("FEA.URVP.Domain.Entities.Users.User", "CreatedByUser")
@@ -188,6 +390,17 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("CreatedByUser");
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.StudentProfiles.StudentProfile", b =>
+                {
+                    b.HasOne("FEA.URVP.Domain.Entities.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

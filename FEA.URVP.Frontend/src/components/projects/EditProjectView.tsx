@@ -7,7 +7,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PostProjectForm } from "@/components/projects/PostProjectForm";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApiError } from "@/lib/api";
-import { myProjectsHref } from "@/lib/auth";
+import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
 import type { ProjectFormValues } from "@/lib/project-form";
 import { getProject, toFormValues } from "@/lib/projects-api";
 
@@ -49,7 +49,7 @@ export function EditProjectView({
   }, [projectId, userId]);
 
   return (
-    <RequireAuth userId={userId}>
+    <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
       <main className="flex-1 bg-background">
         <PageHeader
           eyebrow="Edit listing"

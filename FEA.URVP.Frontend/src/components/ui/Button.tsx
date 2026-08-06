@@ -8,7 +8,8 @@ export type ButtonVariant =
   | "outline-secondary"
   | "outline-light"
   | "filled"
-  | "ghost";
+  | "ghost"
+  | "danger";
 
 export type ButtonSize = "sm" | "md" | "lg";
 
@@ -20,6 +21,7 @@ const variantClass: Record<ButtonVariant, string> = {
   "outline-light": "btn-outline-light",
   filled: "btn-filled",
   ghost: "btn-ghost",
+  danger: "btn-danger",
 };
 
 const sizeClass: Record<ButtonSize, string> = {

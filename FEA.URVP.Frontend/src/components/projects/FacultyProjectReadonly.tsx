@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
-import { ProjectApplicantsBrowse } from "@/components/projects/ProjectApplicantsBrowse";
 import { editProjectHref, myProjectsHref } from "@/lib/auth";
 import { programDescription } from "@/lib/project-form";
 import type { ProjectDto } from "@/lib/projects-api";
@@ -177,10 +176,6 @@ export function FacultyProjectReadonly({
             </Value>
           </Field>
         </div>
-      </section>
-
-      <section className="form-section">
-        <ProjectApplicantsBrowse />
       </section>
 
       <div className="flex flex-wrap items-center gap-3 border-t border-primary/10 pt-8">

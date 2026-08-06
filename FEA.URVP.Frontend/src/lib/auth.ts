@@ -12,6 +12,29 @@ export type AuthStatus = {
   error?: string | null;
 };
 
+export const UserRole = {
+  Student: 0,
+  Faculty: 1,
+  Admin: 2,
+} as const;
+
+export type UserRoleValue = (typeof UserRole)[keyof typeof UserRole];
+
+/** Stable role lists for RequireAuth (avoid inline arrays → effect churn). */
+export const STUDENT_ROLES = [UserRole.Student] as const;
+export const FACULTY_PORTAL_ROLES = [UserRole.Faculty, UserRole.Admin] as const;
+
+/** Temporary: force these emails into the student portal for FE testing. */
+const STUDENT_ROLE_OVERRIDES = new Set(["aa624@aub.edu.lb"]);
+
+function applyRoleOverrides(status: AuthStatus): AuthStatus {
+  const email = status.email?.trim().toLowerCase();
+  if (!email || !STUDENT_ROLE_OVERRIDES.has(email)) return status;
+  if (status.role === UserRole.Student) return status;
+  console.warn("[auth] Temporary student role override for", email);
+  return { ...status, role: UserRole.Student };
+}
+
 export function getAuthCallbackUrl(): string {
   return `${appBaseUrl}/auth/callback`;
 }
@@ -24,6 +47,26 @@ export function getAzureAdSignInUrl(returnUrl: string = getAuthCallbackUrl()): s
 
 export function getAzureAdSignOutUrl(returnUrl: string): string {
   const url = new URL("/api/auth/azuread-sso/signout", apiBaseUrl);
+  url.searchParams.set("returnUrl", returnUrl);
+  return url.toString();
+}
+
+/** Development-only email accounts (must match backend DevAuthAccounts). */
+export const DEV_AUTH_ACCOUNTS = [
+  { email: "faculty@urvp.com", label: "Faculty", role: UserRole.Faculty },
+  { email: "student@urvp.com", label: "Student", role: UserRole.Student },
+  { email: "admin@urvp.com", label: "Admin", role: UserRole.Admin },
+] as const;
+
+/** True when running Next.js in development (`next dev`). */
+export const isDevAuthEnabled = process.env.NODE_ENV === "development";
+
+export function getDevSignInUrl(
+  email: string,
+  returnUrl: string = getAuthCallbackUrl(),
+): string {
+  const url = new URL("/api/auth/dev/signin", apiBaseUrl);
+  url.searchParams.set("email", email);
   url.searchParams.set("returnUrl", returnUrl);
   return url.toString();
 }
@@ -42,7 +85,7 @@ export async function fetchAuthStatus(): Promise<AuthStatus> {
     return failed;
   }
 
-  const data = (await res.json()) as AuthStatus;
+  const data = applyRoleOverrides((await res.json()) as AuthStatus);
   console.log("[auth] /api/auth/status response:", data);
   return data;
 }
@@ -67,9 +110,9 @@ export function authErrorMessage(code: string | null | undefined): string | null
 }
 
 const ROLE_LABELS: Record<number, string> = {
-  0: "Student",
-  1: "Faculty",
-  2: "Admin",
+  [UserRole.Student]: "Student",
+  [UserRole.Faculty]: "Faculty",
+  [UserRole.Admin]: "Admin",
 };
 
 export function roleLabel(role: number | null | undefined): string {
@@ -77,14 +120,39 @@ export function roleLabel(role: number | null | undefined): string {
   return ROLE_LABELS[role] ?? "User";
 }
 
-/** Faculty portal for faculty/admin; student browse for students. */
+export function isStudent(role: number | null | undefined): boolean {
+  return role === UserRole.Student;
+}
+
+export function isFacultyOrAdmin(role: number | null | undefined): boolean {
+  return role === UserRole.Faculty || role === UserRole.Admin;
+}
+
+/** Faculty portal for faculty/admin; student profile for students. */
 export function portalHref(
   role: number | null | undefined,
   userId?: string | null,
 ): string {
-  if (role === 0) return "/projects";
+  if (isStudent(role)) return "/student/profile";
   if (userId) return `/my-projects/${userId}`;
   return "/sign-in";
+}
+
+export function studentProfileHref(): string {
+  return "/student/profile";
+}
+
+export function studentRankingsHref(): string {
+  return "/student/rankings";
+}
+
+/** @deprecated Use studentRankingsHref — kept for older links. */
+export function studentApplicationsHref(): string {
+  return studentRankingsHref();
+}
+
+export function studentProjectsHref(): string {
+  return "/student/projects";
 }
 
 export function myProjectsHref(userId: string): string {

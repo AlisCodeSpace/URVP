@@ -1,8 +1,16 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState, type FormEvent } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { LOGO_SRC } from "@/components/ui/Logo";
-import { authErrorMessage } from "@/lib/auth";
+import {
+  authErrorMessage,
+  DEV_AUTH_ACCOUNTS,
+  getDevSignInUrl,
+  isDevAuthEnabled,
+} from "@/lib/auth";
 
 type SignInViewProps = {
   signInUrl: string;
@@ -11,6 +19,27 @@ type SignInViewProps = {
 
 export function SignInView({ signInUrl, error }: SignInViewProps) {
   const errorText = authErrorMessage(error);
+  const [devEmail, setDevEmail] = useState("");
+  const [devError, setDevError] = useState<string | null>(null);
+
+  function handleDevSignIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setDevError(null);
+
+    const email = devEmail.trim().toLowerCase();
+    const allowed = DEV_AUTH_ACCOUNTS.some(
+      (account) => account.email === email,
+    );
+
+    if (!allowed) {
+      setDevError(
+        "Use faculty@urvp.com, student@urvp.com, or admin@urvp.com.",
+      );
+      return;
+    }
+
+    window.location.href = getDevSignInUrl(email);
+  }
 
   return (
     <main className="sign-in-shell flex h-dvh min-h-0 flex-1 flex-col lg:flex-row">
@@ -125,6 +154,70 @@ export function SignInView({ signInUrl, error }: SignInViewProps) {
                 Secured by AUB single sign-on. You will be redirected to the
                 official login page.
               </Text>
+
+              {isDevAuthEnabled ? (
+                <form onSubmit={handleDevSignIn} className="mt-6 border-t border-black/8 pt-5">
+                  <Text
+                    as="p"
+                    size="1"
+                    weight="medium"
+                    className="!uppercase !tracking-[0.18em] !text-muted"
+                  >
+                    Development sign-in
+                  </Text>
+                  <label className="mt-3 block">
+                    <span className="sr-only">Email</span>
+                    <input
+                      type="email"
+                      name="email"
+                      value={devEmail}
+                      onChange={(e) => {
+                        setDevEmail(e.target.value);
+                        if (devError) setDevError(null);
+                      }}
+                      placeholder="faculty@urvp.com"
+                      autoComplete="username"
+                      list="dev-auth-emails"
+                      className="w-full rounded-md border border-black/12 bg-white px-3 py-2.5 text-sm text-primary outline-none transition focus:border-secondary focus:ring-2 focus:ring-secondary/25"
+                    />
+                    <datalist id="dev-auth-emails">
+                      {DEV_AUTH_ACCOUNTS.map((account) => (
+                        <option key={account.email} value={account.email}>
+                          {account.label}
+                        </option>
+                      ))}
+                    </datalist>
+                  </label>
+
+                  {devError ? (
+                    <Text
+                      as="p"
+                      size="1"
+                      mt="2"
+                      role="alert"
+                      className="!text-red-700"
+                    >
+                      {devError}
+                    </Text>
+                  ) : (
+                    <Text
+                      as="p"
+                      size="1"
+                      mt="2"
+                      className="!leading-relaxed !text-muted/80"
+                    >
+                      Allowed: faculty@urvp.com, student@urvp.com, admin@urvp.com
+                    </Text>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="btn btn-lg mt-3 w-full border border-black/12 bg-transparent text-primary hover:bg-black/[0.03]"
+                  >
+                    Continue with email
+                  </button>
+                </form>
+              ) : null}
             </div>
           </div>
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PostProjectForm } from "@/components/projects/PostProjectForm";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { myProjectsHref } from "@/lib/auth";
+import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Post a Project | URVP",
@@ -19,7 +19,7 @@ export default async function NewProjectPage({ params }: NewProjectPageProps) {
   const { userId } = await params;
 
   return (
-    <RequireAuth userId={userId}>
+    <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
       <main className="flex-1 bg-background">
         <PageHeader
           eyebrow="New listing"

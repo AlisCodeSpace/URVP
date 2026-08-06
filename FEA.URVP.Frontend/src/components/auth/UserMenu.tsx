@@ -62,16 +62,18 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
         >
           Portal
         </Link>
-        <button
-          type="button"
-          className="btn btn-outline-light btn-md w-full"
-          onClick={() => {
-            onNavigate?.();
-            signOut();
-          }}
-        >
-          Sign out
-        </button>
+        <div className="border-t border-white/20 pt-3">
+          <button
+            type="button"
+            className="btn btn-danger btn-md w-full"
+            onClick={() => {
+              onNavigate?.();
+              signOut();
+            }}
+          >
+            Sign out
+          </button>
+        </div>
       </div>
     );
   }
@@ -123,17 +125,19 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
             >
               Portal
             </Link>
-            <button
-              type="button"
-              role="menuitem"
-              className="btn btn-outline-light btn-sm w-full"
-              onClick={() => {
-                setOpen(false);
-                signOut();
-              }}
-            >
-              Sign out
-            </button>
+            <div className="mt-1 border-t border-white/20 pt-2">
+              <button
+                type="button"
+                role="menuitem"
+                className="btn btn-danger btn-sm w-full"
+                onClick={() => {
+                  setOpen(false);
+                  signOut();
+                }}
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
       ) : null}

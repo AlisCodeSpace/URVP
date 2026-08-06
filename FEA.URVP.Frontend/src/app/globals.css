@@ -250,6 +250,19 @@ select:disabled {
   background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
+/* Danger — sign-out / destructive on dark surfaces */
+.btn-danger {
+  background: color-mix(in srgb, #c62828 82%, transparent);
+  border-color: color-mix(in srgb, #ff8a80 55%, transparent);
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #b71c1c;
+  border-color: #ff8a80;
+  color: #fff;
+}
+
 /* Hero atmosphere */
 .hero-plane {
   background:
@@ -474,6 +487,14 @@ select:disabled {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.field-input:disabled,
+.field-textarea:disabled {
+  background: color-mix(in srgb, var(--primary) 4%, var(--surface));
+  color: color-mix(in srgb, var(--foreground) 72%, var(--muted));
+  cursor: not-allowed;
+  opacity: 1;
 }
 
 .field-input::placeholder,
@@ -908,6 +929,12 @@ select:disabled {
   color: var(--primary);
 }
 
+.project-chip.is-match {
+  border-color: color-mix(in srgb, var(--secondary) 55%, transparent);
+  background: color-mix(in srgb, var(--secondary) 20%, white);
+  color: var(--secondary-deep);
+}
+
 .project-apply-panel {
   border-radius: var(--radius-lg);
   box-shadow: 0 18px 40px -28px rgba(61, 18, 72, 0.22);
@@ -957,5 +984,61 @@ select:disabled {
 @media (prefers-reduced-motion: reduce) {
   .project-card:hover {
     transform: none;
+  }
+}
+
+/* Student portal tabs */
+.student-portal-tabs {
+  width: 100%;
+}
+
+.student-portal-tabs-track {
+  display: flex;
+  gap: 0.15rem;
+  overflow-x: auto;
+  border-bottom: 1.5px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  scrollbar-width: none;
+}
+
+.student-portal-tabs-track::-webkit-scrollbar {
+  display: none;
+}
+
+.student-portal-tab {
+  position: relative;
+  flex: 0 0 auto;
+  margin-bottom: -1.5px;
+  padding: 0.85rem 1.15rem;
+  border-bottom: 2.5px solid transparent;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 560;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+.student-portal-tab:hover {
+  color: var(--primary);
+}
+
+.student-portal-tab:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.student-portal-tab.is-active {
+  color: var(--primary);
+  border-bottom-color: var(--secondary);
+  font-weight: 650;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .student-portal-tab {
+    transition: none;
   }
 }

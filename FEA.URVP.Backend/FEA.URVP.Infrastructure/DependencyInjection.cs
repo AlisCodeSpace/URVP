@@ -28,6 +28,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
+        services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
+        services.AddScoped<IProjectRankingRepository, ProjectRankingRepository>();
+        services.AddScoped<IFileStorageRepository, FileStorageRepository>();
         services.AddScoped<IEventBus, InMemoryEventBus>();
 
         // Persist data-protection keys so OIDC correlation/state survives restarts.

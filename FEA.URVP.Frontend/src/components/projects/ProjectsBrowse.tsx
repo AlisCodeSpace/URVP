@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
+import { useStudentResearchTopics } from "@/hooks/useStudentResearchTopics";
 import { ApiError } from "@/lib/api";
 import {
   openingsLeft,
@@ -53,90 +54,10 @@ function matchesStatus(project: CatalogProject, filter: StatusFilter) {
   return project.status.toLowerCase() === filter;
 }
 
-function ProjectCard({ project }: { project: CatalogProject }) {
-  const open = openingsLeft(project);
-  const isClosed = project.status === "Closed" || open === 0;
-  const areaChips = listValues(project.researchArea).slice(0, 2);
-  const activityChips = listValues(project.activityType).slice(0, 2);
-
-  return (
-    <li>
-      <Link
-        href={`/projects/${project.id}`}
-        className="project-card group block border border-primary/12 bg-surface p-5 transition sm:p-6"
-      >
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <span
-            className={`text-xs font-bold uppercase tracking-[0.18em] ${
-              isClosed ? "text-muted" : "text-secondary-deep"
-            }`}
-          >
-            {project.status}
-          </span>
-          <span className="text-xs text-muted">Posted {project.postedAt}</span>
-          <span
-            className={`ml-auto text-xs font-medium uppercase tracking-[0.14em] ${
-              isClosed ? "text-muted" : "text-primary"
-            }`}
-          >
-            {isClosed
-              ? "No openings"
-              : `${open} opening${open === 1 ? "" : "s"}`}
-          </span>
-        </div>
-
-        <Heading
-          as="h2"
-          size="5"
-          weight="medium"
-          mt="3"
-          className="!font-[family-name:var(--font-display)] !leading-snug !text-primary transition group-hover:!text-primary-soft"
-        >
-          {project.title}
-        </Heading>
-
-        <Text as="p" size="2" mt="2" className="!text-muted">
-          {project.facultyName}
-          <span className="mx-2 text-primary/25" aria-hidden>
-            ·
-          </span>
-          {project.affiliation}
-        </Text>
-
-        <Text
-          as="p"
-          size="3"
-          mt="3"
-          className="line-clamp-2 !leading-relaxed !text-muted"
-        >
-          {project.description}
-        </Text>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {areaChips.map((chip) => (
-            <span key={`area-${chip}`} className="project-chip">
-              {chip}
-            </span>
-          ))}
-          {activityChips.map((chip) => (
-            <span key={`activity-${chip}`} className="project-chip">
-              {chip}
-            </span>
-          ))}
-        </div>
-
-        <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-secondary-deep transition group-hover:gap-3">
-          View project
-          <span aria-hidden>→</span>
-        </span>
-      </Link>
-    </li>
-  );
-}
-
 export function ProjectsBrowse() {
   const { status, loading: authLoading } = useAuth();
   const isSignedIn = Boolean(status?.isAuthenticated);
+  const studentTopics = useStudentResearchTopics();
 
   const [projects, setProjects] = useState<CatalogProject[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -392,9 +313,40 @@ export function ProjectsBrowse() {
           </div>
         ) : (
           <ul className="mt-6 grid gap-5">
-            {filtered.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
+            {filtered.map((project) => {
+              const open = openingsLeft(project);
+              const isClosed = project.status === "Closed" || open === 0;
+
+              return (
+                <ProjectCard
+                  key={project.id}
+                  project={{
+                    id: project.id,
+                    title: project.title,
+                    facultyName: project.facultyName,
+                    affiliation: project.affiliation,
+                    description: project.description,
+                    researchAreas: listValues(project.researchArea),
+                    activityTypes: listValues(project.activityType),
+                  }}
+                  studentTopics={studentTopics}
+                  eyebrow={project.status}
+                  eyebrowMuted={isClosed}
+                  meta={`Posted ${project.postedAt}`}
+                  metaEnd={
+                    <span
+                      className={`text-xs font-medium uppercase tracking-[0.14em] ${
+                        isClosed ? "text-muted" : "text-primary"
+                      }`}
+                    >
+                      {isClosed
+                        ? "No openings"
+                        : `${open} opening${open === 1 ? "" : "s"}`}
+                    </span>
+                  }
+                />
+              );
+            })}
           </ul>
         )}
       </div>

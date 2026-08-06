@@ -3,9 +3,9 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { myProjectsHref } from "@/lib/auth";
+import { portalHref } from "@/lib/auth";
 
-/** `/my-projects` → `/my-projects/{userId}` (or sign-in). */
+/** `/my-projects` → role portal (faculty list or student profile). */
 export default function MyProjectsIndexPage() {
   const router = useRouter();
   const { status, loading } = useAuth();
@@ -18,7 +18,7 @@ export default function MyProjectsIndexPage() {
       return;
     }
 
-    router.replace(myProjectsHref(status.userId));
+    router.replace(portalHref(status.role, status.userId));
   }, [loading, status, router]);
 
   return (

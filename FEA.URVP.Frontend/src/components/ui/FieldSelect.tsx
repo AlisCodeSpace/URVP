@@ -11,6 +11,7 @@ type FieldSelectProps = {
   options: readonly FieldSelectOption[];
   value?: string;
   onValueChange?: (value: string) => void;
+  disabled?: boolean;
 };
 
 function optionValue(option: FieldSelectOption) {
@@ -28,6 +29,7 @@ export function FieldSelect({
   options,
   value,
   onValueChange,
+  disabled = false,
 }: FieldSelectProps) {
   return (
     <Select.Root
@@ -35,6 +37,7 @@ export function FieldSelect({
       size="3"
       value={value}
       onValueChange={onValueChange}
+      disabled={disabled}
     >
       <Select.Trigger
         id={id}
