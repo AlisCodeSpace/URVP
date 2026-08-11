@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons";
 import { ApiError } from "@/lib/api";
 import { editProjectHref, newProjectHref, viewProjectHref } from "@/lib/auth";
 import type { MyProject, MyProjectStatus } from "@/lib/project-form";
@@ -82,6 +84,7 @@ function ProjectRow({
           variant="ghost"
           size="sm"
         >
+          <IconPencil />
           Edit
         </Button>
         <Button
@@ -92,6 +95,7 @@ function ProjectRow({
           onClick={() => onDelete(project.id)}
           className="!text-red-800 hover:!text-red-900"
         >
+          <IconTrash />
           {deleting ? "Deleting…" : "Delete"}
         </Button>
       </div>
@@ -103,6 +107,7 @@ export function MyProjectsList({ userId }: { userId: string }) {
   const [projects, setProjects] = useState<MyProject[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<MyProject | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -123,13 +128,15 @@ export function MyProjectsList({ userId }: { userId: string }) {
     void load();
   }, [load]);
 
-  async function handleDelete(id: string) {
-    if (!window.confirm("Delete this project? This cannot be undone.")) return;
+  async function handleConfirmDelete() {
+    if (!pendingDelete) return;
 
+    const id = pendingDelete.id;
     setBusyId(id);
     setError(null);
     try {
       await deleteProject(id);
+      setPendingDelete(null);
       setProjects((prev) => (prev ?? []).filter((p) => p.id !== id));
     } catch (err) {
       setError(
@@ -180,6 +187,7 @@ export function MyProjectsList({ userId }: { userId: string }) {
         </Text>
         <div className="mt-6 flex justify-center">
           <Button href={newProjectHref(userId)} variant="secondary" size="md">
+            <IconPlus />
             New project
           </Button>
         </div>
@@ -207,10 +215,30 @@ export function MyProjectsList({ userId }: { userId: string }) {
             userId={userId}
             project={project}
             busyId={busyId}
-            onDelete={handleDelete}
+            onDelete={(id) => {
+              const project = projects.find((p) => p.id === id) ?? null;
+              setPendingDelete(project);
+            }}
           />
         ))}
       </ul>
+
+      <ConfirmModal
+        open={pendingDelete !== null}
+        onClose={() => {
+          if (busyId === null) setPendingDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete project?"
+        description={
+          pendingDelete
+            ? `Delete “${pendingDelete.title}”? This cannot be undone.`
+            : "Delete this project? This cannot be undone."
+        }
+        confirmLabel="Delete"
+        busyLabel="Deleting…"
+        busy={pendingDelete !== null && busyId === pendingDelete.id}
+      />
     </div>
   );
 }

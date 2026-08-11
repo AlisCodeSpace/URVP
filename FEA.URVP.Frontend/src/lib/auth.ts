@@ -23,6 +23,7 @@ export type UserRoleValue = (typeof UserRole)[keyof typeof UserRole];
 /** Stable role lists for RequireAuth (avoid inline arrays → effect churn). */
 export const STUDENT_ROLES = [UserRole.Student] as const;
 export const FACULTY_PORTAL_ROLES = [UserRole.Faculty, UserRole.Admin] as const;
+export const ADMIN_ROLES = [UserRole.Admin] as const;
 
 /** Temporary: force these emails into the student portal for FE testing. */
 const STUDENT_ROLE_OVERRIDES = new Set(["aa624@aub.edu.lb"]);
@@ -128,14 +129,23 @@ export function isFacultyOrAdmin(role: number | null | undefined): boolean {
   return role === UserRole.Faculty || role === UserRole.Admin;
 }
 
-/** Faculty portal for faculty/admin; student profile for students. */
+export function isAdmin(role: number | null | undefined): boolean {
+  return role === UserRole.Admin;
+}
+
+/** Admin console, faculty portal, or student profile by role. */
 export function portalHref(
   role: number | null | undefined,
   userId?: string | null,
 ): string {
+  if (isAdmin(role)) return "/admin";
   if (isStudent(role)) return "/student/profile";
   if (userId) return `/my-projects/${userId}`;
   return "/sign-in";
+}
+
+export function adminHref(): string {
+  return "/admin";
 }
 
 export function studentProfileHref(): string {

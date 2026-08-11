@@ -100,9 +100,10 @@ export function ProjectCard({
             </span>
           ))}
           {areaChips.length > 0 && activityChips.length > 0 ? (
-            <span className="text-primary/25" aria-hidden>
-              ·
-            </span>
+            <span
+              className="mx-1 h-4 w-px shrink-0 self-center bg-primary/25"
+              aria-hidden
+            />
           ) : null}
           {activityChips.map((chip) => (
             <span key={`activity-${chip}`} className="project-chip">

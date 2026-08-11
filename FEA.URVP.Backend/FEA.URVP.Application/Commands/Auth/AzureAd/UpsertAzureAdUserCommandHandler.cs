@@ -76,7 +76,8 @@ public sealed class UpsertAzureAdUserCommandHandler
 
         var modified = false;
 
-        if (user.Role != userRole)
+        // RoleOverride (e.g. dev sign-in) may update role; otherwise preserve admin-assigned roles.
+        if (request.RoleOverride.HasValue && user.Role != userRole)
         {
             user.Role = userRole;
             modified = true;

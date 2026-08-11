@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Text } from "@radix-ui/themes";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { ProjectDetail } from "@/components/projects/ProjectDetail";
 import { ApiError } from "@/lib/api";
 import type { CatalogProject } from "@/lib/projects";
@@ -40,25 +42,73 @@ export function ProjectDetailLoader({ id }: { id: string }) {
 
   if (notFound) {
     return (
-      <Text as="p" size="3" className="!text-muted">
-        Project not found.
-      </Text>
+      <>
+        <PageHeader
+          title="Project"
+          description="This listing could not be found."
+        >
+          <Link
+            href="/projects"
+            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+          >
+            <span aria-hidden>←</span>
+            Back to projects
+          </Link>
+        </PageHeader>
+        <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
+          <Text as="p" size="3" className="!text-muted">
+            Project not found.
+          </Text>
+        </section>
+      </>
     );
   }
 
   if (error) {
     return (
-      <Text as="p" size="3" className="!text-red-800" role="alert">
-        {error}
-      </Text>
+      <>
+        <PageHeader
+          title="Project"
+          description="Something went wrong while loading this listing."
+        >
+          <Link
+            href="/projects"
+            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+          >
+            <span aria-hidden>←</span>
+            Back to projects
+          </Link>
+        </PageHeader>
+        <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
+          <Text as="p" size="3" className="!text-red-800" role="alert">
+            {error}
+          </Text>
+        </section>
+      </>
     );
   }
 
   if (!project) {
     return (
-      <Text as="p" size="3" className="!text-muted">
-        Loading project…
-      </Text>
+      <>
+        <PageHeader
+          title="Project"
+          description="Loading research opportunity details…"
+        >
+          <Link
+            href="/projects"
+            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+          >
+            <span aria-hidden>←</span>
+            Back to projects
+          </Link>
+        </PageHeader>
+        <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
+          <Text as="p" size="3" className="!text-muted">
+            Loading project…
+          </Text>
+        </section>
+      </>
     );
   }
 

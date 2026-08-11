@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
+import { IconPencil } from "@/components/ui/Icons";
 import { editProjectHref, myProjectsHref } from "@/lib/auth";
 import { programDescription } from "@/lib/project-form";
 import type { ProjectDto } from "@/lib/projects-api";
@@ -184,6 +185,7 @@ export function FacultyProjectReadonly({
           variant="primary"
           size="lg"
         >
+          <IconPencil />
           Edit project
         </Button>
         <Button

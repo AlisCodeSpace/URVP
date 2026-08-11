@@ -1,5 +1,7 @@
+using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.StudentProfiles.Upsert;
 using FEA.URVP.Domain.Catalog;
+using FEA.URVP.Domain.Enums;
 using FluentValidation;
 
 namespace FEA.URVP.Application.Validators.StudentProfiles;
@@ -7,7 +9,7 @@ namespace FEA.URVP.Application.Validators.StudentProfiles;
 public sealed class UpsertStudentProfileCommandValidator
     : AbstractValidator<UpsertStudentProfileCommand>
 {
-    public UpsertStudentProfileCommandValidator()
+    public UpsertStudentProfileCommandValidator(IValueListRepository valueLists)
     {
         RuleFor(x => x.Gender)
             .NotEmpty().WithMessage("Gender is required.")
@@ -49,7 +51,11 @@ public sealed class UpsertStudentProfileCommandValidator
             .WithMessage($"Select at most {StudentProfileCatalog.MaxResearchTopics} research topics.")
             .Must(list => list.Distinct(StringComparer.Ordinal).Count() == list.Count)
             .WithMessage("Research topics must be unique.")
-            .Must(list => list.All(ResearchAreaCatalog.Allowed.Contains))
+            .MustAsync(async (list, ct) =>
+            {
+                var allowed = await valueLists.GetActiveNamesAsync(ValueListKind.ResearchInterest, ct);
+                return list.All(allowed.Contains);
+            })
             .WithMessage("One or more research topics are not allowed.");
 
         RuleFor(x => x.Publications)

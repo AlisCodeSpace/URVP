@@ -1,12 +1,14 @@
+using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Projects.Update;
 using FEA.URVP.Domain.Catalog;
+using FEA.URVP.Domain.Enums;
 using FluentValidation;
 
 namespace FEA.URVP.Application.Validators.Projects;
 
 public sealed class UpdateProjectCommandValidator : AbstractValidator<UpdateProjectCommand>
 {
-    public UpdateProjectCommandValidator()
+    public UpdateProjectCommandValidator(IValueListRepository valueLists)
     {
         RuleFor(x => x.Title)
             .NotEmpty().WithMessage("Title is required.")
@@ -18,7 +20,11 @@ public sealed class UpdateProjectCommandValidator : AbstractValidator<UpdateProj
             .WithMessage($"Select at most {ResearchAreaCatalog.MaxSelections} research areas.")
             .Must(areas => areas.Distinct(StringComparer.Ordinal).Count() == areas.Count)
             .WithMessage("Research areas must be unique.")
-            .Must(areas => areas.All(ResearchAreaCatalog.Allowed.Contains))
+            .MustAsync(async (areas, ct) =>
+            {
+                var allowed = await valueLists.GetActiveNamesAsync(ValueListKind.ResearchArea, ct);
+                return areas.All(allowed.Contains);
+            })
             .WithMessage("One or more research areas are not allowed.");
 
         RuleFor(x => x.IrbStage)

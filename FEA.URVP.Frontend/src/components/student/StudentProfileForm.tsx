@@ -11,6 +11,7 @@ import {
 import { Heading, Text } from "@radix-ui/themes";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
+import { IconPencil } from "@/components/ui/Icons";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { MultiSelectSearch } from "@/components/ui/MultiSelectSearch";
 import { ApiError } from "@/lib/api";
@@ -392,7 +393,14 @@ export function StudentProfileForm() {
           disabled={submitting}
           onClick={editing ? cancelEditing : startEditing}
         >
-          {editing ? "Cancel" : "Edit profile"}
+          {editing ? (
+            "Cancel"
+          ) : (
+            <>
+              <IconPencil />
+              Edit profile
+            </>
+          )}
         </Button>
       </div>
 

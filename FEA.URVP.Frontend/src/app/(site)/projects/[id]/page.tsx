@@ -20,9 +20,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <main className="flex-1 bg-background">
-      <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
-        <ProjectDetailLoader id={id} />
-      </section>
+      <ProjectDetailLoader id={id} />
     </main>
   );
 }

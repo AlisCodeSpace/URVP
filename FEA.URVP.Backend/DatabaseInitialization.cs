@@ -1,5 +1,7 @@
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.Users;
+using FEA.URVP.Domain.Entities.ValueLists;
+using FEA.URVP.Domain.Enums;
 using FEA.URVP.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +34,7 @@ public static class DatabaseInitialization
             logger.LogInformation("Database migrations applied.");
 
             await SeedDevAuthAccountsAsync(dbContext, logger);
+            await SeedValueListsAsync(dbContext, logger);
         }
         catch (Exception ex)
         {
@@ -91,5 +94,63 @@ public static class DatabaseInitialization
 
         await dbContext.SaveChangesAsync();
         logger.LogInformation("Seeded / updated {Count} development auth account(s).", seeded);
+    }
+
+    private static async Task SeedValueListsAsync(AppDbContext dbContext, ILogger logger)
+    {
+        // Current frontend catalogs use the same research-area labels for areas and student interests.
+        var source = ResearchAreaCatalog.Allowed.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+
+        var interests = await SeedKindAsync(dbContext, ValueListKind.ResearchInterest, source);
+        var areas = await SeedKindAsync(dbContext, ValueListKind.ResearchArea, source);
+
+        if (interests + areas == 0)
+        {
+            logger.LogInformation("Value lists already seeded.");
+            return;
+        }
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation(
+            "Seeded value lists: {InterestCount} research interest(s), {AreaCount} research area(s).",
+            interests,
+            areas);
+    }
+
+    private static async Task<int> SeedKindAsync(
+        AppDbContext dbContext,
+        ValueListKind kind,
+        IReadOnlyList<string> names)
+    {
+        var existing = await dbContext.ValueListItems
+            .Where(x => x.Kind == kind)
+            .Select(x => x.Name)
+            .ToListAsync();
+
+        var existingSet = existing.ToHashSet(StringComparer.Ordinal);
+        var now = DateTime.UtcNow;
+        var sortOrder = existing.Count;
+        var added = 0;
+
+        foreach (var name in names)
+        {
+            if (existingSet.Contains(name))
+            {
+                continue;
+            }
+
+            dbContext.ValueListItems.Add(new ValueListItem
+            {
+                Kind = kind,
+                Name = name,
+                SortOrder = sortOrder++,
+                IsActive = true,
+                CreatedAt = now,
+                UpdatedAt = now
+            });
+            added++;
+        }
+
+        return added;
     }
 }

@@ -15,6 +15,11 @@ export const metadata: Metadata = {
   title: "URVP | Undergraduate Research Volunteer Program",
   description:
     "Match with faculty research projects at AUB. Undergraduate Research Volunteer Program – AY 2025-26.",
+  icons: {
+    icon: [{ url: "/aub-logo.png", type: "image/png" }],
+    apple: [{ url: "/aub-logo.png", type: "image/png" }],
+    shortcut: "/aub-logo.png",
+  },
 };
 
 export default function RootLayout({

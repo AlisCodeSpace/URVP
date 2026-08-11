@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { MyProjectsList } from "@/components/projects/MyProjectsList";
 import { Button } from "@/components/ui/Button";
+import { IconPlus } from "@/components/ui/Icons";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { FACULTY_PORTAL_ROLES, newProjectHref } from "@/lib/auth";
 
@@ -27,6 +28,7 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
           description="Review projects you have posted and open new opportunities for undergraduate volunteers."
           actions={
             <Button href={newProjectHref(userId)} variant="secondary" size="lg">
+              <IconPlus />
               New project
             </Button>
           }

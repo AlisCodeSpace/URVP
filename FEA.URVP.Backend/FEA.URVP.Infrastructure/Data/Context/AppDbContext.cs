@@ -1,9 +1,11 @@
 using FEA.URVP.Application.Abstractions.Persistence;
+using FEA.URVP.Domain.Entities.Divisions;
 using FEA.URVP.Domain.Entities.Files;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Entities.Users;
+using FEA.URVP.Domain.Entities.ValueLists;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -29,6 +31,10 @@ public class AppDbContext : DbContext, IUnitOfWork, IDataProtectionKeyContext
     public DbSet<ProjectRanking> ProjectRankings => Set<ProjectRanking>();
 
     public DbSet<FileStorage> FileStorage => Set<FileStorage>();
+
+    public DbSet<ValueListItem> ValueListItems => Set<ValueListItem>();
+
+    public DbSet<Division> Divisions => Set<Division>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 

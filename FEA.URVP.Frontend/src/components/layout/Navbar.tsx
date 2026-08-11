@@ -22,6 +22,7 @@ export function Navbar() {
     pathname === "/news" ||
     pathname === "/contact" ||
     pathname === "/projects" ||
+    pathname.startsWith("/projects/") ||
     pathname.startsWith("/student") ||
     pathname.startsWith("/my-projects") ||
     pathname.startsWith("/news/");
