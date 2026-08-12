@@ -10,12 +10,12 @@ export function RollingBanners() {
 
   return (
     <section className="overflow-hidden bg-background py-16 sm:py-20">
-      <div className="mb-10 px-6">
+      <div className="site-container mb-10">
         <Text
           as="p"
           size="2"
           weight="medium"
-          className="mx-auto max-w-6xl !uppercase !tracking-[0.2em] !text-secondary-deep"
+          className="!uppercase !tracking-[0.2em] !text-secondary-deep"
         >
           Voices &amp; updates
         </Text>

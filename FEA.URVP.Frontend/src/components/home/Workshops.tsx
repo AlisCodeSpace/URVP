@@ -6,7 +6,7 @@ import { workshops } from "@/lib/home-content";
 export function Workshops() {
   return (
     <section className="border-y border-primary/10 bg-primary-deep text-white">
-      <div className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+      <div className="site-container py-20 sm:py-28">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <Text

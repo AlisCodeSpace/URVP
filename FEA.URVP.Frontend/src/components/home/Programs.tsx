@@ -3,7 +3,7 @@ import { Heading, Text } from "@radix-ui/themes";
 export function Programs() {
   return (
     <section className="bg-surface">
-      <div className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+      <div className="site-container py-20 sm:py-28">
         <Heading
           as="h2"
           size="7"
@@ -40,7 +40,7 @@ export function Programs() {
           </Text>
         </article>
 
-        <ul className="mt-14 grid gap-4 text-sm text-muted sm:grid-cols-2">
+        <ul className="mt-14 grid gap-4 text-sm text-muted sm:grid-cols-2 xl:grid-cols-4">
           <li className="border-l-2 border-secondary pl-4">
             Profiles open Aug 25 – Sep 30 for create/update.
           </li>

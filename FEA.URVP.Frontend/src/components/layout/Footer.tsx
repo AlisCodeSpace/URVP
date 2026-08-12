@@ -23,7 +23,7 @@ const socialIcons = {
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-secondary/30 bg-primary-deep text-white">
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-14 sm:py-16 lg:grid-cols-[1.2fr_1fr_1fr]">
+      <div className="site-container grid gap-12 py-14 sm:py-16 lg:grid-cols-[1.2fr_1fr_1fr] xl:gap-16">
         <div>
           <Logo href="/" className="text-white" size={72} />
           <Text as="p" size="2" mt="2" className="!text-white/65">
@@ -113,7 +113,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-5 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
+        <div className="site-container flex flex-col gap-2 py-5 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} American University of Beirut · URVP
           </p>

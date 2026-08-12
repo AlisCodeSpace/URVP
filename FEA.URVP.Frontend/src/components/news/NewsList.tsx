@@ -18,7 +18,7 @@ function newsPageHref(page: number) {
 export function NewsFeatured({ article }: { article: NewsArticle }) {
   return (
     <article className="border-b border-primary/10 bg-surface">
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-14 sm:py-16 lg:grid-cols-[1fr_1.35fr] lg:items-start lg:gap-16">
+      <div className="site-container grid gap-8 py-14 sm:py-16 lg:grid-cols-[1fr_1.35fr] lg:items-start lg:gap-16">
         <div>
           <Text
             as="p"
@@ -204,7 +204,7 @@ export function NewsList({ page = 1 }: { page?: number }) {
     <div>
       {currentPage === 1 ? <NewsFeatured article={featured} /> : null}
 
-      <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
+      <section className="site-container py-14 sm:py-16">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <Heading
             as="h2"

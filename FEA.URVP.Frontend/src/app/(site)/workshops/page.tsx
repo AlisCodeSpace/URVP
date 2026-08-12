@@ -19,7 +19,7 @@ export default function WorkshopsPage() {
 
       <section
         id="workshops-list"
-        className="mx-auto max-w-6xl scroll-mt-24 px-6 py-14 sm:py-16"
+        className="site-container scroll-mt-24 py-14 sm:py-16"
       >
         <WorkshopsList />
       </section>

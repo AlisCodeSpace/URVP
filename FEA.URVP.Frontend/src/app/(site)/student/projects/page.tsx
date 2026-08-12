@@ -24,7 +24,7 @@ export default function StudentProjectsPage() {
 
         <section
           id="projects-catalog"
-          className="mx-auto max-w-6xl scroll-mt-24 px-6 py-10 sm:py-14"
+          className="site-container scroll-mt-24 py-10 sm:py-14"
         >
           <StudentPortalNav />
           <div className="mt-8">

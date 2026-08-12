@@ -35,7 +35,7 @@ export function Navbar() {
           : "sticky top-0 z-50 border-b border-primary/10 bg-primary-deep/95 backdrop-blur-md"
       }
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
+      <div className="site-container flex items-center justify-between gap-4 py-4">
         <Logo
           href="/"
           size={48}

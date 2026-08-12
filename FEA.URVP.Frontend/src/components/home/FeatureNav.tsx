@@ -5,7 +5,7 @@ import { portalLinks } from "@/lib/site";
 export function FeatureNav() {
   return (
     <section className="border-y border-primary/10 bg-primary-deep text-white">
-      <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
+      <div className="site-container py-16 sm:py-20">
         <Heading
           as="h2"
           size="6"
@@ -20,7 +20,7 @@ export function FeatureNav() {
         </Text>
         <nav
           aria-label="Main portal sections"
-          className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6"
         >
           {portalLinks.map((link, i) => (
             <Link

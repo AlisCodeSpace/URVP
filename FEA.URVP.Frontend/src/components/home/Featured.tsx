@@ -4,7 +4,7 @@ import { featuredItems } from "@/lib/home-content";
 export function Featured() {
   return (
     <section className="border-t border-primary/10 bg-background">
-      <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
+      <div className="site-container py-20 sm:py-24">
         <Heading
           as="h2"
           size="7"
@@ -18,7 +18,7 @@ export function Featured() {
           window.
         </Text>
 
-        <ul className="mt-12 grid gap-6 sm:grid-cols-2">
+        <ul className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {featuredItems.map((item) => (
             <li
               key={item.title}

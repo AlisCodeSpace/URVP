@@ -12,7 +12,7 @@ function WorkshopPoster({ workshop }: { workshop: Workshop }) {
           alt={workshop.posterAlt ?? `${workshop.title} poster`}
           fill
           className="object-cover"
-          sizes="(max-width: 768px) 100vw, 33vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
         />
       </div>
     );
@@ -119,7 +119,7 @@ export function WorkshopsList({
   }
 
   return (
-    <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((workshop) => (
         <li key={workshop.id} className="flex">
           <WorkshopCard workshop={workshop} />

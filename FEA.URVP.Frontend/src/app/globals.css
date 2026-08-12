@@ -18,10 +18,51 @@
   --radius-lg: 1.25rem;
   --radius-full: 9999px;
 
+  /* Fluid content width — steps up on large / ultrawide viewports */
+  --site-max: 72rem; /* ~1152px */
+  --site-pad-x: 1.5rem;
+
   /* Exo site-wide (loaded via next/font → --font-exo) */
   --font-exo-stack: var(--font-exo), "Exo", system-ui, sans-serif;
   --font-body: var(--font-exo-stack);
   --font-display: var(--font-exo-stack);
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --site-max: 80rem; /* ~1280px */
+    --site-pad-x: 2rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  :root {
+    --site-max: 96rem; /* ~1536px */
+    --site-pad-x: 2.5rem;
+  }
+}
+
+@media (min-width: 1920px) {
+  :root {
+    --site-max: min(110rem, 88vw); /* ~1760px, capped by viewport */
+    --site-pad-x: 3rem;
+  }
+}
+
+/* Shared horizontal shell for public site pages */
+.site-container {
+  width: 100%;
+  max-width: var(--site-max);
+  margin-inline: auto;
+  padding-inline: var(--site-pad-x);
+}
+
+.site-container--narrow {
+  max-width: 48rem; /* ~768px — forms / long-form reading */
+}
+
+.site-container--flush {
+  padding-inline: 0;
 }
 
 @theme inline {
@@ -1024,6 +1065,12 @@ select:disabled {
   }
 }
 
+@media (min-width: 1280px) {
+  .project-detail-facts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .project-detail-fact {
   min-width: 0;
 }
@@ -1403,11 +1450,21 @@ select:disabled {
 }
 
 .admin-panel {
-  max-width: 64rem;
+  max-width: min(80rem, 100%);
 }
 
 .admin-panel--wide {
-  max-width: 72rem;
+  max-width: min(96rem, 100%);
+}
+
+@media (min-width: 1920px) {
+  .admin-panel {
+    max-width: min(96rem, 100%);
+  }
+
+  .admin-panel--wide {
+    max-width: min(110rem, 100%);
+  }
 }
 
 .admin-page-header {
@@ -2268,6 +2325,26 @@ body.admin-drawer-open {
 @media (min-width: 1280px) {
   .admin-kpi-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .admin-widget-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .admin-content {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .admin-catalog-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .admin-content {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
   }
 }
 

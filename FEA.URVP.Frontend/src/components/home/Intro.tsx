@@ -3,7 +3,7 @@ import { Heading, Text } from "@radix-ui/themes";
 export function Intro() {
   return (
     <section className="bg-background">
-      <div className="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+      <div className="site-container py-20 sm:py-28">
         <Text
           as="p"
           size="2"
@@ -21,8 +21,8 @@ export function Intro() {
         >
           Research starts earlier than you think.
         </Heading>
-        <div className="mt-6 flex max-w-2xl flex-col gap-4 text-muted">
-          <Text as="p" size="3" className="!leading-relaxed">
+        <div className="mt-6 grid max-w-2xl gap-4 text-muted xl:max-w-4xl xl:grid-cols-2">
+          <Text as="p" size="3" className="!leading-relaxed xl:col-span-2">
             Now in its seventh year at AUB, the Undergraduate Research Volunteer
             Program (URVP) is an initiative hosted under the Office of the
             Provost. It targets undergraduate students interested in research

@@ -36,7 +36,7 @@ export default async function NewProjectPage({ params }: NewProjectPageProps) {
           </Link>
         </PageHeader>
 
-        <section className="mx-auto max-w-3xl px-6 py-12 sm:py-16">
+        <section className="site-container site-container--narrow py-12 sm:py-16">
           <PostProjectForm userId={userId} />
         </section>
       </main>

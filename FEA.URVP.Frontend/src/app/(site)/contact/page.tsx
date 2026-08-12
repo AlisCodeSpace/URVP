@@ -36,7 +36,7 @@ export default function ContactPage() {
 
       <section
         id="contact-details"
-        className="mx-auto max-w-6xl scroll-mt-24 px-6 py-16 sm:py-20"
+        className="site-container scroll-mt-24 py-16 sm:py-20"
       >
         <ul className="divide-y divide-primary/10 border-y border-primary/10">
           {contacts.map((contact) => (

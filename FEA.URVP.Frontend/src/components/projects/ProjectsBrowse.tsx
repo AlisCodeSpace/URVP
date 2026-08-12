@@ -153,7 +153,7 @@ export function ProjectsBrowse() {
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[22rem_1fr] lg:gap-12">
+    <div className="grid gap-10 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)] xl:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)] lg:gap-12 xl:gap-14">
       <aside className="project-filters lg:sticky lg:top-24 lg:self-start">
         <Text
           as="p"
@@ -312,7 +312,7 @@ export function ProjectsBrowse() {
             </div>
           </div>
         ) : (
-          <ul className="mt-6 grid gap-5">
+          <ul className="mt-6 grid gap-5 xl:grid-cols-2">
             {filtered.map((project) => {
               const open = openingsLeft(project);
               const isClosed = project.status === "Closed" || open === 0;

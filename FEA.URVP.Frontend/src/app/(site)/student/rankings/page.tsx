@@ -21,7 +21,7 @@ export default function StudentRankingsPage() {
           description="Your top project choices, ordered from 1st to 3rd. The program team uses these rankings for matching."
         />
 
-        <section className="mx-auto max-w-6xl px-6 py-10 sm:py-14">
+        <section className="site-container py-10 sm:py-14">
           <StudentPortalNav />
           <div className="mt-8">
             <StudentRankingsList />

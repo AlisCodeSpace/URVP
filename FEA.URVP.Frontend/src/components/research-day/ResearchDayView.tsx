@@ -9,7 +9,7 @@ import {
 export function ResearchDayContent() {
   return (
     <>
-      <section className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
+      <section className="site-container py-16 sm:py-20">
         <Heading
           as="h2"
           size="7"
@@ -31,7 +31,7 @@ export function ResearchDayContent() {
         id="research-day-deadlines"
         className="scroll-mt-24 border-y border-primary/10 bg-surface"
       >
-        <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
+        <div className="site-container py-16 sm:py-20">
           <Heading
             as="h2"
             size="7"
@@ -88,7 +88,7 @@ export function ResearchDayContent() {
         id="research-day-forms"
         className="scroll-mt-24 border-t border-primary/10 bg-primary-deep text-white"
       >
-        <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
+        <div className="site-container py-16 sm:py-20">
           <Heading
             as="h2"
             size="7"
@@ -138,7 +138,7 @@ export function ResearchDayContent() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
+      <section className="site-container py-16 sm:py-20">
         <Heading
           as="h2"
           size="7"

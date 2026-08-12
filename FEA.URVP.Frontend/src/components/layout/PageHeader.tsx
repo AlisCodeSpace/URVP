@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Heading, Text } from "@radix-ui/themes";
+import { Container } from "@/components/layout/Container";
 
 type PageHeaderProps = {
   title: string;
@@ -7,7 +8,7 @@ type PageHeaderProps = {
   eyebrow?: string;
   actions?: ReactNode;
   children?: ReactNode;
-  /** Content column width. Defaults to 6xl; use 3xl to match narrow page bodies. */
+  /** Content column width. Defaults to fluid site shell; use narrow for forms. */
   maxWidth?: "3xl" | "6xl";
 };
 
@@ -20,13 +21,12 @@ export function PageHeader({
   children,
   maxWidth = "6xl",
 }: PageHeaderProps) {
-  const widthClass = maxWidth === "3xl" ? "max-w-3xl" : "max-w-6xl";
-
   return (
     <section className="page-header relative overflow-hidden text-white">
       <div className="page-header-grid absolute inset-0" aria-hidden />
-      <div
-        className={`relative z-10 mx-auto ${widthClass} px-6 pb-14 pt-28 sm:pb-16 sm:pt-32`}
+      <Container
+        narrow={maxWidth === "3xl"}
+        className="relative z-10 pb-14 pt-28 sm:pb-16 sm:pt-32"
       >
         {children}
         <div className={children ? "mt-5" : undefined}>
@@ -53,7 +53,7 @@ export function PageHeader({
             as="p"
             size="4"
             mt="3"
-            className="max-w-2xl !leading-relaxed !text-white/75"
+            className="max-w-2xl xl:max-w-3xl !leading-relaxed !text-white/75"
           >
             {description}
           </Text>
@@ -61,7 +61,7 @@ export function PageHeader({
             <div className="mt-6 flex flex-wrap gap-3">{actions}</div>
           ) : null}
         </div>
-      </div>
+      </Container>
     </section>
   );
 }

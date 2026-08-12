@@ -142,9 +142,9 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
         </Link>
       </PageHeader>
 
-      <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
+      <section className="site-container py-14 sm:py-16">
         <article>
-          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_18.5rem] lg:items-start lg:gap-14">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,20rem)] xl:grid-cols-[minmax(0,1fr)_minmax(17rem,22rem)] lg:items-start lg:gap-14 xl:gap-16">
             <div className="min-w-0">
               <div className="project-detail-mentor">
                 <Text

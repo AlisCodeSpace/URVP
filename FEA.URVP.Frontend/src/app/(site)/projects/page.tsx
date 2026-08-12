@@ -20,7 +20,7 @@ export default function ProjectsPage() {
 
       <section
         id="projects-catalog"
-        className="mx-auto max-w-6xl scroll-mt-24 px-6 py-14 sm:py-16"
+        className="site-container scroll-mt-24 py-14 sm:py-16"
       >
         <ProjectsBrowse />
       </section>

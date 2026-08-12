@@ -95,7 +95,7 @@ export function SignInView({ signInUrl, error }: SignInViewProps) {
       </section>
 
       <section className="flex min-h-0 flex-1 items-center justify-center px-6 py-7 sm:px-8 lg:px-10">
-        <div className="sign-in-enter w-full max-w-[24rem]">
+        <div className="sign-in-enter w-full max-w-[28rem]">
           <div className="sign-in-card overflow-hidden">
             <div className="sign-in-accent" aria-hidden />
             <div className="px-7 py-7 sm:px-8 sm:py-8">

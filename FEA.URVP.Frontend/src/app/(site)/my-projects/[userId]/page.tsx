@@ -34,7 +34,7 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
           }
         />
 
-        <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
+        <section className="site-container py-14 sm:py-16">
           <MyProjectsList userId={userId} />
         </section>
       </main>

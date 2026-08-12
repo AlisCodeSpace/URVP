@@ -63,7 +63,7 @@ export function FacultyProjectView({
           </Link>
         </PageHeader>
 
-        <section className="mx-auto max-w-3xl px-6 py-12 sm:py-16">
+        <section className="site-container site-container--narrow py-12 sm:py-16">
           {error ? (
             <Text
               as="p"

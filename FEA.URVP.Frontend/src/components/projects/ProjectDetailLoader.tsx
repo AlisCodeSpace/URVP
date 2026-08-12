@@ -55,7 +55,7 @@ export function ProjectDetailLoader({ id }: { id: string }) {
             Back to projects
           </Link>
         </PageHeader>
-        <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
+        <section className="site-container py-14 sm:py-16">
           <Text as="p" size="3" className="!text-muted">
             Project not found.
           </Text>
@@ -79,7 +79,7 @@ export function ProjectDetailLoader({ id }: { id: string }) {
             Back to projects
           </Link>
         </PageHeader>
-        <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
+        <section className="site-container py-14 sm:py-16">
           <Text as="p" size="3" className="!text-red-800" role="alert">
             {error}
           </Text>
@@ -103,7 +103,7 @@ export function ProjectDetailLoader({ id }: { id: string }) {
             Back to projects
           </Link>
         </PageHeader>
-        <section className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
+        <section className="site-container py-14 sm:py-16">
           <Text as="p" size="3" className="!text-muted">
             Loading project…
           </Text>
