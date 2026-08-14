@@ -77,7 +77,7 @@ export function Navbar() {
             <UserMenu status={status} />
           ) : (
             <Button href="/sign-in" variant="secondary" size="sm">
-              Sign in
+              Log In
             </Button>
           )}
         </div>
@@ -144,7 +144,7 @@ export function Navbar() {
                 className="w-full"
                 onClick={() => setOpen(false)}
               >
-                Sign in
+                Log In
               </Button>
             )}
           </div>

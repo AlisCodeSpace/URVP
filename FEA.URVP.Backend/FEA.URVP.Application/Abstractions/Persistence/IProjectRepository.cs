@@ -14,6 +14,13 @@ public interface IProjectRepository
         int pageSize,
         CancellationToken cancellationToken = default);
 
+    Task<(IReadOnlyList<Project> Items, int TotalCount)> ListForAdminAsync(
+        string? search,
+        ProjectStatus? status,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+
     void Add(Project project);
 
     void Remove(Project project);

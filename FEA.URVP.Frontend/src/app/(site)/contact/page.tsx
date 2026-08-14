@@ -14,7 +14,7 @@ import { contacts, socialLinks } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Contact | URVP",
   description:
-    "Contact the program coordinator at the American University of Beirut.",
+    "Contact the Student Success Unit at the Institute for Academic Innovation and Development.",
 };
 
 const socialIcons = {
@@ -31,7 +31,7 @@ export default function ContactPage() {
     <main className="flex-1 bg-background">
       <PageHeader
         title="Contact"
-        description="Questions about cycles, eligibility, or matching. Reach the program coordinator at AUB."
+        description="Questions about cycles, eligibility, or matching. Reach the Student Success Unit at the Institute for Academic Innovation and Development."
       />
 
       <section
@@ -62,10 +62,7 @@ export default function ContactPage() {
                 >
                   {contact.name}
                 </Heading>
-                <Text as="p" size="3" mt="2" className="!text-foreground">
-                  {contact.title}
-                </Text>
-                <Text as="p" size="3" mt="1" className="!text-muted">
+                <Text as="p" size="3" mt="2" className="!text-muted">
                   {contact.affiliation}
                 </Text>
               </div>

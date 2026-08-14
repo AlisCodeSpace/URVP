@@ -3,8 +3,10 @@ using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.Projects.Create;
 using FEA.URVP.Application.Commands.Projects.Delete;
 using FEA.URVP.Application.Commands.Projects.Update;
+using FEA.URVP.Application.Queries.Projects.GetAdminDetail;
 using FEA.URVP.Application.Queries.Projects.GetById;
 using FEA.URVP.Application.Queries.Projects.List;
+using FEA.URVP.Application.Queries.Projects.ListAdmin;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -54,6 +56,43 @@ public sealed class ProjectsController : ApiControllerBase
             cancellationToken);
 
         return PaginatedResponse(items, pageNumber, pageSize, totalCount);
+    }
+
+    /// <summary>List all projects with student ranking counts. Admin only.</summary>
+    [HttpGet("admin")]
+    public async Task<IActionResult> ListAdmin(
+        [FromQuery] string? search = null,
+        [FromQuery] ProjectStatus? status = null,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 20,
+        CancellationToken cancellationToken = default)
+    {
+        if (!UserHasRole(nameof(UserRole.Admin)))
+        {
+            return ForbiddenResponse();
+        }
+
+        pageNumber = Math.Max(1, pageNumber);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var (items, totalCount) = await _mediator.Send(
+            new ListAdminProjectsQuery(search, status, pageNumber, pageSize),
+            cancellationToken);
+
+        return PaginatedResponse(items, pageNumber, pageSize, totalCount);
+    }
+
+    /// <summary>Project details plus students who ranked it. Admin only.</summary>
+    [HttpGet("admin/{id:guid}")]
+    public async Task<IActionResult> GetAdminDetail(Guid id, CancellationToken cancellationToken)
+    {
+        if (!UserHasRole(nameof(UserRole.Admin)))
+        {
+            return ForbiddenResponse();
+        }
+
+        var detail = await _mediator.Send(new GetAdminProjectDetailQuery(id), cancellationToken);
+        return SuccessResponse(detail);
     }
 
     [HttpGet("{id:guid}")]

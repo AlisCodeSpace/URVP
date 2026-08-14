@@ -23,6 +23,10 @@ public interface IProjectRankingRepository
         Guid projectId,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyDictionary<Guid, int>> CountByProjectIdsAsync(
+        IReadOnlyCollection<Guid> projectIds,
+        CancellationToken cancellationToken = default);
+
     void Add(ProjectRanking ranking);
 
     void Remove(ProjectRanking ranking);

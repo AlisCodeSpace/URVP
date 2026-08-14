@@ -14,7 +14,7 @@ const exo = Exo({
 export const metadata: Metadata = {
   title: "URVP | Undergraduate Research Volunteer Program",
   description:
-    "Match with faculty research projects at AUB. Undergraduate Research Volunteer Program – AY 2025-26.",
+    "Match with faculty research. Shape your academic path. Undergraduate Research Volunteer Program – AY 2026–27.",
   icons: {
     icon: [{ url: "/aub-logo.png", type: "image/png" }],
     apple: [{ url: "/aub-logo.png", type: "image/png" }],

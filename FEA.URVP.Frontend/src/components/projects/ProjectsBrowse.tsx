@@ -17,21 +17,12 @@ import {
 import { listProjects, toCatalogProject } from "@/lib/projects-api";
 
 type SortKey = "newest" | "openings" | "title";
-type StatusFilter = "all" | "available" | "open" | "matching" | "closed";
 
 const areaFilterOptions = ["All areas", ...researchAreas] as const;
 const activityFilterOptions = [
   "All activities",
   ...researchActivityTypes,
 ] as const;
-
-const statusFilterOptions: { value: StatusFilter; label: string }[] = [
-  { value: "all", label: "All statuses" },
-  { value: "available", label: "Has openings" },
-  { value: "open", label: "Open" },
-  { value: "matching", label: "Matching" },
-  { value: "closed", label: "Closed" },
-];
 
 const sortOptions: { value: SortKey; label: string }[] = [
   { value: "newest", label: "Newest first" },
@@ -46,12 +37,8 @@ function listValues(joined: string): string[] {
     .filter(Boolean);
 }
 
-function matchesStatus(project: CatalogProject, filter: StatusFilter) {
-  if (filter === "all") return true;
-  if (filter === "available") {
-    return project.status !== "Closed" && openingsLeft(project) > 0;
-  }
-  return project.status.toLowerCase() === filter;
+function isAvailable(project: CatalogProject) {
+  return project.status !== "Closed" && openingsLeft(project) > 0;
 }
 
 export function ProjectsBrowse() {
@@ -64,7 +51,6 @@ export function ProjectsBrowse() {
   const [query, setQuery] = useState("");
   const [area, setArea] = useState("All areas");
   const [activity, setActivity] = useState("All activities");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("available");
   const [sort, setSort] = useState<SortKey>("newest");
 
   useEffect(() => {
@@ -110,7 +96,7 @@ export function ProjectsBrowse() {
       ) {
         return false;
       }
-      if (!matchesStatus(project, statusFilter)) return false;
+      if (!isAvailable(project)) return false;
       if (!q) return true;
 
       const haystack = [
@@ -135,20 +121,18 @@ export function ProjectsBrowse() {
     });
 
     return next;
-  }, [projects, query, area, activity, statusFilter, sort]);
+  }, [projects, query, area, activity, sort]);
 
   const hasActiveFilters =
     query.trim() !== "" ||
     area !== "All areas" ||
     activity !== "All activities" ||
-    statusFilter !== "available" ||
     sort !== "newest";
 
   function clearFilters() {
     setQuery("");
     setArea("All areas");
     setActivity("All activities");
-    setStatusFilter("available");
     setSort("newest");
   }
 
@@ -204,20 +188,6 @@ export function ProjectsBrowse() {
               options={activityFilterOptions}
               value={activity}
               onValueChange={setActivity}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="project-status" className="field-label">
-              Status
-            </label>
-            <FieldSelect
-              id="project-status"
-              name="projectStatus"
-              placeholder="Has openings"
-              options={statusFilterOptions}
-              value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as StatusFilter)}
             />
           </div>
 

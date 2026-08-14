@@ -51,6 +51,25 @@ public sealed class ProjectRankingRepository : IProjectRankingRepository
             .ThenBy(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyDictionary<Guid, int>> CountByProjectIdsAsync(
+        IReadOnlyCollection<Guid> projectIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (projectIds.Count == 0)
+        {
+            return new Dictionary<Guid, int>();
+        }
+
+        var counts = await _db.ProjectRankings
+            .AsNoTracking()
+            .Where(r => projectIds.Contains(r.ProjectId))
+            .GroupBy(r => r.ProjectId)
+            .Select(g => new { ProjectId = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        return counts.ToDictionary(x => x.ProjectId, x => x.Count);
+    }
+
     public void Add(ProjectRanking ranking) => _db.ProjectRankings.Add(ranking);
 
     public void Remove(ProjectRanking ranking) => _db.ProjectRankings.Remove(ranking);

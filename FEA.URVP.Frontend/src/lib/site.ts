@@ -41,10 +41,9 @@ export const socialLinks = [
 
 export const contacts = [
   {
-    role: "Program coordinator",
-    name: "Joseph Costantine",
-    title: "Professor",
-    affiliation: "Institute for Academic Innovations and Development",
-    email: "jc14@aub.edu.lb",
+    role: "Contact",
+    name: "Student Success Unit",
+    affiliation: "Institute for Academic Innovation and Development",
+    email: "theinstitute@aub.edu.lb",
   },
 ] as const;

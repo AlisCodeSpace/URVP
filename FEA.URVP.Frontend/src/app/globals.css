@@ -2348,6 +2348,98 @@ body.admin-drawer-open {
   }
 }
 
+.admin-value-status.is-matching {
+  background: color-mix(in srgb, var(--secondary) 14%, white);
+  color: var(--secondary-deep);
+}
+
+.admin-rank-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.admin-rank-count.is-zero {
+  color: var(--muted);
+  font-weight: 550;
+}
+
+.admin-detail-back {
+  margin-bottom: 0.85rem;
+}
+
+.admin-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+  margin: -0.5rem 0 1.35rem;
+}
+
+.admin-detail-rank-split {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.admin-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem 1.5rem;
+}
+
+.admin-detail-field.is-wide {
+  grid-column: 1 / -1;
+}
+
+.admin-detail-value {
+  color: var(--foreground);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.admin-detail-prose {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.admin-detail-section {
+  margin-top: 1.85rem;
+}
+
+.admin-detail-section-head {
+  margin-bottom: 0.95rem;
+}
+
+.admin-detail-section-title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.admin-detail-section-desc {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.admin-rank-badge {
+  display: inline-flex;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--primary) 10%, white);
+  color: var(--primary-deep);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+@media (min-width: 768px) {
+  .admin-detail-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .admin-sidebar,
   .admin-nav-link,

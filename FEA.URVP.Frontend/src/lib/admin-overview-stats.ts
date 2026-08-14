@@ -63,6 +63,7 @@ export const adminKpis: AdminKpi[] = [
     value: "87",
     hint: "Listed for matching",
     delta: "12 draft",
+    href: "/admin/projects",
   },
   {
     id: "rankings",

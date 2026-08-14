@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { PageHero } from "@/components/layout/PageHero";
 
@@ -7,14 +8,27 @@ export function Hero() {
       title="Undergraduate Research Volunteer Program"
       titleScale="brand"
       headline="Match with faculty research. Shape your academic path."
-      description="AY 2025–26 · American University of Beirut. Faculty post projects; students find their fit."
+      announcement={
+        <>
+          Applications for the URVP 2026–27 cycle are open.{" "}
+          <Link
+            href="/sign-in"
+            className="underline decoration-secondary/70 underline-offset-4 transition hover:text-white"
+          >
+            Apply now!
+          </Link>
+        </>
+      }
       actions={
         <>
           <Button href="/sign-in" variant="secondary" size="lg">
-            Apply
+            Log In
           </Button>
           <Button href="/projects" variant="outline-light" size="lg">
-            Browse projects
+            Browse Projects
+          </Button>
+          <Button href="/my-projects" variant="outline-light" size="lg">
+            Faculty Portal
           </Button>
         </>
       }

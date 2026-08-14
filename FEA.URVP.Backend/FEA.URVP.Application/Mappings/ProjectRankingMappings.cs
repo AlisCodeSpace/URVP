@@ -24,4 +24,21 @@ public static class ProjectRankingMappings
             UpdatedAt = ranking.UpdatedAt,
         };
     }
+
+    public static ProjectRankingStudentDto ToStudentDto(this ProjectRanking ranking)
+    {
+        var student = ranking.StudentUser;
+
+        return new ProjectRankingStudentDto
+        {
+            RankingId = ranking.Id,
+            StudentUserId = ranking.StudentUserId,
+            StudentName = student?.Name ?? "Unknown student",
+            StudentEmail = student?.Email ?? string.Empty,
+            StudentUserName = student?.UserName,
+            Rank = ranking.Rank,
+            RankedAt = ranking.CreatedAt,
+            UpdatedAt = ranking.UpdatedAt,
+        };
+    }
 }

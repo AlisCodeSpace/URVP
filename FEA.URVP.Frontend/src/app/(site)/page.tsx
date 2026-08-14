@@ -2,8 +2,8 @@ import { Featured } from "@/components/home/Featured";
 import { FeatureNav } from "@/components/home/FeatureNav";
 import { Hero } from "@/components/home/Hero";
 import { Intro } from "@/components/home/Intro";
-import { Programs } from "@/components/home/Programs";
 import { RollingBanners } from "@/components/home/RollingBanners";
+import { Testimonials } from "@/components/home/Testimonials";
 import { Workshops } from "@/components/home/Workshops";
 
 export default function Home() {
@@ -12,7 +12,7 @@ export default function Home() {
       <Hero />
       <Intro />
       <FeatureNav />
-      <Programs />
+      <Testimonials />
       <RollingBanners />
       <Workshops />
       <Featured />

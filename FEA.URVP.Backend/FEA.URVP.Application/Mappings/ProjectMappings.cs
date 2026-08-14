@@ -29,6 +29,21 @@ public static class ProjectMappings
         UpdatedAt = project.UpdatedAt
     };
 
+    public static AdminProjectListItemDto ToAdminListItem(this Project project, int rankingCount) => new()
+    {
+        Id = project.Id,
+        Title = project.Title,
+        FacultyName = project.FacultyNameSnapshot,
+        Affiliation = project.AffiliationSnapshot,
+        Email = project.EmailSnapshot,
+        Status = project.Status,
+        VolunteersRequired = project.VolunteersRequired,
+        VolunteersFilled = project.VolunteersFilled,
+        RankingCount = rankingCount,
+        CreatedAt = project.CreatedAt,
+        UpdatedAt = project.UpdatedAt
+    };
+
     public static string ToLabel(IrbStage value) => value switch
     {
         IrbStage.IrbApproved => "IRB Approved",

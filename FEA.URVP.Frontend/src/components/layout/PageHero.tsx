@@ -8,7 +8,9 @@ type PageHeroProps = {
   /** Primary headline under the display title */
   headline: string;
   /** Short supporting sentence */
-  description: string;
+  description?: ReactNode;
+  /** Cycle or deadline callout, shown above the supporting sentence */
+  announcement?: ReactNode;
   /** Optional CTAs (same slot as Home Apply / Browse) */
   actions?: ReactNode;
   /**
@@ -29,6 +31,7 @@ export function PageHero({
   title,
   headline,
   description,
+  announcement,
   actions,
   titleScale = "page",
 }: PageHeroProps) {
@@ -50,14 +53,27 @@ export function PageHero({
         >
           {headline}
         </Heading>
-        <Text
-          as="p"
-          size="4"
-          mt="3"
-          className="animate-fade-up-delay max-w-lg xl:max-w-xl !leading-relaxed !text-white/80"
-        >
-          {description}
-        </Text>
+        {announcement ? (
+          <Text
+            as="p"
+            size="4"
+            mt="4"
+            weight="medium"
+            className="animate-fade-up-delay max-w-xl xl:max-w-2xl !leading-relaxed !text-secondary"
+          >
+            {announcement}
+          </Text>
+        ) : null}
+        {description ? (
+          <Text
+            as="p"
+            size="4"
+            mt="3"
+            className="animate-fade-up-delay max-w-lg xl:max-w-xl !leading-relaxed !text-white/80"
+          >
+            {description}
+          </Text>
+        ) : null}
         {actions ? (
           <Flex gap="3" wrap="wrap" mt="6" className="animate-fade-up-delay-2">
             {actions}

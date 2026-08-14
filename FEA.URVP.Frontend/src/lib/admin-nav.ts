@@ -23,6 +23,11 @@ export const adminNav: AdminNavGroup[] = [
         description: "Accounts, roles, and access.",
       },
       {
+        href: "/admin/projects",
+        label: "Projects",
+        description: "All listings and student ranking interest.",
+      },
+      {
         href: "/admin/faculties",
         label: "Faculties",
         description: "Faculty units across the university.",

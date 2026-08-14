@@ -48,6 +48,41 @@ public sealed class ProjectRepository : IProjectRepository
         return (items, totalCount);
     }
 
+    public async Task<(IReadOnlyList<Project> Items, int TotalCount)> ListForAdminAsync(
+        string? search,
+        ProjectStatus? status,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _db.Projects.AsNoTracking().AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(p =>
+                p.Title.Contains(term) ||
+                p.FacultyNameSnapshot.Contains(term) ||
+                p.AffiliationSnapshot.Contains(term) ||
+                p.EmailSnapshot.Contains(term));
+        }
+
+        if (status.HasValue)
+        {
+            query = query.Where(p => p.Status == status.Value);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
     public void Add(Project project) => _db.Projects.Add(project);
 
     public void Remove(Project project) => _db.Projects.Remove(project);

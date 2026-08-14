@@ -35,8 +35,8 @@ export function Footer() {
             mt="4"
             className="max-w-sm !leading-relaxed !text-white/60"
           >
-            Hosted under the Office of the Provost at the American University of
-            Beirut. Matching undergraduates with faculty research since 2019.
+            Hosted within the Student Success Unit under the Institute for
+            Academic Innovation and Development.
           </Text>
           <div className="mt-6 flex flex-wrap gap-2">
             {socialLinks.map((social) => {
@@ -100,9 +100,12 @@ export function Footer() {
                 <Text as="p" size="2" className="!text-white/85">
                   {contact.name}
                 </Text>
+                <Text as="p" size="2" mt="1" className="!text-white/60">
+                  {contact.affiliation}
+                </Text>
                 <a
                   href={`mailto:${contact.email}`}
-                  className="mt-1 text-sm text-secondary transition hover:underline"
+                  className="mt-2 text-sm text-secondary transition hover:underline"
                 >
                   {contact.email}
                 </a>
@@ -117,7 +120,7 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} American University of Beirut · URVP
           </p>
-          <p>AY 2025–26 Cycle · Office of the Provost</p>
+          <p>AY 2026–27 Cycle · Student Success Unit</p>
         </div>
       </div>
     </footer>

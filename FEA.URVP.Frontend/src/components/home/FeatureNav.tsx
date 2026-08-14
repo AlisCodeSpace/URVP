@@ -12,11 +12,11 @@ export function FeatureNav() {
           weight="medium"
           className="!font-[family-name:var(--font-display)] !text-white"
         >
-          Explore the portal
+          Explore the Portal
         </Heading>
-        <Text as="p" size="3" mt="2" className="max-w-xl !text-white/70">
-          Jump to the main features — apply, browse faculty projects, join
-          workshops, and stay informed.
+        <Text as="p" size="3" mt="2" className="max-w-2xl !text-white/70">
+          Use the portal not only to apply, but also to stay informed about the
+          latest research projects, workshops, and URVP Research Day updates.
         </Text>
         <nav
           aria-label="Main portal sections"

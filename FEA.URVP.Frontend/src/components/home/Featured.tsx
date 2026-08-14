@@ -50,18 +50,6 @@ export function Featured() {
             </li>
           ))}
         </ul>
-
-        <div className="mt-14 border-t border-primary/10 pt-8 text-sm text-muted">
-          <p>
-            Questions:{" "}
-            <a
-              href="mailto:jc14@aub.edu.lb"
-              className="font-medium text-primary hover:underline"
-            >
-              Prof. Joseph Costantine
-            </a>
-          </p>
-        </div>
       </div>
     </section>
   );
