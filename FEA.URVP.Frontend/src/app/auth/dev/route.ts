@@ -3,6 +3,7 @@ import { request as httpRequest } from "node:http";
 import type { IncomingHttpHeaders } from "node:http";
 import { URL } from "node:url";
 import { NextRequest, NextResponse } from "next/server";
+import { publicAppOrigin } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -120,52 +121,52 @@ function requestOnce(
 }
 
 export async function GET(request: NextRequest) {
+  const appOrigin = publicAppOrigin(request.headers);
+  const fail = () =>
+    NextResponse.redirect(new URL("/sign-in?error=authentication_failed", appOrigin));
+
   const origin = backendOrigin();
   const email = request.nextUrl.searchParams.get("email")?.trim() ?? "";
-  const fallbackCallback = `${request.nextUrl.origin}/auth/callback`;
+  const requestedReturnUrl = request.nextUrl.searchParams.get("returnUrl")?.trim() ?? "";
+  const fallbackCallback = `${appOrigin}/auth/callback`;
   const returnUrl =
-    request.nextUrl.searchParams.get("returnUrl")?.trim() || fallbackCallback;
+    requestedReturnUrl && !requestedReturnUrl.includes("0.0.0.0")
+      ? requestedReturnUrl
+      : fallbackCallback;
 
-  if (!email) {
-    return NextResponse.redirect(
-      new URL("/sign-in?error=authentication_failed", request.nextUrl.origin),
-    );
-  }
-
-  if (!/^https?:\/\//i.test(origin)) {
-    return NextResponse.redirect(
-      new URL("/sign-in?error=authentication_failed", request.nextUrl.origin),
-    );
+  if (!email || !/^https?:\/\//i.test(origin)) {
+    return fail();
   }
 
   const upstreamUrl = new URL("/api/auth/dev/signin", origin);
   upstreamUrl.searchParams.set("email", email);
   upstreamUrl.searchParams.set("returnUrl", returnUrl);
 
-  const upstream = await requestOnce(upstreamUrl.toString());
-  const response = NextResponse.redirect(returnUrl, 302);
-
-  for (const cookie of readSetCookies(upstream.headers)) {
-    response.headers.append("set-cookie", rewriteCookie(cookie));
-    const parsed = parseSetCookie(cookie);
-    if (!parsed) {
-      continue;
+  try {
+    const upstream = await requestOnce(upstreamUrl.toString());
+    if (upstream.status >= 400) {
+      return fail();
     }
-    response.cookies.set(parsed.name, parsed.value, {
-      httpOnly: parsed.httpOnly,
-      secure: true,
-      sameSite: "lax",
-      path: parsed.path,
-      expires: parsed.expires,
-      maxAge: parsed.maxAge,
-    });
-  }
 
-  if (upstream.status >= 400) {
-    return NextResponse.redirect(
-      new URL("/sign-in?error=authentication_failed", request.nextUrl.origin),
-    );
-  }
+    const response = NextResponse.redirect(returnUrl, 302);
+    for (const cookie of readSetCookies(upstream.headers)) {
+      response.headers.append("set-cookie", rewriteCookie(cookie));
+      const parsed = parseSetCookie(cookie);
+      if (!parsed) {
+        continue;
+      }
+      response.cookies.set(parsed.name, parsed.value, {
+        httpOnly: parsed.httpOnly,
+        secure: true,
+        sameSite: "lax",
+        path: parsed.path,
+        expires: parsed.expires,
+        maxAge: parsed.maxAge,
+      });
+    }
 
-  return response;
+    return response;
+  } catch {
+    return fail();
+  }
 }
