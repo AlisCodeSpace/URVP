@@ -43,7 +43,7 @@ public sealed class DevAuthController : ApiControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> SignIn(
         [FromQuery, Required, EmailAddress, StringLength(256)] string email,
-        [FromQuery, DataType(DataType.Url), StringLength(2048), RegularExpression(@"^https?://[^\s]{1,2047}$")]
+        [FromQuery, StringLength(2048)]
         string? returnUrl = null)
     {
         if (!_configuration.GetValue("Auth:EnableDevSignIn", true))

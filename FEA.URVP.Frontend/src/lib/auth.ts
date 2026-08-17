@@ -37,7 +37,11 @@ function applyRoleOverrides(status: AuthStatus): AuthStatus {
 }
 
 export function getAuthCallbackUrl(): string {
-  return `${appBaseUrl}/auth/callback`;
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : appBaseUrl;
+  return `${origin.replace(/\/$/, "")}/auth/callback`;
 }
 
 export function getAzureAdSignInUrl(returnUrl: string = getAuthCallbackUrl()): string {

@@ -32,7 +32,7 @@ public sealed class AzureAdSsoController : ApiControllerBase
     [HttpGet("signin")]
     [AllowAnonymous]
     public IActionResult SignIn(
-        [FromQuery, DataType(DataType.Url), StringLength(2048), RegularExpression(@"^https?://[^\s]{1,2047}$")]
+        [FromQuery, StringLength(2048)]
         string? returnUrl = null)
     {
         try
@@ -81,7 +81,7 @@ public sealed class AzureAdSsoController : ApiControllerBase
     [HttpGet("signout")]
     [AllowAnonymous]
     public async Task<IActionResult> SignOut(
-        [FromQuery, DataType(DataType.Url), StringLength(2048), RegularExpression(@"^https?://[^\s]{1,2047}$")]
+        [FromQuery, StringLength(2048)]
         string? returnUrl = null)
     {
         try
