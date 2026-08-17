@@ -1,0 +1,54 @@
+# Blueprint for a two-service Render demo deploy.
+# After the first deploy, set the sync:false env vars in the dashboard:
+#   API: ConnectionStrings__SqlServerConnection, Cors__AllowedOrigins, AzureAd__*, AdminEmails__0
+#   Web: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_URL
+# Azure AD redirect URI: https://<urvp-api-host>/signin-oidc-ad
+# SQL Server is not hosted on Render — use Azure SQL (or another SQL Server).
+
+services:
+  - type: web
+    name: urvp-api
+    runtime: docker
+    dockerfilePath: ./FEA.URVP.Backend/Dockerfile
+    dockerContext: ./FEA.URVP.Backend
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Database__ApplyMigrationsOnStartup
+        value: "true"
+      - key: Database__SeedCatalogsOnStartup
+        value: "true"
+      - key: AzureAd__Instance
+        value: https://login.microsoftonline.com/
+      - key: AzureAd__CallbackPath
+        value: /signin-oidc-ad
+      - key: AzureAd__FrontendCallbackPath
+        value: /auth/callback
+      - key: ConnectionStrings__SqlServerConnection
+        sync: false
+      - key: Cors__AllowedOrigins
+        sync: false
+      - key: AzureAd__TenantId
+        sync: false
+      - key: AzureAd__ClientId
+        sync: false
+      - key: AdminEmails__0
+        sync: false
+
+  - type: web
+    name: urvp-web
+    runtime: node
+    rootDir: FEA.URVP.Frontend
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false

@@ -16,6 +16,7 @@ public static class ServiceCollectionConfiguration
         IWebHostEnvironment environment)
     {
         services
+            .AddForwardedHeadersSupport()
             .AddApiServices()
             .AddApplication()
             .AddInfrastructure(configuration)

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FEA.URVP.Backend;
 
 /// <summary>
-/// Optional startup database initialization (Development only).
+/// Startup database initialization: migrations, catalog seed, and Development auth accounts.
 /// </summary>
 public static class DatabaseInitialization
 {
@@ -18,30 +18,73 @@ public static class DatabaseInitialization
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
             .CreateLogger(nameof(DatabaseInitialization));
+        var applyMigrations = app.Configuration.GetValue("Database:ApplyMigrationsOnStartup", app.Environment.IsDevelopment());
+        var seedCatalogs = app.Configuration.GetValue("Database:SeedCatalogsOnStartup", true);
 
-        if (!app.Environment.IsDevelopment())
+        if (applyMigrations)
+        {
+            await ApplyMigrationsAsync(app, dbContext, logger);
+        }
+        else
         {
             logger.LogInformation(
-                "Skipping automatic migrations for {Environment}. Apply schema changes through a controlled deployment process.",
+                "Skipping automatic migrations for {Environment}. Set Database:ApplyMigrationsOnStartup to apply schema changes on startup.",
                 app.Environment.EnvironmentName);
+        }
+
+        if (app.Environment.IsDevelopment())
+        {
+            try
+            {
+                await SeedDevAuthAccountsAsync(dbContext, logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Development auth account seeding skipped.");
+            }
+        }
+
+        if (!seedCatalogs)
+        {
             return;
         }
 
         try
         {
-            logger.LogInformation("Applying database migrations for Development...");
-            await dbContext.Database.MigrateAsync();
-            logger.LogInformation("Database migrations applied.");
-
-            await SeedDevAuthAccountsAsync(dbContext, logger);
             await SeedValueListsAsync(dbContext, logger);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (app.Environment.IsDevelopment())
         {
-            logger.LogWarning(
-                ex,
-                "Database initialization skipped. Create an initial migration when the schema is ready.");
+            logger.LogWarning(ex, "Catalog seeding skipped.");
         }
+    }
+
+    private static async Task ApplyMigrationsAsync(
+        WebApplication app,
+        AppDbContext dbContext,
+        ILogger logger)
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            try
+            {
+                logger.LogInformation("Applying database migrations for Development...");
+                await dbContext.Database.MigrateAsync();
+                logger.LogInformation("Database migrations applied.");
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(
+                    ex,
+                    "Database initialization skipped. Create an initial migration when the schema is ready.");
+            }
+
+            return;
+        }
+
+        logger.LogInformation("Applying database migrations...");
+        await dbContext.Database.MigrateAsync();
+        logger.LogInformation("Database migrations applied.");
     }
 
     private static async Task SeedDevAuthAccountsAsync(AppDbContext dbContext, ILogger logger)

@@ -1,3 +1,4 @@
+using FEA.URVP.Api.Configuration.Security;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -38,11 +39,12 @@ public static class AuthenticationConfiguration
                 options.SlidingExpiration = slidingExpiration;
                 options.ExpireTimeSpan = TimeSpan.FromHours(expireHours);
 
-                var corsOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+                var corsOrigins = CorsOrigins.GetAllowedOrigins(configuration);
                 var hasCrossOriginCors = corsOrigins.Length > 0;
 
-                if (environment.IsDevelopment() && hasCrossOriginCors)
+                if (hasCrossOriginCors)
                 {
+                    // SPA and API are different origins (e.g. two Render web services).
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                     options.Cookie.SameSite = SameSiteMode.None;
                 }
@@ -64,6 +66,10 @@ public static class AuthenticationConfiguration
                     if (parsed.HasValue)
                     {
                         options.Cookie.SameSite = parsed.Value;
+                        if (parsed.Value == SameSiteMode.None)
+                        {
+                            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                        }
                     }
                 }
 

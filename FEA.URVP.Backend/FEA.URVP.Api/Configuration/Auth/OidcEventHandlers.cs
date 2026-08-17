@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Application.Commands.Auth.AzureAd;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -175,7 +176,7 @@ public static class OidcEventHandlers
         string errorCode)
     {
         var frontendCallbackPath = configuration["AzureAd:FrontendCallbackPath"] ?? "/auth/callback";
-        var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+        var allowedOrigins = CorsOrigins.GetAllowedOrigins(configuration);
         var frontendOrigin = allowedOrigins.FirstOrDefault() ?? string.Empty;
         var redirectUrl = !string.IsNullOrEmpty(frontendOrigin)
             ? $"{frontendOrigin}{frontendCallbackPath}?error={errorCode}"

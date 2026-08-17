@@ -10,6 +10,7 @@ public static class MiddlewareConfiguration
 {
     public static WebApplication ConfigureMiddlewarePipeline(this WebApplication app)
     {
+        app.UseForwardedHeaders();
         app.UseGlobalExceptionHandling();
 
         if (app.Environment.IsDevelopment())
@@ -22,7 +23,12 @@ public static class MiddlewareConfiguration
         if (!app.Environment.IsDevelopment())
         {
             app.UseHsts();
-            app.UseHttpsRedirection();
+            // Render (and similar PaaS) terminate TLS and set PORT. Redirecting
+            // HTTP→HTTPS inside the container causes loops without a public HTTPS port.
+            if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("PORT")))
+            {
+                app.UseHttpsRedirection();
+            }
         }
 
         app.UseRouting();

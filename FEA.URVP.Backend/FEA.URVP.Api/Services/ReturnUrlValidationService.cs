@@ -1,3 +1,5 @@
+using FEA.URVP.Api.Configuration.Security;
+
 namespace FEA.URVP.Api.Services;
 
 /// <summary>
@@ -21,7 +23,7 @@ public sealed class ReturnUrlValidationService
 
     public string ValidateReturnUrl(string? returnUrl)
     {
-        var allowedOrigins = _configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+        var allowedOrigins = CorsOrigins.GetAllowedOrigins(_configuration);
         var defaultReturnUrl = allowedOrigins.FirstOrDefault()
             ?? (_environment.IsDevelopment() ? "https://localhost:3000" : "/");
 

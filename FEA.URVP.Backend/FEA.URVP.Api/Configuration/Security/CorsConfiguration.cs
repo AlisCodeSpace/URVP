@@ -9,7 +9,7 @@ public static class CorsConfiguration
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+        var allowedOrigins = CorsOrigins.GetAllowedOrigins(configuration);
 
         services.AddCors(options =>
         {
