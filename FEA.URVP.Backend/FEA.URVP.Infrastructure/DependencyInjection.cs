@@ -19,10 +19,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("SqlServerConnection")
+        var connectionString = SqlConnectionString.Normalize(
+            configuration.GetConnectionString("SqlServerConnection")
             ?? throw new InvalidOperationException(
                 "Connection string 'SqlServerConnection' is missing. " +
-                "Set ConnectionStrings:SqlServerConnection in configuration.");
+                "Set ConnectionStrings:SqlServerConnection in configuration."));
 
         services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
