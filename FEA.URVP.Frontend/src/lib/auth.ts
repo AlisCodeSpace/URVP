@@ -1,4 +1,4 @@
-import { appBaseUrl, getApiBaseUrl } from "@/lib/config";
+import { appBaseUrl, getApiBaseUrl, useSameOriginApi } from "@/lib/config";
 
 export type AuthStatus = {
   isAuthenticated: boolean;
@@ -70,7 +70,9 @@ export function getDevSignInUrl(
   email: string,
   returnUrl: string = getAuthCallbackUrl(),
 ): string {
-  const url = new URL("/api/auth/dev/signin", getApiBaseUrl());
+  const url = useSameOriginApi
+    ? new URL("/auth/dev", getApiBaseUrl())
+    : new URL("/api/auth/dev/signin", getApiBaseUrl());
   url.searchParams.set("email", email);
   url.searchParams.set("returnUrl", returnUrl);
   return url.toString();
