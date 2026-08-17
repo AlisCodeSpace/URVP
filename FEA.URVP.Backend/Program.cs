@@ -13,7 +13,17 @@ builder.Services.ConfigureAllServices(builder.Configuration, builder.Environment
 
 var app = builder.Build();
 
-await app.InitializeDatabaseAsync();
 app.ConfigureMiddlewarePipeline();
 
-app.Run();
+await app.StartAsync();
+
+try
+{
+    await app.InitializeDatabaseAsync();
+}
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Database initialization failed. The API will keep running.");
+}
+
+await app.WaitForShutdownAsync();

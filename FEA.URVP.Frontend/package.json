@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --experimental-https",
+    "prebuild": "node scripts/ensure-deps.cjs",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "lint": "eslint"
