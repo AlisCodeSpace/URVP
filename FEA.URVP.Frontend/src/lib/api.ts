@@ -1,4 +1,4 @@
-import { apiBaseUrl } from "@/lib/config";
+import { getApiBaseUrl } from "@/lib/config";
 
 export type ApiEnvelope<T> = {
   success: boolean;
@@ -34,11 +34,10 @@ export async function apiFetch<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(`${apiBaseUrl}${path}`, {
+  const res = await fetch(`${getApiBaseUrl()}${path}`, {
     ...init,
     headers,
     credentials: "include",
-    mode: "cors",
     cache: "no-store",
   });
 

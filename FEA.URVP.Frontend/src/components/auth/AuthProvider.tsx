@@ -14,7 +14,6 @@ import {
   getAzureAdSignOutUrl,
   type AuthStatus,
 } from "@/lib/auth";
-import { appBaseUrl } from "@/lib/config";
 
 type AuthContextValue = {
   status: AuthStatus | null;
@@ -45,7 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const signOut = useCallback(() => {
-    window.location.href = getAzureAdSignOutUrl(`${appBaseUrl}/`);
+    const home = `${window.location.origin}/`;
+    window.location.href = getAzureAdSignOutUrl(home);
   }, []);
 
   const value = useMemo(

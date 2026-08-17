@@ -32,7 +32,7 @@ export function AuthCallbackView() {
         if (cancelled) return;
       }
 
-      router.replace("/");
+      router.replace("/sign-in?error=session_missing");
     })();
 
     return () => {

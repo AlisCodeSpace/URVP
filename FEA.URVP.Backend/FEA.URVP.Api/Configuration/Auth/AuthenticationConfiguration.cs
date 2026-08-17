@@ -42,21 +42,16 @@ public static class AuthenticationConfiguration
                 var corsOrigins = CorsOrigins.GetAllowedOrigins(configuration);
                 var hasCrossOriginCors = corsOrigins.Length > 0;
 
-                if (hasCrossOriginCors)
-                {
-                    // SPA and API are different origins (e.g. two Render web services).
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.Cookie.SameSite = SameSiteMode.None;
-                }
-                else if (environment.IsDevelopment())
+                if (environment.IsDevelopment() && !hasCrossOriginCors)
                 {
                     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                     options.Cookie.SameSite = SameSiteMode.Lax;
                 }
                 else
                 {
+                    // Production, or local SPA+API on different origins.
                     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.Cookie.SameSite = SameSiteMode.None;
                 }
 
                 var configuredSameSite = cookieConfig["SameSite"];

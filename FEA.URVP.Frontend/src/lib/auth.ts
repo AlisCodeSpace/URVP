@@ -1,4 +1,4 @@
-import { apiBaseUrl, appBaseUrl } from "@/lib/config";
+import { appBaseUrl, getApiBaseUrl } from "@/lib/config";
 
 export type AuthStatus = {
   isAuthenticated: boolean;
@@ -45,13 +45,13 @@ export function getAuthCallbackUrl(): string {
 }
 
 export function getAzureAdSignInUrl(returnUrl: string = getAuthCallbackUrl()): string {
-  const url = new URL("/api/auth/azuread-sso/signin", apiBaseUrl);
+  const url = new URL("/api/auth/azuread-sso/signin", getApiBaseUrl());
   url.searchParams.set("returnUrl", returnUrl);
   return url.toString();
 }
 
 export function getAzureAdSignOutUrl(returnUrl: string): string {
-  const url = new URL("/api/auth/azuread-sso/signout", apiBaseUrl);
+  const url = new URL("/api/auth/azuread-sso/signout", getApiBaseUrl());
   url.searchParams.set("returnUrl", returnUrl);
   return url.toString();
 }
@@ -70,18 +70,17 @@ export function getDevSignInUrl(
   email: string,
   returnUrl: string = getAuthCallbackUrl(),
 ): string {
-  const url = new URL("/api/auth/dev/signin", apiBaseUrl);
+  const url = new URL("/api/auth/dev/signin", getApiBaseUrl());
   url.searchParams.set("email", email);
   url.searchParams.set("returnUrl", returnUrl);
   return url.toString();
 }
 
 export async function fetchAuthStatus(): Promise<AuthStatus> {
-  const res = await fetch(`${apiBaseUrl}/api/auth/status`, {
+  const res = await fetch(`${getApiBaseUrl()}/api/auth/status`, {
     method: "GET",
     credentials: "include",
     cache: "no-store",
-    mode: "cors",
   });
 
   if (!res.ok) {
