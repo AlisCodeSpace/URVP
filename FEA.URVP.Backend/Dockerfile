@@ -11,11 +11,14 @@ FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 # Render's 512MB sandbox: diagnostics IPC and server GC often SIGSEGV (exit 139).
+# Disable config-file inotify watchers (user limit 128) so CreateBuilder can start.
 ENV DOTNET_EnableDiagnostics=0 \
     COMPlus_EnableDiagnostics=0 \
     DOTNET_RUNNING_IN_CONTAINER=true \
     DOTNET_gcServer=0 \
     DOTNET_GCHeapCount=1 \
+    DOTNET_HOSTBUILDER_RELOADCONFIGONCHANGE=false \
+    DOTNET_USE_POLLING_FILE_WATCHER=true \
     ASPNETCORE_ENVIRONMENT=Production \
     ASPNETCORE_HTTP_PORTS=10000 \
     ASPNETCORE_URLS=http://0.0.0.0:10000

@@ -1,6 +1,16 @@
 using FEA.URVP.Api.Configuration;
 using FEA.URVP.Backend;
 
+// Render (and similar Linux PaaS) often exhaust inotify watches. Config file
+// reload is not needed outside local Development.
+if (!string.Equals(
+        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+        "Development",
+        StringComparison.OrdinalIgnoreCase))
+{
+    Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER_RELOADCONFIGONCHANGE", "false");
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 var port = Environment.GetEnvironmentVariable("PORT");
