@@ -163,7 +163,7 @@ export function SignInView({ signInUrl, error }: SignInViewProps) {
                     weight="medium"
                     className="!uppercase !tracking-[0.18em] !text-muted"
                   >
-                    Development sign-in
+                    Demo sign-in
                   </Text>
                   <label className="mt-3 block">
                     <span className="sr-only">Email</span>

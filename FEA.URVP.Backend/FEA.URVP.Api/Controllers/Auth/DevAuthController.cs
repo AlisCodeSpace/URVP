@@ -13,31 +13,31 @@ using Microsoft.AspNetCore.Mvc;
 namespace FEA.URVP.Api.Controllers.Auth;
 
 /// <summary>
-/// Development-only email sign-in (no password). Unavailable outside Development.
+/// Email sign-in (no password) for demo accounts. Gated by Auth:EnableDevSignIn.
 /// </summary>
 [ApiController]
 [Route("api/auth/dev")]
 public sealed class DevAuthController : ApiControllerBase
 {
-    private readonly IWebHostEnvironment _environment;
+    private readonly IConfiguration _configuration;
     private readonly IMediator _mediator;
     private readonly ReturnUrlValidationService _returnUrlValidator;
     private readonly ILogger<DevAuthController> _logger;
 
     public DevAuthController(
-        IWebHostEnvironment environment,
+        IConfiguration configuration,
         IMediator mediator,
         ReturnUrlValidationService returnUrlValidator,
         ILogger<DevAuthController> logger)
     {
-        _environment = environment;
+        _configuration = configuration;
         _mediator = mediator;
         _returnUrlValidator = returnUrlValidator;
         _logger = logger;
     }
 
     /// <summary>
-    /// Signs in as a whitelisted development user by email and redirects to returnUrl.
+    /// Signs in as a whitelisted demo user by email and redirects to returnUrl.
     /// </summary>
     [HttpGet("signin")]
     [AllowAnonymous]
@@ -46,7 +46,7 @@ public sealed class DevAuthController : ApiControllerBase
         [FromQuery, DataType(DataType.Url), StringLength(2048), RegularExpression(@"^https?://[^\s]{1,2047}$")]
         string? returnUrl = null)
     {
-        if (!_environment.IsDevelopment())
+        if (!_configuration.GetValue("Auth:EnableDevSignIn", true))
         {
             return NotFound();
         }

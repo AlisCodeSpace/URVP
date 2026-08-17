@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FEA.URVP.Backend;
 
 /// <summary>
-/// Startup database initialization: migrations, catalog seed, and Development auth accounts.
+/// Startup database initialization: migrations, catalog seed, and demo auth accounts.
 /// </summary>
 public static class DatabaseInitialization
 {
@@ -32,7 +32,7 @@ public static class DatabaseInitialization
                 app.Environment.EnvironmentName);
         }
 
-        if (app.Environment.IsDevelopment())
+        if (app.Configuration.GetValue("Auth:EnableDevSignIn", true))
         {
             try
             {
@@ -40,7 +40,7 @@ public static class DatabaseInitialization
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Development auth account seeding skipped.");
+                logger.LogWarning(ex, "Demo auth account seeding skipped.");
             }
         }
 
@@ -131,12 +131,12 @@ public static class DatabaseInitialization
 
         if (seeded == 0)
         {
-            logger.LogInformation("Development auth accounts already up to date.");
+            logger.LogInformation("Demo auth accounts already up to date.");
             return;
         }
 
         await dbContext.SaveChangesAsync();
-        logger.LogInformation("Seeded / updated {Count} development auth account(s).", seeded);
+        logger.LogInformation("Seeded / updated {Count} demo auth account(s).", seeded);
     }
 
     private static async Task SeedValueListsAsync(AppDbContext dbContext, ILogger logger)

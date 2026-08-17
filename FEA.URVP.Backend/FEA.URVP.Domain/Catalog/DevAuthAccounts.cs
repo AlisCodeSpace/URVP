@@ -3,7 +3,7 @@ using FEA.URVP.Domain.Enums;
 namespace FEA.URVP.Domain.Catalog;
 
 /// <summary>
-/// Fixed accounts for Development-only email sign-in. Never used in production.
+/// Fixed accounts for demo email sign-in (faculty/student/admin).
 /// </summary>
 public static class DevAuthAccounts
 {

@@ -52,15 +52,15 @@ export function getAzureAdSignOutUrl(returnUrl: string): string {
   return url.toString();
 }
 
-/** Development-only email accounts (must match backend DevAuthAccounts). */
+/** Demo email accounts (must match backend DevAuthAccounts). */
 export const DEV_AUTH_ACCOUNTS = [
   { email: "faculty@urvp.com", label: "Faculty", role: UserRole.Faculty },
   { email: "student@urvp.com", label: "Student", role: UserRole.Student },
   { email: "admin@urvp.com", label: "Admin", role: UserRole.Admin },
 ] as const;
 
-/** True when running Next.js in development (`next dev`). */
-export const isDevAuthEnabled = process.env.NODE_ENV === "development";
+/** Temporary: email sign-in is shown in all environments for demo. */
+export const isDevAuthEnabled = true;
 
 export function getDevSignInUrl(
   email: string,
