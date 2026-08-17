@@ -38,6 +38,15 @@ public static class MiddlewareConfiguration
         app.UseAuthorization();
         app.MapControllers();
 
+        // Render (and load balancers) probe / and /health with GET or HEAD.
+        // FallbackPolicy would otherwise challenge those to Azure AD and fail the deploy.
+        app.MapMethods("/", ["GET", "HEAD"], () => Results.Ok(new { status = "ok" }))
+            .AllowAnonymous()
+            .ExcludeFromDescription();
+        app.MapMethods("/health", ["GET", "HEAD"], () => Results.Ok(new { status = "healthy" }))
+            .AllowAnonymous()
+            .ExcludeFromDescription();
+
         return app;
     }
 }

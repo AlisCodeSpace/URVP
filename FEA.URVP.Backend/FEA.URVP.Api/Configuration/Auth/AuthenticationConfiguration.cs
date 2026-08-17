@@ -75,7 +75,11 @@ public static class AuthenticationConfiguration
 
                 options.Events.OnRedirectToLogin = context =>
                 {
-                    if (context.Request.Path.StartsWithSegments("/api") || IsBackgroundFetch(context.HttpContext.Request))
+                    var path = context.Request.Path;
+                    if (path.StartsWithSegments("/api")
+                        || path == "/"
+                        || path.StartsWithSegments("/health")
+                        || IsBackgroundFetch(context.HttpContext.Request))
                     {
                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     }

@@ -15,15 +15,21 @@ var app = builder.Build();
 
 app.ConfigureMiddlewarePipeline();
 
-await app.StartAsync();
-
-try
+app.Lifetime.ApplicationStarted.Register(() =>
 {
-    await app.InitializeDatabaseAsync();
-}
-catch (Exception ex)
-{
-    app.Logger.LogError(ex, "Database initialization failed. The API will keep running.");
-}
+    _ = InitializeDatabaseInBackground(app);
+});
 
-await app.WaitForShutdownAsync();
+await app.RunAsync();
+
+static async Task InitializeDatabaseInBackground(WebApplication app)
+{
+    try
+    {
+        await app.InitializeDatabaseAsync();
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Database initialization failed. The API will keep running.");
+    }
+}

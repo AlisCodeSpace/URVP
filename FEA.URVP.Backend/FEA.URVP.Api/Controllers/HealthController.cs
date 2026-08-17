@@ -9,5 +9,6 @@ namespace FEA.URVP.Api.Controllers;
 public sealed class HealthController : ControllerBase
 {
     [HttpGet]
+    [HttpHead]
     public IActionResult Get() => Ok(new { status = "healthy" });
 }
