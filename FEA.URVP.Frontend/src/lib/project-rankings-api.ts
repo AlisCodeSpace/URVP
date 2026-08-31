@@ -1,5 +1,16 @@
 import { apiFetch } from "@/lib/api";
 
+export type ProjectRankingStudentDto = {
+  rankingId: string;
+  studentUserId: string;
+  studentName: string;
+  studentEmail: string;
+  studentUserName?: string | null;
+  rank: number;
+  rankedAt: string;
+  updatedAt: string;
+};
+
 export type ProjectRankingDto = {
   id: string;
   projectId: string;
@@ -18,6 +29,14 @@ export type RankOption = (typeof RANK_OPTIONS)[number];
 
 export async function getMyProjectRankings(): Promise<ProjectRankingDto[]> {
   return apiFetch<ProjectRankingDto[]>("/api/project-rankings/me");
+}
+
+export async function getProjectRankings(
+  projectId: string,
+): Promise<ProjectRankingStudentDto[]> {
+  return apiFetch<ProjectRankingStudentDto[]>(
+    `/api/projects/${projectId}/rankings`,
+  );
 }
 
 export async function upsertProjectRanking(

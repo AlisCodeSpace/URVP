@@ -2,51 +2,23 @@ import type { ReactNode } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
 import { IconPencil } from "@/components/ui/Icons";
+import {
+  ReadOnlyChips,
+  ReadOnlyField,
+  ReadOnlyValue,
+} from "@/components/ui/ReadOnlyField";
 import { editProjectHref, myProjectsHref } from "@/lib/auth";
 import { programDescription } from "@/lib/project-form";
 import type { ProjectDto } from "@/lib/projects-api";
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div>
-      <p className="field-label">{label}</p>
-      {children}
-    </div>
-  );
-}
-
-function Value({ children }: { children: ReactNode }) {
-  return <div className="field-display">{children}</div>;
-}
-
-function ChipList({ items }: { items: string[] }) {
-  if (items.length === 0) {
-    return <Value>—</Value>;
-  }
-
-  return (
-    <div className="field-display-chips">
-      {items.map((item) => (
-        <span key={item} className="multi-select-chip">
-          <span className="multi-select-chip-label">{item}</span>
-        </span>
-      ))}
-    </div>
-  );
-}
-
 export function FacultyProjectReadonly({
   userId,
   project,
+  children,
 }: {
   userId: string;
   project: ProjectDto;
+  children?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-10">
@@ -78,18 +50,18 @@ export function FacultyProjectReadonly({
         </Text>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
-          <Field label="Full name">
-            <Value>{project.facultyName}</Value>
-          </Field>
-          <Field label="Affiliation">
-            <Value>{project.affiliation}</Value>
-          </Field>
-          <Field label="User name">
-            <Value>{project.userName || "—"}</Value>
-          </Field>
-          <Field label="Email">
-            <Value>{project.email}</Value>
-          </Field>
+          <ReadOnlyField label="Full name">
+            <ReadOnlyValue>{project.facultyName}</ReadOnlyValue>
+          </ReadOnlyField>
+          <ReadOnlyField label="Affiliation">
+            <ReadOnlyValue>{project.affiliation}</ReadOnlyValue>
+          </ReadOnlyField>
+          <ReadOnlyField label="User name">
+            <ReadOnlyValue>{project.userName || "—"}</ReadOnlyValue>
+          </ReadOnlyField>
+          <ReadOnlyField label="Email">
+            <ReadOnlyValue>{project.email}</ReadOnlyValue>
+          </ReadOnlyField>
         </div>
       </section>
 
@@ -107,24 +79,24 @@ export function FacultyProjectReadonly({
         </Text>
 
         <div className="mt-6 grid gap-5">
-          <Field label="Project title">
-            <Value>{project.title}</Value>
-          </Field>
+          <ReadOnlyField label="Project title">
+            <ReadOnlyValue>{project.title}</ReadOnlyValue>
+          </ReadOnlyField>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Research area">
-              <ChipList items={project.researchAreas} />
-            </Field>
-            <Field label="IRB approval stage">
-              <Value>{project.irbStageLabel}</Value>
-            </Field>
+            <ReadOnlyField label="Research area">
+              <ReadOnlyChips items={project.researchAreas} />
+            </ReadOnlyField>
+            <ReadOnlyField label="IRB approval stage">
+              <ReadOnlyValue>{project.irbStageLabel}</ReadOnlyValue>
+            </ReadOnlyField>
           </div>
 
-          <Field label="Brief description">
-            <Value>
+          <ReadOnlyField label="Brief description">
+            <ReadOnlyValue>
               <p className="whitespace-pre-wrap">{project.briefDescription}</p>
-            </Value>
-          </Field>
+            </ReadOnlyValue>
+          </ReadOnlyField>
         </div>
       </section>
 
@@ -143,30 +115,30 @@ export function FacultyProjectReadonly({
 
         <div className="mt-6 grid gap-5">
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Research activity type">
-              <ChipList items={project.activityTypes} />
-            </Field>
-            <Field label="Number of volunteers required">
-              <Value>{project.volunteersRequired}</Value>
-            </Field>
+            <ReadOnlyField label="Research activity type">
+              <ReadOnlyChips items={project.activityTypes} />
+            </ReadOnlyField>
+            <ReadOnlyField label="Number of volunteers required">
+              <ReadOnlyValue>{project.volunteersRequired}</ReadOnlyValue>
+            </ReadOnlyField>
           </div>
 
-          <Field label="Status">
-            <Value>{project.status}</Value>
-          </Field>
+          <ReadOnlyField label="Status">
+            <ReadOnlyValue>{project.status}</ReadOnlyValue>
+          </ReadOnlyField>
 
-          <Field label="Minimum qualifications">
-            <Value>
+          <ReadOnlyField label="Minimum qualifications">
+            <ReadOnlyValue>
               {project.minQualifications?.trim() ? (
                 <p className="whitespace-pre-wrap">{project.minQualifications}</p>
               ) : (
                 "—"
               )}
-            </Value>
-          </Field>
+            </ReadOnlyValue>
+          </ReadOnlyField>
 
-          <Field label="Additional comments">
-            <Value>
+          <ReadOnlyField label="Additional comments">
+            <ReadOnlyValue>
               {project.additionalComments?.trim() ? (
                 <p className="whitespace-pre-wrap">
                   {project.additionalComments}
@@ -174,10 +146,12 @@ export function FacultyProjectReadonly({
               ) : (
                 "—"
               )}
-            </Value>
-          </Field>
+            </ReadOnlyValue>
+          </ReadOnlyField>
         </div>
       </section>
+
+      {children}
 
       <div className="flex flex-wrap items-center gap-3 border-t border-primary/10 pt-8">
         <Button

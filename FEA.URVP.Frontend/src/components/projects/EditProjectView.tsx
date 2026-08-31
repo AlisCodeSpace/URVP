@@ -55,7 +55,6 @@ export function EditProjectView({
           eyebrow="Edit listing"
           title="Edit project"
           description="Update your research opportunity details and volunteer requirements."
-          maxWidth="3xl"
         >
           <Link
             href={myProjectsHref(userId)}
@@ -66,7 +65,7 @@ export function EditProjectView({
           </Link>
         </PageHeader>
 
-        <section className="site-container site-container--narrow py-12 sm:py-16">
+        <section className="site-container py-14 sm:py-16">
           {error ? (
             <Text
               as="p"

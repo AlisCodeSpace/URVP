@@ -604,7 +604,7 @@ export function StudentProfileForm() {
         />
       </Section>
 
-      <Section title="Previous research experience">
+      <Section title="Research Interests">
         <Field
           id="researchTopics"
           label="Research topic(s)"

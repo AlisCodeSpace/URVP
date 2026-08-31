@@ -1,5 +1,6 @@
 using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.StudentProfiles.Upsert;
+using FEA.URVP.Application.Queries.StudentProfiles.GetByUserId;
 using FEA.URVP.Application.Queries.StudentProfiles.GetMine;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -30,6 +31,24 @@ public sealed class StudentProfilesController : ApiControllerBase
         }
 
         var profile = await _mediator.Send(new GetMyStudentProfileQuery(userId), cancellationToken);
+        return SuccessResponse(profile);
+    }
+
+    /// <summary>
+    /// Faculty (or admin) view of a student who ranked one of the caller's projects.
+    /// </summary>
+    [HttpGet("{userId:guid}")]
+    public async Task<IActionResult> GetByUserId(Guid userId, CancellationToken cancellationToken)
+    {
+        var currentUserId = GetCurrentUserId();
+        if (currentUserId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        var profile = await _mediator.Send(
+            new GetStudentProfileByUserIdQuery(currentUserId, userId),
+            cancellationToken);
         return SuccessResponse(profile);
     }
 

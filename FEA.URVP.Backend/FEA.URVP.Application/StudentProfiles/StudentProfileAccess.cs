@@ -26,4 +26,15 @@ internal static class StudentProfileAccess
 
         throw new UnauthorizedAccessException("Only students can manage a student profile.");
     }
+
+    public static void EnsureCanViewRankedStudent(UserRole role)
+    {
+        if (role is UserRole.Faculty or UserRole.Admin)
+        {
+            return;
+        }
+
+        throw new UnauthorizedAccessException(
+            "Only faculty or admins can view a ranked student's profile.");
+    }
 }

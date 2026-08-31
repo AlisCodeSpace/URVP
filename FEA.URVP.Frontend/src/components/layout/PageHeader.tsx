@@ -8,8 +8,6 @@ type PageHeaderProps = {
   eyebrow?: string;
   actions?: ReactNode;
   children?: ReactNode;
-  /** Content column width. Defaults to fluid site shell; use narrow for forms. */
-  maxWidth?: "3xl" | "6xl";
 };
 
 /** Compact dark header — navbar overlays this background on matching routes. */
@@ -19,15 +17,11 @@ export function PageHeader({
   eyebrow,
   actions,
   children,
-  maxWidth = "6xl",
 }: PageHeaderProps) {
   return (
     <section className="page-header relative overflow-hidden text-white">
       <div className="page-header-grid absolute inset-0" aria-hidden />
-      <Container
-        narrow={maxWidth === "3xl"}
-        className="relative z-10 pb-14 pt-28 sm:pb-16 sm:pt-32"
-      >
+      <Container className="relative z-10 pb-14 pt-28 sm:pb-16 sm:pt-32">
         {children}
         <div className={children ? "mt-5" : undefined}>
           {eyebrow ? (

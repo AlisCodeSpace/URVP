@@ -51,6 +51,17 @@ public sealed class ProjectRankingRepository : IProjectRankingRepository
             .ThenBy(r => r.CreatedAt)
             .ToListAsync(cancellationToken);
 
+    public Task<bool> StudentHasRankedFacultyProjectAsync(
+        Guid studentUserId,
+        Guid facultyUserId,
+        CancellationToken cancellationToken = default) =>
+        _db.ProjectRankings
+            .AsNoTracking()
+            .AnyAsync(
+                r => r.StudentUserId == studentUserId
+                     && r.Project.CreatedByUserId == facultyUserId,
+                cancellationToken);
+
     public async Task<IReadOnlyDictionary<Guid, int>> CountByProjectIdsAsync(
         IReadOnlyCollection<Guid> projectIds,
         CancellationToken cancellationToken = default)

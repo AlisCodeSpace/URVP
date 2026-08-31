@@ -40,7 +40,7 @@ function WorkshopPoster({ workshop }: { workshop: Workshop }) {
 
 function WorkshopCard({ workshop }: { workshop: Workshop }) {
   return (
-    <article className="workshop-card flex flex-col overflow-hidden border border-primary/12 bg-surface transition duration-300 hover:border-secondary/70">
+    <article className="workshop-card flex h-full min-w-0 w-full flex-col overflow-hidden border border-primary/12 bg-surface transition duration-300 hover:border-secondary/70">
       <WorkshopPoster workshop={workshop} />
 
       <div className="flex flex-1 flex-col px-5 py-6 sm:px-6">
@@ -119,9 +119,9 @@ export function WorkshopsList({
   }
 
   return (
-    <ul className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <ul className="workshop-card-grid">
       {items.map((workshop) => (
-        <li key={workshop.id} className="flex">
+        <li key={workshop.id} className="flex min-w-0 w-full">
           <WorkshopCard workshop={workshop} />
         </li>
       ))}

@@ -282,7 +282,7 @@ export function ProjectsBrowse() {
             </div>
           </div>
         ) : (
-          <ul className="mt-6 grid gap-5 xl:grid-cols-2">
+          <ul className="mt-6 grid w-full gap-5">
             {filtered.map((project) => {
               const open = openingsLeft(project);
               const isClosed = project.status === "Closed" || open === 0;

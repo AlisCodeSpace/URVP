@@ -108,7 +108,7 @@ export function StudentRankingsList() {
 
   return (
     <>
-      <ul className="grid gap-4">
+      <ul className="grid w-full gap-4">
         {rankings.map((ranking) => (
           <ProjectCard
             key={ranking.id}

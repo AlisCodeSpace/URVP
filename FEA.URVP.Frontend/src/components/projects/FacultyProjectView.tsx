@@ -4,10 +4,15 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Text } from "@radix-ui/themes";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { FacultyProjectRankings } from "@/components/projects/FacultyProjectRankings";
 import { FacultyProjectReadonly } from "@/components/projects/FacultyProjectReadonly";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApiError } from "@/lib/api";
 import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
+import {
+  getProjectRankings,
+  type ProjectRankingStudentDto,
+} from "@/lib/project-rankings-api";
 import { getProject, type ProjectDto } from "@/lib/projects-api";
 
 export function FacultyProjectView({
@@ -18,6 +23,10 @@ export function FacultyProjectView({
   projectId: string;
 }) {
   const [project, setProject] = useState<ProjectDto | null>(null);
+  const [rankings, setRankings] = useState<ProjectRankingStudentDto[] | null>(
+    null,
+  );
+  const [rankingsError, setRankingsError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,6 +54,31 @@ export function FacultyProjectView({
     };
   }, [projectId, userId]);
 
+  useEffect(() => {
+    if (!project) return;
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const next = await getProjectRankings(projectId);
+        if (cancelled) return;
+        setRankings(next);
+        setRankingsError(null);
+      } catch (err) {
+        if (cancelled) return;
+        setRankingsError(
+          err instanceof ApiError
+            ? err.message
+            : "Could not load ranked students.",
+        );
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [project, projectId]);
+
   return (
     <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
       <main className="flex-1 bg-background">
@@ -52,7 +86,6 @@ export function FacultyProjectView({
           eyebrow="Faculty portal"
           title="View project"
           description="Review the details of your posted research opportunity."
-          maxWidth="3xl"
         >
           <Link
             href={myProjectsHref(userId)}
@@ -63,7 +96,7 @@ export function FacultyProjectView({
           </Link>
         </PageHeader>
 
-        <section className="site-container site-container--narrow py-12 sm:py-16">
+        <section className="site-container py-14 sm:py-16">
           {error ? (
             <Text
               as="p"
@@ -78,7 +111,15 @@ export function FacultyProjectView({
               Loading project…
             </Text>
           ) : (
-            <FacultyProjectReadonly userId={userId} project={project} />
+            <FacultyProjectReadonly userId={userId} project={project}>
+              <FacultyProjectRankings
+                userId={userId}
+                projectId={projectId}
+                rankings={rankings}
+                loading={rankings == null && rankingsError == null}
+                error={rankingsError}
+              />
+            </FacultyProjectReadonly>
           )}
         </section>
       </main>

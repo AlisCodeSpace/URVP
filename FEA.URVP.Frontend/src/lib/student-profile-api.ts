@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api";
+import { apiDownloadFile, apiFetch } from "@/lib/api";
 import {
   emptyStudentProfile,
   mergeAvailabilityFromApi,
@@ -132,6 +132,19 @@ export function toUpsertPayload(
 
 export async function getMyStudentProfile(): Promise<StudentProfileDto> {
   return apiFetch<StudentProfileDto>("/api/student-profiles/me");
+}
+
+export async function getStudentProfile(
+  userId: string,
+): Promise<StudentProfileDto> {
+  return apiFetch<StudentProfileDto>(`/api/student-profiles/${userId}`);
+}
+
+export async function downloadStudentDocument(
+  fileId: string,
+  fileName: string,
+): Promise<void> {
+  await apiDownloadFile(`/api/files/${fileId}`, fileName);
 }
 
 export async function upsertMyStudentProfile(

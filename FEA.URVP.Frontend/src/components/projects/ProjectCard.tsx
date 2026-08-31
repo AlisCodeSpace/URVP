@@ -117,8 +117,8 @@ export function ProjectCard({
 
   if (actions) {
     return (
-      <li>
-        <article className="project-card border border-primary/12 bg-surface p-5 sm:p-6">
+      <li className="min-w-0 w-full">
+        <article className="project-card w-full border border-primary/12 bg-surface p-5 sm:p-6">
           {body}
           <div className="mt-5 flex flex-wrap gap-2">{actions}</div>
         </article>
@@ -127,10 +127,10 @@ export function ProjectCard({
   }
 
   return (
-    <li>
+    <li className="min-w-0 w-full">
       <Link
         href={href}
-        className="project-card group block border border-primary/12 bg-surface p-5 transition sm:p-6"
+        className="project-card group block w-full border border-primary/12 bg-surface p-5 transition sm:p-6"
       >
         {body}
         <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-secondary-deep transition group-hover:gap-3">

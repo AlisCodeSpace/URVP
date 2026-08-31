@@ -3,6 +3,7 @@ using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.Projects.Create;
 using FEA.URVP.Application.Commands.Projects.Delete;
 using FEA.URVP.Application.Commands.Projects.Update;
+using FEA.URVP.Application.Queries.ProjectRankings.ListByProject;
 using FEA.URVP.Application.Queries.Projects.GetAdminDetail;
 using FEA.URVP.Application.Queries.Projects.GetById;
 using FEA.URVP.Application.Queries.Projects.List;
@@ -93,6 +94,22 @@ public sealed class ProjectsController : ApiControllerBase
 
         var detail = await _mediator.Send(new GetAdminProjectDetailQuery(id), cancellationToken);
         return SuccessResponse(detail);
+    }
+
+    /// <summary>Students who ranked this project. Project owner or admin only.</summary>
+    [HttpGet("{id:guid}/rankings")]
+    public async Task<IActionResult> ListRankings(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        var rankings = await _mediator.Send(
+            new ListProjectRankingsQuery(id, userId, UserHasRole(nameof(UserRole.Admin))),
+            cancellationToken);
+        return SuccessResponse(rankings);
     }
 
     [HttpGet("{id:guid}")]

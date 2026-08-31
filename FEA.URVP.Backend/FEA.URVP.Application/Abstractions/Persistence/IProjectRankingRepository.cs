@@ -23,6 +23,14 @@ public interface IProjectRankingRepository
         Guid projectId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// True when the student has ranked at least one project posted by the faculty member.
+    /// </summary>
+    Task<bool> StudentHasRankedFacultyProjectAsync(
+        Guid studentUserId,
+        Guid facultyUserId,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyDictionary<Guid, int>> CountByProjectIdsAsync(
         IReadOnlyCollection<Guid> projectIds,
         CancellationToken cancellationToken = default);

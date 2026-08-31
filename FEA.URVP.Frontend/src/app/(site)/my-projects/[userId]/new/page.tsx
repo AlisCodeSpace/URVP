@@ -25,7 +25,6 @@ export default async function NewProjectPage({ params }: NewProjectPageProps) {
           eyebrow="New listing"
           title="Post a project"
           description="Share a research opportunity across AUB faculties, centers, and institutes for undergraduate matching."
-          maxWidth="3xl"
         >
           <Link
             href={myProjectsHref(userId)}
@@ -36,7 +35,7 @@ export default async function NewProjectPage({ params }: NewProjectPageProps) {
           </Link>
         </PageHeader>
 
-        <section className="site-container site-container--narrow py-12 sm:py-16">
+        <section className="site-container py-14 sm:py-16">
           <PostProjectForm userId={userId} />
         </section>
       </main>

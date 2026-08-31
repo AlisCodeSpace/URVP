@@ -185,3 +185,11 @@ export function viewProjectHref(userId: string, projectId: string): string {
 export function editProjectHref(userId: string, projectId: string): string {
   return `/my-projects/${userId}/${projectId}/edit`;
 }
+
+export function viewRankedStudentHref(
+  userId: string,
+  projectId: string,
+  studentUserId: string,
+): string {
+  return `/my-projects/${userId}/${projectId}/students/${studentUserId}`;
+}

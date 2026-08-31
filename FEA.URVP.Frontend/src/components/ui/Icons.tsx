@@ -49,6 +49,17 @@ export function IconPencil(props: IconProps) {
   );
 }
 
+/** Download — use for file downloads. */
+export function IconDownload(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 3v12" />
+      <path d="m7 11 5 5 5-5" />
+      <path d="M5 21h14" />
+    </IconBase>
+  );
+}
+
 /** Trash — use for Delete / Remove actions. */
 export function IconTrash(props: IconProps) {
   return (
