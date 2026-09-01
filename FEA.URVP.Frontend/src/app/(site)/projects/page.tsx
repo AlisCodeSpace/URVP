@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { ProjectsBrowse } from "@/components/projects/ProjectsBrowse";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { ProjectsBrowse } from "@/components/projects/ProjectsBrowse";
 import { projectsIntro } from "@/lib/projects";
 
 export const metadata: Metadata = {
@@ -11,19 +12,17 @@ export const metadata: Metadata = {
 
 export default function ProjectsPage() {
   return (
-    <main className="flex-1 bg-background">
-      <PageHeader
-        eyebrow="Student portal"
-        title="Projects"
-        description={projectsIntro}
-      />
+    <RequireAuth>
+      <main className="flex-1 bg-background">
+        <PageHeader title="Projects" description={projectsIntro} />
 
-      <section
-        id="projects-catalog"
-        className="site-container scroll-mt-24 py-14 sm:py-16"
-      >
-        <ProjectsBrowse />
-      </section>
-    </main>
+        <section
+          id="projects-catalog"
+          className="site-container scroll-mt-24 py-10 sm:py-14"
+        >
+          <ProjectsBrowse variant="catalog" />
+        </section>
+      </main>
+    </RequireAuth>
   );
 }

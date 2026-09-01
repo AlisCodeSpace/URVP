@@ -28,24 +28,14 @@ export const adminNav: AdminNavGroup[] = [
         description: "All listings and student ranking interest.",
       },
       {
-        href: "/admin/faculties",
-        label: "Faculties",
-        description: "Faculty units across the university.",
+        href: "/admin/news",
+        label: "News",
+        description: "Stories on the News page and home ticker.",
       },
       {
-        href: "/admin/divisions",
-        label: "Divisions",
-        description: "Departments and academic divisions.",
-      },
-      {
-        href: "/admin/certificates",
-        label: "Certificates",
-        description: "Certificate programs and credentials.",
-      },
-      {
-        href: "/admin/associations",
-        label: "Associations",
-        description: "Student and research associations.",
+        href: "/admin/workshops",
+        label: "Workshops",
+        description: "Sessions, registration links, and card photos.",
       },
       {
         href: "/admin/semesters",
@@ -64,19 +54,9 @@ export const adminNav: AdminNavGroup[] = [
             description: "Student and faculty research interests.",
           },
           {
-            href: "/admin/research-areas",
-            label: "Research Areas",
-            description: "Canonical research area taxonomy.",
-          },
-          {
-            href: "/admin/courses",
-            label: "Courses",
-            description: "Course catalog entries used in matching.",
-          },
-          {
-            href: "/admin/majors",
-            label: "Majors",
-            description: "Degree majors and concentrations.",
+            href: "/admin/research-activity-types",
+            label: "Research Activity Types",
+            description: "Activity types faculty choose when posting projects.",
           },
         ],
       },

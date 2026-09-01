@@ -5,6 +5,7 @@ using FEA.URVP.Application.DTOs.Files;
 using FEA.URVP.Application.StudentProfiles;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.Files;
+using FEA.URVP.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.Files.Upload;
@@ -14,16 +15,19 @@ public sealed class UploadFileCommandHandler
 {
     private readonly IFileStorageRepository _files;
     private readonly IUserRepository _users;
+    private readonly IWorkshopRepository _workshops;
 
     public UploadFileCommandHandler(
         ILogger<UploadFileCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IFileStorageRepository files,
-        IUserRepository users)
+        IUserRepository users,
+        IWorkshopRepository workshops)
         : base(logger, unitOfWork)
     {
         _files = files;
         _users = users;
+        _workshops = workshops;
     }
 
     protected override async Task<FileMetadataDto> HandleInternal(
@@ -47,6 +51,21 @@ public sealed class UploadFileCommandHandler
                 throw new UnauthorizedAccessException("You can only upload files for your own profile.");
             }
         }
+        else if (request.EntityType == FileStorageCatalog.EntityWorkshop)
+        {
+            if (user.Role is not UserRole.Admin)
+            {
+                throw new UnauthorizedAccessException("Only administrators can upload workshop posters.");
+            }
+
+            if (request.FileCategory != FileStorageCatalog.CategoryPoster)
+            {
+                throw new ArgumentException("Workshop files must use the Poster category.");
+            }
+
+            _ = await _workshops.FindByIdAsync(request.EntityId, cancellationToken)
+                ?? throw new KeyNotFoundException($"Workshop {request.EntityId} was not found.");
+        }
         else
         {
             throw new ArgumentException($"Entity type '{request.EntityType}' is not supported.");
@@ -65,7 +84,7 @@ public sealed class UploadFileCommandHandler
 
         var hash = SHA256.HashData(request.Content);
         var mimeType = string.IsNullOrWhiteSpace(request.ContentType)
-            ? "application/pdf"
+            ? (FileStorageCatalog.IsImageCategory(request.FileCategory) ? "image/jpeg" : "application/pdf")
             : request.ContentType.Trim();
 
         var file = new FileStorage
@@ -84,6 +103,15 @@ public sealed class UploadFileCommandHandler
         };
 
         _files.Add(file);
+
+        if (request.EntityType == FileStorageCatalog.EntityWorkshop)
+        {
+            var workshop = await _workshops.FindByIdAsync(request.EntityId, cancellationToken)
+                ?? throw new KeyNotFoundException($"Workshop {request.EntityId} was not found.");
+            workshop.PosterFileId = file.Id;
+            workshop.UpdatedAt = DateTime.UtcNow;
+        }
+
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 
         Logger.LogInformation(

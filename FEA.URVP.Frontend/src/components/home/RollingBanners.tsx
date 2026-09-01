@@ -1,11 +1,31 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Text } from "@radix-ui/themes";
-import { newsItems } from "@/lib/home-content";
+import { newsItems, toNewsTickerItems, type NewsTickerItem } from "@/lib/home-content";
+import { loadPublicNews } from "@/lib/news-api";
 
-export function RollingBanners() {
-  const news = [...newsItems, ...newsItems];
+export function RollingBanners({ items }: { items?: NewsTickerItem[] }) {
+  const [ticker, setTicker] = useState<NewsTickerItem[]>(items ?? newsItems);
+
+  useEffect(() => {
+    if (items) {
+      setTicker(items);
+      return;
+    }
+    let cancelled = false;
+    void loadPublicNews().then((articles) => {
+      if (!cancelled) setTicker(toNewsTickerItems(articles));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
+
+  if (ticker.length === 0) return null;
+
+  const news = [...ticker, ...ticker];
 
   return (
     <section className="overflow-hidden bg-background py-16 sm:py-20">

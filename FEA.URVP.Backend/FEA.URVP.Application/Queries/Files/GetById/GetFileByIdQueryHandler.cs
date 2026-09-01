@@ -27,6 +27,11 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
         var file = await _files.FindByIdAsync(request.FileId, cancellationToken)
             ?? throw new KeyNotFoundException($"File {request.FileId} was not found.");
 
+        if (FileStorageCatalog.IsPublicFile(file.EntityType, file.FileCategory))
+        {
+            return ToContent(file);
+        }
+
         var isOwner =
             file.EntityId == request.CurrentUserId
             || file.UploadedBy == request.CurrentUserId;
@@ -36,7 +41,11 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
             await EnsureFacultyCanDownloadStudentFileAsync(request, file.EntityType, file.EntityId, cancellationToken);
         }
 
-        return new FileContentDto
+        return ToContent(file);
+    }
+
+    private static FileContentDto ToContent(Domain.Entities.Files.FileStorage file) =>
+        new()
         {
             Id = file.Id,
             FileName = file.FileName,
@@ -44,7 +53,6 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
             Content = file.Content,
             ContentHash = file.ContentHash,
         };
-    }
 
     private async Task EnsureFacultyCanDownloadStudentFileAsync(
         GetFileByIdQuery request,

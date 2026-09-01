@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { ProjectDetailLoader } from "@/components/projects/ProjectDetailLoader";
 
 type ProjectPageProps = {
@@ -19,8 +20,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { id } = await params;
 
   return (
-    <main className="flex-1 bg-background">
-      <ProjectDetailLoader id={id} />
-    </main>
+    <RequireAuth>
+      <main className="flex-1 bg-background">
+        <ProjectDetailLoader id={id} />
+      </main>
+    </RequireAuth>
   );
 }

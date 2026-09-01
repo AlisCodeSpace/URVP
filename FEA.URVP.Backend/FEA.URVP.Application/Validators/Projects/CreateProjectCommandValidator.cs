@@ -22,7 +22,7 @@ public sealed class CreateProjectCommandValidator : AbstractValidator<CreateProj
             .WithMessage("Research areas must be unique.")
             .MustAsync(async (areas, ct) =>
             {
-                var allowed = await valueLists.GetActiveNamesAsync(ValueListKind.ResearchArea, ct);
+                var allowed = await valueLists.GetActiveNamesAsync(ValueListKind.ResearchInterest, ct);
                 return areas.All(allowed.Contains);
             })
             .WithMessage("One or more research areas are not allowed.");
@@ -40,7 +40,13 @@ public sealed class CreateProjectCommandValidator : AbstractValidator<CreateProj
             .WithMessage($"Select at most {ResearchActivityTypeCatalog.MaxSelections} activity types.")
             .Must(types => types.Distinct(StringComparer.Ordinal).Count() == types.Count)
             .WithMessage("Activity types must be unique.")
-            .Must(types => types.All(ResearchActivityTypeCatalog.Allowed.Contains))
+            .MustAsync(async (types, ct) =>
+            {
+                var allowed = await valueLists.GetActiveNamesAsync(
+                    ValueListKind.ResearchActivityType,
+                    ct);
+                return types.All(allowed.Contains);
+            })
             .WithMessage("One or more activity types are not allowed.");
 
         RuleFor(x => x.VolunteersRequired)

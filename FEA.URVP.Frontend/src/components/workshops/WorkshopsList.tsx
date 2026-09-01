@@ -1,19 +1,35 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Heading, Text } from "@radix-ui/themes";
 import type { Workshop } from "@/lib/workshops";
-import { workshops as defaultWorkshops } from "@/lib/workshops";
+import { loadPublicWorkshops } from "@/lib/workshops-api";
+
+function isRemotePoster(src: string) {
+  return /^https?:\/\//i.test(src);
+}
 
 function WorkshopPoster({ workshop }: { workshop: Workshop }) {
   if (workshop.posterSrc) {
     return (
       <div className="workshop-poster relative aspect-[3/2] overflow-hidden bg-primary-deep">
-        <Image
-          src={workshop.posterSrc}
-          alt={workshop.posterAlt ?? `${workshop.title} poster`}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
-        />
+        {isRemotePoster(workshop.posterSrc) ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={workshop.posterSrc}
+            alt={workshop.posterAlt ?? `${workshop.title} poster`}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <Image
+            src={workshop.posterSrc}
+            alt={workshop.posterAlt ?? `${workshop.title} poster`}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
+          />
+        )}
       </div>
     );
   }
@@ -95,11 +111,35 @@ function WorkshopCard({ workshop }: { workshop: Workshop }) {
 }
 
 export function WorkshopsList({
-  items = defaultWorkshops,
+  items,
 }: {
   items?: Workshop[];
 }) {
-  if (items.length === 0) {
+  const [list, setList] = useState<Workshop[] | null>(items ?? null);
+
+  useEffect(() => {
+    if (items) {
+      setList(items);
+      return;
+    }
+    let cancelled = false;
+    void loadPublicWorkshops().then((next) => {
+      if (!cancelled) setList(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
+
+  if (!list) {
+    return (
+      <Text as="p" size="3" className="!text-muted">
+        Loading workshops…
+      </Text>
+    );
+  }
+
+  if (list.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-primary/20 px-6 py-16 text-center">
         <Heading
@@ -120,7 +160,7 @@ export function WorkshopsList({
 
   return (
     <ul className="workshop-card-grid">
-      {items.map((workshop) => (
+      {list.map((workshop) => (
         <li key={workshop.id} className="flex min-w-0 w-full">
           <WorkshopCard workshop={workshop} />
         </li>

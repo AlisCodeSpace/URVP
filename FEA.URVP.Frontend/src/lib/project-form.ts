@@ -32,9 +32,11 @@ export type MyProjectStatus = "Open" | "Matching" | "Closed";
 export type MyProject = {
   id: string;
   title: string;
-  researchArea: string;
-  activityType: string;
+  researchAreas: string[];
+  activityTypes: string[];
+  description: string;
   volunteersRequired: number;
+  volunteersFilled: number;
   status: MyProjectStatus;
   updatedAt: string;
 };

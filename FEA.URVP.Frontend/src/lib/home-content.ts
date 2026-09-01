@@ -1,5 +1,5 @@
-import { workshops as workshopCatalog } from "./workshops";
-import { newsArticles } from "./news";
+import { workshops as workshopCatalog, type Workshop } from "./workshops";
+import { newsArticles, type NewsArticle } from "./news";
 
 export { navLinks } from "./site";
 
@@ -30,20 +30,41 @@ export const testimonials = [
   },
 ] as const;
 
+export type NewsTickerItem = {
+  title: string;
+  detail: string;
+  href: string;
+};
+
+export type WorkshopTeaser = {
+  title: string;
+  date: string;
+  blurb: string;
+  href: string;
+};
+
+export function toNewsTickerItems(articles: NewsArticle[]): NewsTickerItem[] {
+  return articles.map((article) => ({
+    title: article.title,
+    detail: article.ticker,
+    href: `/news/${article.slug}`,
+  }));
+}
+
+export function toWorkshopTeasers(items: Workshop[]): WorkshopTeaser[] {
+  return items.map((workshop) => ({
+    title: workshop.title,
+    date: workshop.date,
+    blurb: workshop.description,
+    href: "/workshops",
+  }));
+}
+
 /** Home marquee — derived from the News catalog. */
-export const newsItems = newsArticles.map((article) => ({
-  title: article.title,
-  detail: article.ticker,
-  href: `/news/${article.slug}`,
-}));
+export const newsItems = toNewsTickerItems(newsArticles);
 
 /** Home teaser — derived from the Workshops page catalog. */
-export const workshops = workshopCatalog.map((workshop) => ({
-  title: workshop.title,
-  date: workshop.date,
-  blurb: workshop.description,
-  href: "/workshops",
-}));
+export const workshops = toWorkshopTeasers(workshopCatalog);
 
 export const introEyebrow = "Welcome · AY 2026–27";
 

@@ -2,10 +2,16 @@ import Link from "next/link";
 import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
 import type { NewsArticle } from "@/lib/news";
-import { getNewsNeighbors } from "@/lib/news";
 
-export function NewsArticleView({ article }: { article: NewsArticle }) {
-  const { previous, next } = getNewsNeighbors(article.slug);
+export function NewsArticleView({
+  article,
+  previous = null,
+  next = null,
+}: {
+  article: NewsArticle;
+  previous?: NewsArticle | null;
+  next?: NewsArticle | null;
+}) {
 
   return (
     <article className="flex-1 bg-background">

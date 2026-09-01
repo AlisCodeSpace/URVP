@@ -8,15 +8,26 @@ import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { useStudentResearchTopics } from "@/hooks/useStudentResearchTopics";
 import { ApiError } from "@/lib/api";
+import { projectsHref } from "@/lib/auth";
 import {
   openingsLeft,
   researchActivityTypes,
   researchAreas,
   type CatalogProject,
 } from "@/lib/projects";
+import type { MyProjectStatus } from "@/lib/project-form";
+import {
+  getMyProjectRankings,
+  rankLabel,
+  RANK_OPTIONS,
+  type ProjectRankingDto,
+} from "@/lib/project-rankings-api";
 import { listProjects, toCatalogProject } from "@/lib/projects-api";
 
+const PAGE_SIZE = 6;
+
 type SortKey = "newest" | "openings" | "title";
+type ProjectsBrowseVariant = "catalog" | "ranked";
 
 const areaFilterOptions = ["All areas", ...researchAreas] as const;
 const activityFilterOptions = [
@@ -30,6 +41,8 @@ const sortOptions: { value: SortKey; label: string }[] = [
   { value: "title", label: "Title A–Z" },
 ];
 
+const statusByCode: MyProjectStatus[] = ["Open", "Matching", "Closed"];
+
 function listValues(joined: string): string[] {
   return joined
     .split(",")
@@ -41,17 +54,225 @@ function isAvailable(project: CatalogProject) {
   return project.status !== "Closed" && openingsLeft(project) > 0;
 }
 
-export function ProjectsBrowse() {
+function catalogFromRanking(ranking: ProjectRankingDto): CatalogProject {
+  return {
+    id: ranking.projectId,
+    title: ranking.projectTitle,
+    researchArea: ranking.researchAreas.join(", "),
+    activityType: "",
+    volunteersRequired: 0,
+    volunteersFilled: 0,
+    status: statusByCode[ranking.projectStatus] ?? "Open",
+    postedAt: "",
+    postedAtISO: ranking.rankedAt.slice(0, 10),
+    facultyName: ranking.facultyName,
+    affiliation: ranking.facultyAffiliation,
+    description: "",
+    irbStage: "",
+  };
+}
+
+function matchesSearchAndFilters(
+  project: CatalogProject,
+  query: string,
+  area: string,
+  activity: string,
+): boolean {
+  if (
+    area !== "All areas" &&
+    !listValues(project.researchArea).includes(area)
+  ) {
+    return false;
+  }
+  if (
+    activity !== "All activities" &&
+    !listValues(project.activityType).includes(activity)
+  ) {
+    return false;
+  }
+  if (!query) return true;
+
+  const haystack = [
+    project.title,
+    project.description,
+    project.facultyName,
+    project.affiliation,
+    project.researchArea,
+    project.activityType,
+    project.minQualifications ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return haystack.includes(query);
+}
+
+function CatalogProjectCard({
+  project,
+  studentTopics,
+  rank,
+}: {
+  project: CatalogProject;
+  studentTopics: ReadonlySet<string>;
+  rank?: number;
+}) {
+  const open = openingsLeft(project);
+  const isClosed = project.status === "Closed" || open === 0;
+  const hasOpeningsData =
+    project.volunteersRequired > 0 || project.volunteersFilled > 0;
+
+  return (
+    <ProjectCard
+      project={{
+        id: project.id,
+        title: project.title,
+        facultyName: project.facultyName,
+        affiliation: project.affiliation,
+        description: project.description || undefined,
+        researchAreas: listValues(project.researchArea),
+        activityTypes: listValues(project.activityType),
+      }}
+      studentTopics={studentTopics}
+      eyebrow={project.status}
+      eyebrowMuted={isClosed}
+      rank={rank}
+      meta={project.postedAt ? `Posted ${project.postedAt}` : ""}
+      metaEnd={
+        hasOpeningsData ? (
+          <span
+            className={`text-xs font-medium uppercase tracking-[0.14em] ${
+              isClosed ? "text-muted" : "text-primary"
+            }`}
+          >
+            {isClosed
+              ? "No openings"
+              : `${open} opening${open === 1 ? "" : "s"}`}
+          </span>
+        ) : undefined
+      }
+    />
+  );
+}
+
+function CatalogPagination({
+  page,
+  totalPages,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  return (
+    <nav
+      aria-label="Projects pagination"
+      className="mt-10 flex flex-col items-center gap-4 border-t border-primary/10 pt-8 sm:flex-row sm:justify-between"
+    >
+      <Text as="p" size="2" className="!text-muted">
+        Page {page} of {totalPages}
+      </Text>
+
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+        >
+          Previous
+        </Button>
+
+        {pages.map((n) => (
+          <Button
+            key={n}
+            type="button"
+            variant={n === page ? "primary" : "outline"}
+            size="sm"
+            aria-label={`Page ${n}`}
+            aria-current={n === page ? "page" : undefined}
+            className="min-w-10"
+            onClick={() => onPageChange(n)}
+          >
+            {n}
+          </Button>
+        ))}
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={page >= totalPages}
+          onClick={() => onPageChange(page + 1)}
+        >
+          Next
+        </Button>
+      </div>
+    </nav>
+  );
+}
+
+function RankedEmptyCta() {
+  return (
+    <div className="ranked-empty-cta px-6 py-12 text-center sm:px-10 sm:py-16">
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {RANK_OPTIONS.map((rank) => (
+          <span key={rank} className="rank-badge">
+            {rankLabel(rank)}
+          </span>
+        ))}
+      </div>
+      <Heading
+        as="h2"
+        size="6"
+        weight="medium"
+        mt="5"
+        className="!font-[family-name:var(--font-display)] !text-primary"
+      >
+        Rank your top 3 projects
+      </Heading>
+      <Text
+        as="p"
+        size="3"
+        mt="3"
+        className="mx-auto max-w-lg !leading-relaxed !text-muted"
+      >
+        You haven’t applied to any projects yet. Browse open opportunities and
+        express interest to set your 1st, 2nd, and 3rd choices — matching
+        depends on these rankings.
+      </Text>
+      <div className="mt-8 flex justify-center">
+        <Button href={projectsHref()} variant="primary" size="lg">
+          Apply to projects
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export function ProjectsBrowse({
+  variant = "catalog",
+}: {
+  variant?: ProjectsBrowseVariant;
+}) {
+  const ranked = variant === "ranked";
   const { status, loading: authLoading } = useAuth();
   const isSignedIn = Boolean(status?.isAuthenticated);
   const studentTopics = useStudentResearchTopics();
 
   const [projects, setProjects] = useState<CatalogProject[] | null>(null);
+  const [rankings, setRankings] = useState<ProjectRankingDto[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [rankingsError, setRankingsError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [area, setArea] = useState("All areas");
   const [activity, setActivity] = useState("All activities");
   const [sort, setSort] = useState<SortKey>("newest");
+  const [pageNumber, setPageNumber] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,40 +299,53 @@ export function ProjectsBrowse() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!ranked) {
+      setRankings([]);
+      setRankingsError(null);
+      return;
+    }
+
+    if (authLoading) return;
+
+    if (!isSignedIn) {
+      setRankings([]);
+      setRankingsError(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const mine = await getMyProjectRankings();
+        if (cancelled) return;
+        setRankings(mine);
+        setRankingsError(null);
+      } catch (err) {
+        if (cancelled) return;
+        setRankings([]);
+        setRankingsError(
+          err instanceof ApiError
+            ? err.message
+            : "Could not load your rankings.",
+        );
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, isSignedIn, ranked]);
+
   const filtered = useMemo(() => {
     if (!projects) return [];
 
     const q = query.trim().toLowerCase();
 
     const next = projects.filter((project) => {
-      if (
-        area !== "All areas" &&
-        !listValues(project.researchArea).includes(area)
-      ) {
-        return false;
-      }
-      if (
-        activity !== "All activities" &&
-        !listValues(project.activityType).includes(activity)
-      ) {
-        return false;
-      }
       if (!isAvailable(project)) return false;
-      if (!q) return true;
-
-      const haystack = [
-        project.title,
-        project.description,
-        project.facultyName,
-        project.affiliation,
-        project.researchArea,
-        project.activityType,
-        project.minQualifications ?? "",
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(q);
+      return matchesSearchAndFilters(project, q, area, activity);
     });
 
     next.sort((a, b) => {
@@ -123,21 +357,58 @@ export function ProjectsBrowse() {
     return next;
   }, [projects, query, area, activity, sort]);
 
+  const rankedItems = useMemo(() => {
+    if (!rankings) return [];
+
+    const byId = new Map((projects ?? []).map((project) => [project.id, project]));
+
+    return rankings
+      .slice()
+      .sort((a, b) => a.rank - b.rank)
+      .map((ranking) => ({
+        project: byId.get(ranking.projectId) ?? catalogFromRanking(ranking),
+        rank: ranking.rank,
+      }));
+  }, [projects, rankings]);
+
   const hasActiveFilters =
     query.trim() !== "" ||
     area !== "All areas" ||
     activity !== "All activities" ||
     sort !== "newest";
 
+  const visibleCount = ranked ? rankedItems.length : filtered.length;
+  const rankedEmpty = ranked && rankings != null && rankings.length === 0;
+  const loadingList = ranked ? rankings == null : projects == null;
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(pageNumber, totalPages);
+  const paged = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, currentPage]);
+
+  useEffect(() => {
+    setPageNumber(1);
+  }, [query, area, activity, sort]);
+
   function clearFilters() {
     setQuery("");
     setArea("All areas");
     setActivity("All activities");
     setSort("newest");
+    setPageNumber(1);
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)] xl:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)] lg:gap-12 xl:gap-14">
+    <div
+      className={
+        ranked
+          ? undefined
+          : "grid gap-10 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)] xl:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)] lg:gap-12 xl:gap-14"
+      }
+    >
+      {!ranked ? (
       <aside className="project-filters lg:sticky lg:top-24 lg:self-start">
         <Text
           as="p"
@@ -216,44 +487,59 @@ export function ProjectsBrowse() {
           </button>
         ) : null}
       </aside>
+      ) : null}
 
       <div>
-        <div className="flex flex-col gap-2 border-b border-primary/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <Heading
-              as="h2"
-              size="6"
-              weight="medium"
-              className="!font-[family-name:var(--font-display)] !text-primary"
-            >
-              Open opportunities
-            </Heading>
-            <Text as="p" size="2" mt="1" className="!text-muted">
-              {projects == null
-                ? "Loading…"
-                : `${filtered.length} result${filtered.length === 1 ? "" : "s"}`}
-              {query.trim() ? ` for “${query.trim()}”` : null}
+        {!ranked ? (
+          <div className="flex flex-col gap-2 border-b border-primary/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <Heading
+                as="h2"
+                size="6"
+                weight="medium"
+                className="!font-[family-name:var(--font-display)] !text-primary"
+              >
+                Open Opportunities
+              </Heading>
+              <Text as="p" size="2" mt="1" className="!text-muted">
+                {loadingList
+                  ? "Loading…"
+                  : `${visibleCount} result${visibleCount === 1 ? "" : "s"}`}
+                {query.trim() ? ` for “${query.trim()}”` : null}
+              </Text>
+            </div>
+            {!authLoading && !isSignedIn ? (
+              <Button href="/sign-in" variant="outline" size="sm">
+                Sign in to apply
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+
+        {ranked && rankingsError && (rankings?.length ?? 0) === 0 ? (
+          <div className="rounded-lg border border-dashed border-red-200 px-6 py-10 text-center">
+            <Text as="p" size="3" className="!text-red-800">
+              {rankingsError}
             </Text>
           </div>
-          {!authLoading && !isSignedIn ? (
-            <Button href="/sign-in" variant="outline" size="sm">
-              Sign in to apply
-            </Button>
-          ) : null}
-        </div>
-
-        {loadError ? (
-          <div className="mt-10 rounded-lg border border-dashed border-red-200 px-6 py-10 text-center">
+        ) : ranked && rankings == null ? (
+          <Text as="p" size="3" className="!text-muted">
+            Loading your rankings…
+          </Text>
+        ) : rankedEmpty ? (
+          <RankedEmptyCta />
+        ) : loadError ? (
+          <div className={`${ranked ? "" : "mt-10 "}rounded-lg border border-dashed border-red-200 px-6 py-10 text-center`}>
             <Text as="p" size="3" className="!text-red-800">
               {loadError}
             </Text>
           </div>
-        ) : projects == null ? (
-          <Text as="p" size="3" mt="8" className="!text-muted">
+        ) : loadingList ? (
+          <Text as="p" size="3" className="mt-8 !text-muted">
             Loading projects…
           </Text>
-        ) : filtered.length === 0 ? (
-          <div className="mt-10 rounded-lg border border-dashed border-primary/20 px-6 py-16 text-center">
+        ) : visibleCount === 0 ? (
+          <div className={`${ranked ? "" : "mt-10 "}rounded-lg border border-dashed border-primary/20 px-6 py-16 text-center`}>
             <Heading
               as="h3"
               size="5"
@@ -282,42 +568,33 @@ export function ProjectsBrowse() {
             </div>
           </div>
         ) : (
-          <ul className="mt-6 grid w-full gap-5">
-            {filtered.map((project) => {
-              const open = openingsLeft(project);
-              const isClosed = project.status === "Closed" || open === 0;
-
-              return (
-                <ProjectCard
-                  key={project.id}
-                  project={{
-                    id: project.id,
-                    title: project.title,
-                    facultyName: project.facultyName,
-                    affiliation: project.affiliation,
-                    description: project.description,
-                    researchAreas: listValues(project.researchArea),
-                    activityTypes: listValues(project.activityType),
-                  }}
-                  studentTopics={studentTopics}
-                  eyebrow={project.status}
-                  eyebrowMuted={isClosed}
-                  meta={`Posted ${project.postedAt}`}
-                  metaEnd={
-                    <span
-                      className={`text-xs font-medium uppercase tracking-[0.14em] ${
-                        isClosed ? "text-muted" : "text-primary"
-                      }`}
-                    >
-                      {isClosed
-                        ? "No openings"
-                        : `${open} opening${open === 1 ? "" : "s"}`}
-                    </span>
-                  }
-                />
-              );
-            })}
-          </ul>
+          <>
+            <ul className={`grid w-full gap-5${ranked ? "" : " mt-6"}`}>
+              {ranked
+                ? rankedItems.map(({ project, rank }) => (
+                    <CatalogProjectCard
+                      key={project.id}
+                      project={project}
+                      studentTopics={studentTopics}
+                      rank={rank}
+                    />
+                  ))
+                : paged.map((project) => (
+                    <CatalogProjectCard
+                      key={project.id}
+                      project={project}
+                      studentTopics={studentTopics}
+                    />
+                  ))}
+            </ul>
+            {!ranked ? (
+              <CatalogPagination
+                page={currentPage}
+                totalPages={totalPages}
+                onPageChange={setPageNumber}
+              />
+            ) : null}
+          </>
         )}
       </div>
     </div>

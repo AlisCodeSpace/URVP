@@ -157,8 +157,12 @@ export function studentProfileHref(): string {
   return "/student/profile";
 }
 
+export function projectsHref(): string {
+  return "/projects";
+}
+
 export function studentRankingsHref(): string {
-  return "/student/rankings";
+  return studentProjectsHref();
 }
 
 /** @deprecated Use studentRankingsHref — kept for older links. */

@@ -72,9 +72,11 @@ export function toMyProject(dto: ProjectDto): MyProject {
   return {
     id: dto.id,
     title: dto.title,
-    researchArea: dto.researchAreas.join(", "),
-    activityType: dto.activityTypes.join(", "),
+    researchAreas: [...dto.researchAreas],
+    activityTypes: [...dto.activityTypes],
+    description: dto.briefDescription,
     volunteersRequired: dto.volunteersRequired,
+    volunteersFilled: dto.volunteersFilled,
     status: dto.status,
     updatedAt: formatProjectDate(dto.updatedAt),
   };

@@ -8,6 +8,7 @@ import {
   isAdmin,
   isStudent,
   myProjectsHref,
+  projectsHref,
   studentProfileHref,
 } from "@/lib/auth";
 
@@ -17,7 +18,7 @@ export function Hero() {
   const role = status?.role;
   const userId = status?.userId;
 
-  const showApplyLink = !loading && (!isSignedIn || isStudent(role));
+  const showStudentCtas = !loading && (!isSignedIn || isStudent(role));
   const applyHref = isSignedIn ? studentProfileHref() : "/sign-in";
 
   return (
@@ -28,12 +29,12 @@ export function Hero() {
       announcement={
         <>
           Applications for the URVP 2026–27 cycle are open.
-          {showApplyLink ? (
+          {showStudentCtas ? (
             <>
               {" "}
               <Link
                 href={applyHref}
-                className="underline decoration-secondary/70 underline-offset-4 transition hover:text-white"
+                className="underline decoration-secondary/70 underline-offset-4 transition hover:text-white hover:decoration-white"
               >
                 Apply now!
               </Link>
@@ -52,9 +53,11 @@ export function Hero() {
               Log In
             </Button>
           )}
-          <Button href="/projects" variant="outline-light" size="lg">
-            Browse Projects
-          </Button>
+          {loading ? null : (
+            <Button href={projectsHref()} variant="outline-light" size="lg">
+              {isStudent(role) ? "Apply to Projects" : "Browse Projects"}
+            </Button>
+          )}
           {loading || isSignedIn ? null : (
             <Button href="/my-projects" variant="outline-light" size="lg">
               Faculty Portal

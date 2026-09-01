@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { ProjectDetail } from "@/components/projects/ProjectDetail";
 import { ApiError } from "@/lib/api";
 import type { CatalogProject } from "@/lib/projects";
+import { projectsHref } from "@/lib/auth";
 import { getProject, toCatalogProject } from "@/lib/projects-api";
 
 export function ProjectDetailLoader({ id }: { id: string }) {
@@ -48,7 +49,7 @@ export function ProjectDetailLoader({ id }: { id: string }) {
           description="This listing could not be found."
         >
           <Link
-            href="/projects"
+            href={projectsHref()}
             className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
           >
             <span aria-hidden>←</span>
@@ -72,7 +73,7 @@ export function ProjectDetailLoader({ id }: { id: string }) {
           description="Something went wrong while loading this listing."
         >
           <Link
-            href="/projects"
+            href={projectsHref()}
             className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
           >
             <span aria-hidden>←</span>
@@ -96,7 +97,7 @@ export function ProjectDetailLoader({ id }: { id: string }) {
           description="Loading research opportunity details…"
         >
           <Link
-            href="/projects"
+            href={projectsHref()}
             className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
           >
             <span aria-hidden>←</span>

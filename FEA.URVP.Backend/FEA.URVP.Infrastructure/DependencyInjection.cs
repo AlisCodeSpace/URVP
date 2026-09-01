@@ -34,6 +34,9 @@ public static class DependencyInjection
         services.AddScoped<IFileStorageRepository, FileStorageRepository>();
         services.AddScoped<IValueListRepository, ValueListRepository>();
         services.AddScoped<IDivisionRepository, DivisionRepository>();
+        services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
+        services.AddScoped<IWorkshopRepository, WorkshopRepository>();
+        services.AddScoped<ISemesterRepository, SemesterRepository>();
         services.AddScoped<IEventBus, InMemoryEventBus>();
 
         // Persist data-protection keys so OIDC correlation/state survives restarts.

@@ -5,7 +5,7 @@ export default function AdminResearchInterestsPage() {
     <AdminValueListPage
       kind="research-interests"
       title="Research Interests"
-      description="Options students select as research topics on their profiles."
+      description="Research topics used on student profiles and when posting a project."
     />
   );
 }

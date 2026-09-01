@@ -7,11 +7,12 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { ExpressInterestModal } from "@/components/projects/ExpressInterestModal";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
+import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import {
   isResearchTopicMatch,
   useStudentResearchTopics,
 } from "@/hooks/useStudentResearchTopics";
-import { isStudent } from "@/lib/auth";
+import { isStudent, projectsHref } from "@/lib/auth";
 import { openingsLeft, type CatalogProject } from "@/lib/projects";
 
 function DetailFact({
@@ -119,6 +120,7 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
   const { status } = useAuth();
   const isSignedIn = Boolean(status?.isAuthenticated);
   const canRank = isSignedIn && isStudent(status?.role);
+  const appWindow = useApplicationWindow();
   const studentTopics = useStudentResearchTopics();
   const open = openingsLeft(project);
   const isClosed = project.status === "Closed" || open === 0;
@@ -134,7 +136,7 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
         description={`${project.facultyName} · ${project.affiliation}. Posted ${project.postedAt}.`}
       >
         <Link
-          href="/projects"
+          href={projectsHref()}
           className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
         >
           <span aria-hidden>←</span>
@@ -251,17 +253,29 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
               >
                 {isClosed
                   ? "This listing is not accepting new volunteers right now."
-                  : canRank
-                    ? "Matching is managed by the program team. Rank this project as one of your top 3 choices."
-                    : isSignedIn
-                      ? "Only student accounts can express interest in projects."
-                      : "Sign in with your AUB account to express interest. Matching is managed by the program team."}
+                  : !appWindow.loading && !appWindow.isOpen
+                    ? "The student application window is currently closed. Check back during the application period (typically mid-September to end of September)."
+                    : canRank
+                      ? "Matching is managed by the program team. Rank this project as one of your top 3 choices."
+                      : isSignedIn
+                        ? "Only student accounts can express interest in projects."
+                        : "Sign in with your AUB account to express interest. Matching is managed by the program team."}
               </Text>
 
               <div className="mt-6 flex flex-col gap-2">
                 {isClosed ? (
                   <Button type="button" variant="outline" size="md" disabled>
                     Applications closed
+                  </Button>
+                ) : !appWindow.loading && !appWindow.isOpen ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    disabled
+                    title="The application window is not currently open."
+                  >
+                    Applications not open
                   </Button>
                 ) : canRank ? (
                   <Button
@@ -281,7 +295,7 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
                     Sign in to apply
                   </Button>
                 )}
-                <Button href="/projects" variant="ghost" size="md">
+                <Button href={projectsHref()} variant="ghost" size="md">
                   Browse more
                 </Button>
               </div>

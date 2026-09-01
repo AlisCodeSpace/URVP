@@ -1,10 +1,10 @@
 import { apiFetch } from "@/lib/api";
 
-export type ValueListKindSlug = "research-interests" | "research-areas";
+export type ValueListKindSlug = "research-interests" | "research-activity-types";
 
 export type ValueListItemDto = {
   id: string;
-  kind: "ResearchInterest" | "ResearchArea";
+  kind: "ResearchInterest" | "ResearchActivityType";
   name: string;
   sortOrder: number;
   isActive: boolean;

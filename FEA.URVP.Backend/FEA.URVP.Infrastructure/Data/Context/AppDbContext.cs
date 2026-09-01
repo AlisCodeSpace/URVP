@@ -1,11 +1,14 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Domain.Entities.Divisions;
 using FEA.URVP.Domain.Entities.Files;
+using FEA.URVP.Domain.Entities.News;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Entities.ValueLists;
+using FEA.URVP.Domain.Entities.Semesters;
+using FEA.URVP.Domain.Entities.Workshops;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -35,6 +38,12 @@ public class AppDbContext : DbContext, IUnitOfWork, IDataProtectionKeyContext
     public DbSet<ValueListItem> ValueListItems => Set<ValueListItem>();
 
     public DbSet<Division> Divisions => Set<Division>();
+
+    public DbSet<NewsArticle> NewsArticles => Set<NewsArticle>();
+
+    public DbSet<Workshop> Workshops => Set<Workshop>();
+
+    public DbSet<Semester> Semesters => Set<Semester>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 

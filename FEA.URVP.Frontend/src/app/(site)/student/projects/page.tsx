@@ -4,31 +4,30 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { ProjectsBrowse } from "@/components/projects/ProjectsBrowse";
 import { StudentPortalNav } from "@/components/student/StudentPortalNav";
 import { STUDENT_ROLES } from "@/lib/auth";
-import { projectsIntro } from "@/lib/projects";
 
 export const metadata: Metadata = {
-  title: "Projects | URVP Student Portal",
+  title: "Ranked Projects | URVP Student Portal",
   description:
-    "Browse faculty research projects and find volunteer opportunities in the Undergraduate Research Volunteer Program at AUB.",
+    "Your top project choices, ordered from 1st to 3rd. The program team uses these rankings for matching.",
 };
 
-export default function StudentProjectsPage() {
+export default function StudentRankedProjectsPage() {
   return (
     <RequireAuth roles={STUDENT_ROLES}>
       <main className="flex-1 bg-background">
         <PageHeader
           eyebrow="Student portal"
-          title="Projects"
-          description={projectsIntro}
+          title="Ranked Projects"
+          description="Your top project choices, ordered from 1st to 3rd. The program team uses these rankings for matching."
         />
 
         <section
-          id="projects-catalog"
+          id="ranked-projects"
           className="site-container scroll-mt-24 py-10 sm:py-14"
         >
           <StudentPortalNav />
           <div className="mt-8">
-            <ProjectsBrowse />
+            <ProjectsBrowse variant="ranked" />
           </div>
         </section>
       </main>

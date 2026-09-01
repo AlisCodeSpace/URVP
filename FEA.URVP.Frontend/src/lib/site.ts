@@ -1,14 +1,16 @@
+import { projectsHref, studentProfileHref } from "@/lib/auth";
+
 export const navLinks = [
+  { href: projectsHref(), label: "Projects" },
   { href: "/workshops", label: "Workshops" },
   { href: "/research-day", label: "Research Day" },
   { href: "/news", label: "News" },
   { href: "/contact", label: "Contact" },
 ] as const;
 
-/** Home “Explore the portal” tiles — includes Application & Projects. */
+/** Home “Explore the portal” tiles — Profile plus primary nav links. */
 export const portalLinks = [
-  { href: "/student/profile", label: "Application" },
-  { href: "/projects", label: "Projects" },
+  { href: studentProfileHref(), label: "Profile" },
   ...navLinks,
 ] as const;
 

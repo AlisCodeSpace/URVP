@@ -62,7 +62,7 @@ export function Navbar() {
               key={link.href}
               href={link.href}
               className={`rounded-md px-3 py-2 text-[0.95rem] font-semibold transition ${
-                pathname === link.href
+                pathname === link.href || pathname.startsWith(`${link.href}/`)
                   ? "text-secondary"
                   : "text-white/85 hover:text-white"
               }`}

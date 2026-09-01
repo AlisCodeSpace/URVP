@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { isResearchTopicMatch } from "@/hooks/useStudentResearchTopics";
+import { rankLabel } from "@/lib/project-rankings-api";
 
 export type ProjectCardData = {
   id: string;
@@ -21,6 +22,7 @@ type ProjectCardProps = {
   href?: string;
   eyebrow: string;
   eyebrowMuted?: boolean;
+  rank?: number;
   meta: string;
   metaEnd?: ReactNode;
   actions?: ReactNode;
@@ -32,6 +34,7 @@ export function ProjectCard({
   href = `/projects/${project.id}`,
   eyebrow,
   eyebrowMuted = false,
+  rank,
   meta,
   metaEnd,
   actions,
@@ -50,7 +53,10 @@ export function ProjectCard({
         >
           {eyebrow}
         </span>
-        <span className="text-xs text-muted">{meta}</span>
+        {rank != null ? (
+          <span className="rank-badge">{rankLabel(rank)}</span>
+        ) : null}
+        {meta ? <span className="text-xs text-muted">{meta}</span> : null}
         {metaEnd ? <span className="ml-auto">{metaEnd}</span> : null}
       </div>
 

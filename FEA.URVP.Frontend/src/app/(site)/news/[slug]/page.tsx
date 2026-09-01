@@ -1,21 +1,18 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { NewsArticleView } from "@/components/news/NewsArticleView";
-import { getNewsBySlug, newsArticles } from "@/lib/news";
+import { NewsArticleLoader } from "@/components/news/NewsArticleLoader";
+import { getNewsBySlug } from "@/lib/news";
+import { loadPublicNewsArticle } from "@/lib/news-api";
 
 type NewsArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return newsArticles.map((article) => ({ slug: article.slug }));
-}
-
 export async function generateMetadata({
   params,
 }: NewsArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = getNewsBySlug(slug);
+  const result = await loadPublicNewsArticle(slug);
+  const article = result?.article ?? getNewsBySlug(slug);
   if (!article) {
     return { title: "News | URVP" };
   }
@@ -27,10 +24,5 @@ export async function generateMetadata({
 
 export default async function NewsArticlePage({ params }: NewsArticlePageProps) {
   const { slug } = await params;
-  const article = getNewsBySlug(slug);
-  if (!article) {
-    notFound();
-  }
-
-  return <NewsArticleView article={article} />;
+  return <NewsArticleLoader slug={slug} />;
 }

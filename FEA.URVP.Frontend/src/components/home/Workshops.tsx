@@ -1,9 +1,33 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { workshops } from "@/lib/home-content";
+import {
+  workshops as defaultWorkshops,
+  toWorkshopTeasers,
+  type WorkshopTeaser,
+} from "@/lib/home-content";
+import { loadPublicWorkshops } from "@/lib/workshops-api";
 
-export function Workshops() {
+export function Workshops({ items }: { items?: WorkshopTeaser[] }) {
+  const [list, setList] = useState<WorkshopTeaser[]>(items ?? defaultWorkshops);
+
+  useEffect(() => {
+    if (items) {
+      setList(items);
+      return;
+    }
+    let cancelled = false;
+    void loadPublicWorkshops().then((next) => {
+      if (!cancelled) setList(toWorkshopTeasers(next));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [items]);
+
   return (
     <section className="border-y border-primary/10 bg-primary-deep text-white">
       <div className="site-container py-20 sm:py-28">
@@ -37,7 +61,7 @@ export function Workshops() {
         </div>
 
         <ul className="mt-12 divide-y divide-white/15 border-y border-white/15">
-          {workshops.map((workshop) => (
+          {list.map((workshop) => (
             <li key={workshop.title}>
               <Link
                 href={workshop.href}

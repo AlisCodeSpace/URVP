@@ -21,9 +21,9 @@ public sealed class FilesController : ApiControllerBase
         _mediator = mediator;
     }
 
-    /// <summary>Upload a PDF into SQL FileStorage (StudentProfile documents).</summary>
+    /// <summary>Upload a file into SQL FileStorage (student PDFs or workshop posters).</summary>
     [HttpPost]
-    [RequestSizeLimit(FileStorageCatalog.MaxDocumentBytes)]
+    [RequestSizeLimit(FileStorageCatalog.MaxUploadBytes)]
     public async Task<IActionResult> Upload(
         IFormFile file,
         [FromForm] string entityType,
@@ -62,19 +62,21 @@ public sealed class FilesController : ApiControllerBase
         return SuccessResponse(metadata, "File uploaded");
     }
 
-    /// <summary>Download a file stored in SQL.</summary>
+    /// <summary>Download a file stored in SQL. Workshop posters are public.</summary>
+    [AllowAnonymous]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Download(Guid id, CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
-        if (userId == Guid.Empty)
-        {
-            return UnauthorizedResponse();
-        }
-
         var file = await _mediator.Send(
             new GetFileByIdQuery(id, userId, UserHasRole(nameof(UserRole.Admin))),
             cancellationToken);
+
+        if (file.MimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            Response.Headers.CacheControl = "public, max-age=86400";
+            return File(file.Content, file.MimeType);
+        }
 
         return File(file.Content, file.MimeType, file.FileName);
     }

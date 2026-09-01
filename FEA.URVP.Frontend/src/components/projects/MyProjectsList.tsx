@@ -14,11 +14,11 @@ import {
   toMyProject,
 } from "@/lib/projects-api";
 
-const statusClass: Record<MyProjectStatus, string> = {
-  Open: "text-secondary-deep",
-  Matching: "text-primary",
-  Closed: "text-muted",
-};
+function statusClass(status: MyProjectStatus) {
+  if (status === "Open") return "is-active";
+  if (status === "Matching") return "is-matching";
+  return "";
+}
 
 function ProjectRow({
   userId,
@@ -32,74 +32,60 @@ function ProjectRow({
   onDelete: (id: string) => void;
 }) {
   const deleting = busyId === project.id;
+  const areas = project.researchAreas.slice(0, 2).join(" · ");
+  const extraAreas = project.researchAreas.length - 2;
 
   return (
-    <li className="grid gap-4 border-b border-primary/10 py-7 last:border-b-0 sm:grid-cols-[1fr_auto] sm:items-end">
-      <div>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <Text
-            as="p"
-            size="1"
-            weight="bold"
-            className={`!uppercase !tracking-[0.18em] ${statusClass[project.status]}`}
+    <tr>
+      <td>
+        <div className="admin-users-name">{project.title}</div>
+        {areas ? (
+          <div className="admin-users-meta">
+            {areas}
+            {extraAreas > 0 ? ` · +${extraAreas}` : ""}
+          </div>
+        ) : null}
+      </td>
+      <td>
+        <span className={`admin-value-status ${statusClass(project.status)}`}>
+          {project.status}
+        </span>
+      </td>
+      <td>
+        {project.volunteersFilled}/{project.volunteersRequired}
+      </td>
+      <td>{project.updatedAt}</td>
+      <td>
+        <div className="admin-value-actions">
+          <Button
+            href={viewProjectHref(userId, project.id)}
+            variant="primary"
+            size="sm"
           >
-            {project.status}
-          </Text>
-          <Text as="p" size="1" className="!text-muted">
-            Updated {project.updatedAt}
-          </Text>
+            View
+          </Button>
+          <Button
+            href={editProjectHref(userId, project.id)}
+            variant="ghost"
+            size="sm"
+          >
+            <IconPencil />
+            Edit
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={deleting || busyId !== null}
+            onClick={() => onDelete(project.id)}
+            className="!text-red-800 hover:!text-red-900"
+          >
+            <IconTrash />
+            {deleting ? "Deleting…" : "Delete"}
+          </Button>
         </div>
-        <Heading
-          as="h2"
-          size="5"
-          weight="medium"
-          mt="2"
-          className="!font-[family-name:var(--font-display)] !text-primary"
-        >
-          {project.title}
-        </Heading>
-        <Text as="p" size="2" mt="2" className="!text-muted">
-          {project.researchArea}
-          <span className="mx-2 text-primary/25" aria-hidden>
-            ·
-          </span>
-          {project.activityType}
-          <span className="mx-2 text-primary/25" aria-hidden>
-            ·
-          </span>
-          {project.volunteersRequired} volunteer
-          {project.volunteersRequired === 1 ? "" : "s"}
-        </Text>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          href={viewProjectHref(userId, project.id)}
-          variant="primary"
-          size="sm"
-        >
-          View
-        </Button>
-        <Button
-          href={editProjectHref(userId, project.id)}
-          variant="ghost"
-          size="sm"
-        >
-          <IconPencil />
-          Edit
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          disabled={deleting || busyId !== null}
-          onClick={() => onDelete(project.id)}
-          className="!text-red-800 hover:!text-red-900"
-        >
-          <IconTrash />
-          {deleting ? "Deleting…" : "Delete"}
-        </Button>
-      </div>
-    </li>
+      </td>
+    </tr>
   );
 }
 
@@ -208,20 +194,34 @@ export function MyProjectsList({ userId }: { userId: string }) {
           {error}
         </Text>
       ) : null}
-      <ul className="border-y border-primary/10">
-        {projects.map((project) => (
-          <ProjectRow
-            key={project.id}
-            userId={userId}
-            project={project}
-            busyId={busyId}
-            onDelete={(id) => {
-              const project = projects.find((p) => p.id === id) ?? null;
-              setPendingDelete(project);
-            }}
-          />
-        ))}
-      </ul>
+
+      <div className="admin-users-table-wrap">
+        <table className="admin-users-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Status</th>
+              <th>Seats</th>
+              <th>Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.map((project) => (
+              <ProjectRow
+                key={project.id}
+                userId={userId}
+                project={project}
+                busyId={busyId}
+                onDelete={(id) => {
+                  const next = projects.find((p) => p.id === id) ?? null;
+                  setPendingDelete(next);
+                }}
+              />
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <ConfirmModal
         open={pendingDelete !== null}

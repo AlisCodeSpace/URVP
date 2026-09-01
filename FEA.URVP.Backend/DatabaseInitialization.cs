@@ -1,6 +1,8 @@
 using FEA.URVP.Domain.Catalog;
+using FEA.URVP.Domain.Entities.News;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Entities.ValueLists;
+using FEA.URVP.Domain.Entities.Workshops;
 using FEA.URVP.Domain.Enums;
 using FEA.URVP.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +54,7 @@ public static class DatabaseInitialization
         try
         {
             await SeedValueListsAsync(dbContext, logger);
+            await SeedNewsAndWorkshopsAsync(dbContext, logger);
         }
         catch (Exception ex) when (app.Environment.IsDevelopment())
         {
@@ -141,13 +144,21 @@ public static class DatabaseInitialization
 
     private static async Task SeedValueListsAsync(AppDbContext dbContext, ILogger logger)
     {
-        // Current frontend catalogs use the same research-area labels for areas and student interests.
-        var source = ResearchAreaCatalog.Allowed.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+        var interestSource = ResearchAreaCatalog.Allowed
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var activitySource = ResearchActivityTypeCatalog.Allowed
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
-        var interests = await SeedKindAsync(dbContext, ValueListKind.ResearchInterest, source);
-        var areas = await SeedKindAsync(dbContext, ValueListKind.ResearchArea, source);
+        var replacedActivities = await ReplaceStaleActivityTypesAsync(dbContext, logger);
+        var interests = await SeedKindAsync(dbContext, ValueListKind.ResearchInterest, interestSource);
+        var activities = await SeedKindAsync(
+            dbContext,
+            ValueListKind.ResearchActivityType,
+            activitySource);
 
-        if (interests + areas == 0)
+        if (replacedActivities + interests + activities == 0)
         {
             logger.LogInformation("Value lists already seeded.");
             return;
@@ -155,9 +166,38 @@ public static class DatabaseInitialization
 
         await dbContext.SaveChangesAsync();
         logger.LogInformation(
-            "Seeded value lists: {InterestCount} research interest(s), {AreaCount} research area(s).",
+            "Seeded value lists: {InterestCount} research interest(s), {ActivityCount} research activity type(s).",
             interests,
-            areas);
+            activities);
+    }
+
+    /// <summary>
+    /// Kind 1 used to duplicate research areas. Replace those rows with activity types.
+    /// </summary>
+    private static async Task<int> ReplaceStaleActivityTypesAsync(AppDbContext dbContext, ILogger logger)
+    {
+        var existing = await dbContext.ValueListItems
+            .Where(x => x.Kind == ValueListKind.ResearchActivityType)
+            .ToListAsync();
+
+        if (existing.Count == 0)
+        {
+            return 0;
+        }
+
+        var activityHits = existing.Count(x => ResearchActivityTypeCatalog.Allowed.Contains(x.Name));
+        var areaHits = existing.Count(x => ResearchAreaCatalog.Allowed.Contains(x.Name));
+        if (areaHits <= activityHits)
+        {
+            return 0;
+        }
+
+        dbContext.ValueListItems.RemoveRange(existing);
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation(
+            "Replaced {Count} duplicated research-area value(s) with research activity types.",
+            existing.Count);
+        return existing.Count;
     }
 
     private static async Task<int> SeedKindAsync(
@@ -195,5 +235,74 @@ public static class DatabaseInitialization
         }
 
         return added;
+    }
+
+    private static async Task SeedNewsAndWorkshopsAsync(AppDbContext dbContext, ILogger logger)
+    {
+        var newsCount = await dbContext.NewsArticles.CountAsync();
+        var workshopCount = await dbContext.Workshops.CountAsync();
+        if (newsCount > 0 && workshopCount > 0)
+        {
+            logger.LogInformation("News and workshops already seeded.");
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        var addedNews = 0;
+        var addedWorkshops = 0;
+
+        if (newsCount == 0)
+        {
+            foreach (var article in NewsSeedCatalog.Articles)
+            {
+                dbContext.NewsArticles.Add(new NewsArticle
+                {
+                    Slug = article.Slug,
+                    Title = article.Title,
+                    Excerpt = article.Excerpt,
+                    Category = article.Category,
+                    Author = article.Author,
+                    Ticker = article.Ticker,
+                    Body = [.. article.Body],
+                    PublishedAt = article.PublishedAt,
+                    Featured = article.Featured,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                });
+                addedNews++;
+            }
+        }
+
+        if (workshopCount == 0)
+        {
+            var sort = 0;
+            foreach (var workshop in WorkshopSeedCatalog.Items)
+            {
+                dbContext.Workshops.Add(new Workshop
+                {
+                    Title = workshop.Title,
+                    Date = workshop.Date,
+                    Time = workshop.Time,
+                    Location = workshop.Location,
+                    Description = workshop.Description,
+                    RegistrationUrl = workshop.RegistrationUrl,
+                    SortOrder = sort++,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                });
+                addedWorkshops++;
+            }
+        }
+
+        if (addedNews + addedWorkshops == 0)
+        {
+            return;
+        }
+
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation(
+            "Seeded content: {NewsCount} news article(s), {WorkshopCount} workshop(s).",
+            addedNews,
+            addedWorkshops);
     }
 }

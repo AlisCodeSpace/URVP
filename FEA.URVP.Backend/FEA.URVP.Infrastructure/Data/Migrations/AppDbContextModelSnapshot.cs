@@ -120,10 +120,74 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
                     b.ToTable("FileStorage", null, t =>
                         {
-                            t.HasCheckConstraint("CK_FileStorage_EntityType", "[EntityType] IN ('StudentProfile')");
+                            t.HasCheckConstraint("CK_FileStorage_EntityType", "[EntityType] IN ('StudentProfile', 'Workshop')");
 
-                            t.HasCheckConstraint("CK_FileStorage_FileSize", "([FileCategory] IN ('Transcript', 'CitiCertification') AND [FileSize] <= 10485760)");
+                            t.HasCheckConstraint("CK_FileStorage_FileSize", "(([FileCategory] IN ('Transcript', 'CitiCertification') AND [FileSize] <= 10485760) OR ([FileCategory] = 'Poster' AND [FileSize] <= 5242880))");
                         });
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.News.NewsArticle", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Excerpt")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("Featured")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("PublishedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("Ticker")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PublishedAt")
+                        .HasDatabaseName("IX_NewsArticles_PublishedAt");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("IX_NewsArticles_Slug");
+
+                    b.ToTable("NewsArticles", (string)null);
                 });
 
             modelBuilder.Entity("FEA.URVP.Domain.Entities.ProjectRankings.ProjectRanking", b =>
@@ -413,6 +477,102 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .HasDatabaseName("IX_ValueListItems_Kind_SortOrder");
 
                     b.ToTable("ValueListItems", (string)null);
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Workshops.Workshop", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Date")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PosterAlt")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<Guid?>("PosterFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RegistrationUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Time")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SortOrder")
+                        .HasDatabaseName("IX_Workshops_SortOrder");
+
+                    b.ToTable("Workshops", (string)null);
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Semesters.Semester", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ApplicationWindowEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ApplicationWindowStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Semesters_IsActive");
+
+                    b.ToTable("Semesters", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>

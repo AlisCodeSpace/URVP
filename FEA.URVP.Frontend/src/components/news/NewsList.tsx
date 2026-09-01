@@ -1,11 +1,15 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heading, Text } from "@radix-ui/themes";
-import type { NewsArticle } from "@/lib/news";
 import {
   NEWS_PAGE_SIZE,
-  getFeaturedNews,
-  getNewsPage,
+  pickFeaturedNews,
+  paginateNewsArticles,
+  type NewsArticle,
 } from "@/lib/news";
+import { loadPublicNews } from "@/lib/news-api";
 
 function formatIndex(i: number) {
   return String(i + 1).padStart(2, "0");
@@ -196,13 +200,55 @@ function NewsPagination({
 }
 
 export function NewsList({ page = 1 }: { page?: number }) {
-  const featured = getFeaturedNews();
-  const { items, page: currentPage, totalPages, total } = getNewsPage(page);
+  const [articles, setArticles] = useState<NewsArticle[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadPublicNews().then((items) => {
+      if (!cancelled) setArticles(items);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!articles) {
+    return (
+      <section className="site-container py-14 sm:py-16">
+        <Text as="p" size="3" className="!text-muted">
+          Loading news…
+        </Text>
+      </section>
+    );
+  }
+  if (articles.length === 0) {
+    return (
+      <section className="site-container py-14 sm:py-16">
+        <Heading
+          as="h2"
+          size="7"
+          weight="medium"
+          className="!font-[family-name:var(--font-display)] !text-primary"
+        >
+          Latest updates
+        </Heading>
+        <Text as="p" size="3" mt="4" className="max-w-xl !text-muted">
+          News will appear here once stories are published.
+        </Text>
+      </section>
+    );
+  }
+
+  const featured = pickFeaturedNews(articles);
+  const { items, page: currentPage, totalPages, total } = paginateNewsArticles(
+    articles,
+    page,
+  );
   const startIndex = (currentPage - 1) * NEWS_PAGE_SIZE;
 
   return (
     <div>
-      {currentPage === 1 ? <NewsFeatured article={featured} /> : null}
+      {currentPage === 1 && featured ? <NewsFeatured article={featured} /> : null}
 
       <section className="site-container py-14 sm:py-16">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">

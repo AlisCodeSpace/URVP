@@ -247,7 +247,7 @@ export function ExpressInterestModal({
                 href={studentRankingsHref()}
                 className="font-medium text-secondary-deep underline-offset-2 hover:underline"
               >
-                My Rankings
+                Ranked Projects
               </a>
               .
             </Text>

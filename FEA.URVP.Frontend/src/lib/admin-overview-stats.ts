@@ -85,6 +85,7 @@ export const adminKpis: AdminKpi[] = [
     value: "156",
     hint: "Registrations this term",
     delta: "3 sessions",
+    href: "/admin/workshops",
   },
 ];
 
@@ -125,11 +126,7 @@ export const adminPipeline: AdminPipelineStep[] = [
 ];
 
 export const adminCatalogCounts = [
-  { label: "Faculties", value: 7, href: "/admin/faculties" },
-  { label: "Divisions", value: 24, href: "/admin/divisions" },
-  { label: "Majors", value: 61, href: "/admin/majors" },
-  { label: "Courses", value: 412, href: "/admin/courses" },
-  { label: "Research areas", value: 38, href: "/admin/research-areas" },
+  { label: "Activity types", value: 49, href: "/admin/research-activity-types" },
   { label: "Interests", value: 96, href: "/admin/research-interests" },
 ] as const;
 

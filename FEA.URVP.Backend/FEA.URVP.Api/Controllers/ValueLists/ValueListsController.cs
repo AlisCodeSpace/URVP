@@ -120,8 +120,8 @@ public sealed class ValueListsController : ApiControllerBase
             case "research-interests":
                 listKind = ValueListKind.ResearchInterest;
                 return true;
-            case "research-areas":
-                listKind = ValueListKind.ResearchArea;
+            case "research-activity-types":
+                listKind = ValueListKind.ResearchActivityType;
                 return true;
             default:
                 listKind = default;
