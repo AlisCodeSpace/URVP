@@ -13,6 +13,7 @@ import {
   listMyProjects,
   toMyProject,
 } from "@/lib/projects-api";
+import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 
 function statusClass(status: MyProjectStatus) {
   if (status === "Open") return "is-active";
@@ -134,11 +135,7 @@ export function MyProjectsList({ userId }: { userId: string }) {
   }
 
   if (projects === null) {
-    return (
-      <Text as="p" size="3" className="!text-muted">
-        Loading your projects…
-      </Text>
-    );
+    return <AdminTableSkeleton columns={5} rows={4} />;
   }
 
   if (error && projects.length === 0) {

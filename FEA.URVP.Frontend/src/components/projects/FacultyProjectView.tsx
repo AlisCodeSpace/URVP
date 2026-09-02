@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Text } from "@radix-ui/themes";
 import { RequireAuth } from "@/components/auth/RequireAuth";
@@ -14,6 +14,7 @@ import {
   type ProjectRankingStudentDto,
 } from "@/lib/project-rankings-api";
 import { getProject, type ProjectDto } from "@/lib/projects-api";
+import { ProjectDetailSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function FacultyProjectView({
   userId,
@@ -54,16 +55,19 @@ export function FacultyProjectView({
     };
   }, [projectId, userId]);
 
+  const loadRankings = useCallback(async () => {
+    const next = await getProjectRankings(projectId);
+    setRankings(next);
+    setRankingsError(null);
+  }, [projectId]);
+
   useEffect(() => {
     if (!project) return;
     let cancelled = false;
 
     void (async () => {
       try {
-        const next = await getProjectRankings(projectId);
-        if (cancelled) return;
-        setRankings(next);
-        setRankingsError(null);
+        await loadRankings();
       } catch (err) {
         if (cancelled) return;
         setRankingsError(
@@ -77,7 +81,7 @@ export function FacultyProjectView({
     return () => {
       cancelled = true;
     };
-  }, [project, projectId]);
+  }, [project, loadRankings]);
 
   return (
     <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
@@ -107,17 +111,25 @@ export function FacultyProjectView({
               {error}
             </Text>
           ) : project == null ? (
-            <Text as="p" size="3" className="!text-muted">
-              Loading project…
-            </Text>
+            <ProjectDetailSkeleton />
           ) : (
             <FacultyProjectReadonly userId={userId} project={project}>
               <FacultyProjectRankings
                 userId={userId}
                 projectId={projectId}
+                volunteersRequired={project.volunteersRequired}
                 rankings={rankings}
                 loading={rankings == null && rankingsError == null}
                 error={rankingsError}
+                onRankingsChanged={() => {
+                  void loadRankings().catch((err: unknown) => {
+                    setRankingsError(
+                      err instanceof ApiError
+                        ? err.message
+                        : "Could not refresh ranked students.",
+                    );
+                  });
+                }}
               />
             </FacultyProjectReadonly>
           )}

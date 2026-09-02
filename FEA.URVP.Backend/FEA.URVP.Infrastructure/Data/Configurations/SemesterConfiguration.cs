@@ -20,6 +20,8 @@ public sealed class SemesterConfiguration : IEntityTypeConfiguration<Semester>
             .HasMaxLength(1000);
 
         builder.Property(x => x.IsActive).IsRequired();
+        builder.Property(x => x.CycleStart);
+        builder.Property(x => x.CycleEnd);
         builder.Property(x => x.ApplicationWindowStart);
         builder.Property(x => x.ApplicationWindowEnd);
         builder.Property(x => x.CreatedAt).IsRequired();

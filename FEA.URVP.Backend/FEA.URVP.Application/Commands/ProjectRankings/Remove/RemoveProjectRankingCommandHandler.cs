@@ -10,16 +10,19 @@ public sealed class RemoveProjectRankingCommandHandler
     : BaseCommandHandler<RemoveProjectRankingCommand>
 {
     private readonly IProjectRankingRepository _rankings;
+    private readonly IFacultyCandidateRankingRepository _candidateRankings;
     private readonly IUserRepository _users;
 
     public RemoveProjectRankingCommandHandler(
         ILogger<RemoveProjectRankingCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IProjectRankingRepository rankings,
+        IFacultyCandidateRankingRepository candidateRankings,
         IUserRepository users)
         : base(logger, unitOfWork)
     {
         _rankings = rankings;
+        _candidateRankings = candidateRankings;
         _users = users;
     }
 
@@ -42,6 +45,15 @@ public sealed class RemoveProjectRankingCommandHandler
             request.ProjectId,
             cancellationToken)
             ?? throw new ArgumentException("Ranking was not found for this project.");
+
+        var facultyRanking = await _candidateRankings.FindByProjectAndStudentAsync(
+            request.ProjectId,
+            user.Id,
+            cancellationToken);
+        if (facultyRanking is not null)
+        {
+            _candidateRankings.Remove(facultyRanking);
+        }
 
         _rankings.Remove(ranking);
         await UnitOfWork.SaveChangesAsync(cancellationToken);

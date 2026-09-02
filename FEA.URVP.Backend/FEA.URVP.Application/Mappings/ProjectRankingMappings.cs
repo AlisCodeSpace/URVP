@@ -1,4 +1,5 @@
 using FEA.URVP.Application.DTOs.ProjectRankings;
+using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 
 namespace FEA.URVP.Application.Mappings;
@@ -25,7 +26,9 @@ public static class ProjectRankingMappings
         };
     }
 
-    public static ProjectRankingStudentDto ToStudentDto(this ProjectRanking ranking)
+    public static ProjectRankingStudentDto ToStudentDto(
+        this ProjectRanking ranking,
+        byte? facultyRank = null)
     {
         var student = ranking.StudentUser;
 
@@ -37,8 +40,25 @@ public static class ProjectRankingMappings
             StudentEmail = student?.Email ?? string.Empty,
             StudentUserName = student?.UserName,
             Rank = ranking.Rank,
+            FacultyRank = facultyRank,
             RankedAt = ranking.CreatedAt,
             UpdatedAt = ranking.UpdatedAt,
         };
+    }
+
+    public static IReadOnlyList<ProjectRankingStudentDto> ToStudentDtos(
+        this IEnumerable<ProjectRanking> rankings,
+        IEnumerable<FacultyCandidateRanking> facultyRanks)
+    {
+        var facultyByStudent = facultyRanks.ToDictionary(r => r.StudentUserId, r => r.Rank);
+
+        return rankings
+            .Select(r => r.ToStudentDto(
+                facultyByStudent.TryGetValue(r.StudentUserId, out var facultyRank) ? facultyRank : null))
+            .OrderBy(r => r.FacultyRank.HasValue ? 0 : 1)
+            .ThenBy(r => r.FacultyRank)
+            .ThenBy(r => r.Rank)
+            .ThenBy(r => r.RankedAt)
+            .ToList();
     }
 }

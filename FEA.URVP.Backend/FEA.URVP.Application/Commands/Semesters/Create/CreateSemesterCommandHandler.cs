@@ -30,10 +30,19 @@ public sealed class CreateSemesterCommandHandler
         {
             Name = request.Name.Trim(),
             Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
-            IsActive = false,
             CreatedAt = now,
             UpdatedAt = now,
         };
+
+        await SemesterSchedule.ApplyAsync(
+            _semesters,
+            semester,
+            request.CycleStart,
+            request.CycleEnd,
+            request.ApplicationWindowStart,
+            request.ApplicationWindowEnd,
+            now,
+            cancellationToken);
 
         _semesters.Add(semester);
         await UnitOfWork.SaveChangesAsync(cancellationToken);

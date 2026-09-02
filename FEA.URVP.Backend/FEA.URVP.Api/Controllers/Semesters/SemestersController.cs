@@ -91,8 +91,9 @@ public sealed class SemestersController : ApiControllerBase
     }
 
     /// <summary>
-    /// Starts or ends the academic cycle for this semester.
-    /// Starting a cycle automatically deactivates all other semesters.
+    /// Starts or ends the academic cycle for this semester immediately.
+    /// Starting a cycle ends any other running cycle. Ending a cycle also
+    /// closes an open application window.
     /// </summary>
     [Authorize]
     [HttpPost("{id:guid}/set-active")]
@@ -112,9 +113,9 @@ public sealed class SemestersController : ApiControllerBase
     }
 
     /// <summary>
-    /// Opens or closes the student application window.
-    /// Pass null for ApplicationWindowStart to reset the window entirely.
-    /// Pass null for ApplicationWindowEnd to leave the window open indefinitely.
+    /// Opens or closes the student application window immediately, or sets
+    /// scheduled start/end dates. The window closes automatically when the
+    /// end date is reached. Pass null for both dates to clear the window.
     /// </summary>
     [Authorize]
     [HttpPost("{id:guid}/set-application-window")]

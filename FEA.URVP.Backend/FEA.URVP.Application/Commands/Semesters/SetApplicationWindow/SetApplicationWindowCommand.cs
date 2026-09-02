@@ -6,8 +6,8 @@ namespace FEA.URVP.Application.Commands.Semesters.SetApplicationWindow;
 
 /// <summary>
 /// Opens or closes the student application window for a semester.
-/// Pass null for ApplicationWindowStart to reset the window entirely.
-/// Pass null for ApplicationWindowEnd to leave the window open indefinitely.
+/// Pass null for both dates to clear the window. An omitted end date
+/// keeps the window open until it is closed instantly or an end is set.
 /// </summary>
 public sealed class SetApplicationWindowCommand : IRequest<SemesterDto>
 {
@@ -20,7 +20,8 @@ public sealed class SetApplicationWindowCommand : IRequest<SemesterDto>
     public DateTime? ApplicationWindowStart { get; init; }
 
     /// <summary>
-    /// UTC end of the application window. Pass null to leave the window open.
+    /// UTC end of the application window. Pass null to leave the window open
+    /// until it is closed instantly or an end date is set later.
     /// </summary>
     public DateTime? ApplicationWindowEnd { get; init; }
 }

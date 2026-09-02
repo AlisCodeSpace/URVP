@@ -10,6 +10,7 @@ import {
   type NewsArticle,
 } from "@/lib/news";
 import { loadPublicNews } from "@/lib/news-api";
+import { NewsListSkeleton } from "@/components/ui/SectionSkeletons";
 
 function formatIndex(i: number) {
   return String(i + 1).padStart(2, "0");
@@ -213,13 +214,7 @@ export function NewsList({ page = 1 }: { page?: number }) {
   }, []);
 
   if (!articles) {
-    return (
-      <section className="site-container py-14 sm:py-16">
-        <Text as="p" size="3" className="!text-muted">
-          Loading news…
-        </Text>
-      </section>
-    );
+    return <NewsListSkeleton />;
   }
   if (articles.length === 0) {
     return (

@@ -9,7 +9,6 @@ internal static class ProjectRankingAccess
         new(StringComparer.OrdinalIgnoreCase)
         {
             "ali.anani@aub.edu.lb",
-            "aa624@aub.edu.lb",
         };
 
     public static void EnsureCanRank(UserRole role, string email)

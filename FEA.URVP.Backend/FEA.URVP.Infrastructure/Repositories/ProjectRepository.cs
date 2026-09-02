@@ -83,6 +83,14 @@ public sealed class ProjectRepository : IProjectRepository
         return (items, totalCount);
     }
 
+    public async Task<IReadOnlyList<Project>> ListByStatusAsync(
+        ProjectStatus status,
+        CancellationToken cancellationToken = default) =>
+        await _db.Projects
+            .Where(p => p.Status == status)
+            .OrderBy(p => p.Title)
+            .ToListAsync(cancellationToken);
+
     public void Add(Project project) => _db.Projects.Add(project);
 
     public void Remove(Project project) => _db.Projects.Remove(project);

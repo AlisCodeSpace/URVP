@@ -10,13 +10,16 @@ public sealed class GetAdminProjectDetailQueryHandler
 {
     private readonly IProjectRepository _projects;
     private readonly IProjectRankingRepository _rankings;
+    private readonly IFacultyCandidateRankingRepository _candidateRankings;
 
     public GetAdminProjectDetailQueryHandler(
         IProjectRepository projects,
-        IProjectRankingRepository rankings)
+        IProjectRankingRepository rankings,
+        IFacultyCandidateRankingRepository candidateRankings)
     {
         _projects = projects;
         _rankings = rankings;
+        _candidateRankings = candidateRankings;
     }
 
     public async Task<AdminProjectDetailDto> Handle(
@@ -27,11 +30,12 @@ public sealed class GetAdminProjectDetailQueryHandler
             ?? throw new KeyNotFoundException($"Project {request.ProjectId} was not found.");
 
         var rankings = await _rankings.ListByProjectAsync(project.Id, cancellationToken);
+        var facultyRanks = await _candidateRankings.ListByProjectAsync(project.Id, cancellationToken);
 
         return new AdminProjectDetailDto
         {
             Project = project.ToDto(),
-            Rankings = rankings.Select(r => r.ToStudentDto()).ToList(),
+            Rankings = rankings.ToStudentDtos(facultyRanks),
         };
     }
 }

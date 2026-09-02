@@ -8,6 +8,7 @@ public sealed class ProjectRankingStudentDto
     public string StudentEmail { get; init; } = null!;
     public string? StudentUserName { get; init; }
     public byte Rank { get; init; }
+    public byte? FacultyRank { get; init; }
     public DateTime RankedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 }

@@ -7,6 +7,7 @@ export type ProjectRankingStudentDto = {
   studentEmail: string;
   studentUserName?: string | null;
   rank: number;
+  facultyRank?: number | null;
   rankedAt: string;
   updatedAt: string;
 };
@@ -66,8 +67,19 @@ export function formatRankedAt(iso: string): string {
 }
 
 export function rankLabel(rank: number): string {
-  if (rank === 1) return "1st choice";
-  if (rank === 2) return "2nd choice";
-  if (rank === 3) return "3rd choice";
-  return `Rank ${rank}`;
+  const n = Math.trunc(rank);
+  if (n < 1) return `Rank ${rank}`;
+  const tens = n % 100;
+  const ones = n % 10;
+  const suffix =
+    tens >= 11 && tens <= 13
+      ? "th"
+      : ones === 1
+        ? "st"
+        : ones === 2
+          ? "nd"
+          : ones === 3
+            ? "rd"
+            : "th";
+  return `${n}${suffix} choice`;
 }

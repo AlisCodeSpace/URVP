@@ -6,6 +6,7 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { AdminPosterField } from "@/components/admin/AdminPosterField";
 import { Button } from "@/components/ui/Button";
+import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
   createWorkshop,
@@ -153,7 +154,15 @@ export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
   }
 
   if (loading) {
-    return <p className="admin-users-status">Loading workshop…</p>;
+    return (
+      <div className="admin-panel admin-panel--wide">
+        <AdminPageHeader
+          title={isEdit ? "Edit workshop" : "New workshop"}
+          description="Same fields as the Workshops page, plus a 3:2 card photo."
+        />
+        <AdminFormSkeleton fields={7} />
+      </div>
+    );
   }
 
   return (

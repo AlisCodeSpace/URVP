@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
   deleteNews,
@@ -109,7 +110,7 @@ export function AdminNewsView() {
       </div>
 
       {loading && !data ? (
-        <p className="admin-users-status">Loading news…</p>
+        <AdminTableSkeleton columns={5} />
       ) : error ? (
         <p className="admin-users-banner is-error" role="alert">
           {error}

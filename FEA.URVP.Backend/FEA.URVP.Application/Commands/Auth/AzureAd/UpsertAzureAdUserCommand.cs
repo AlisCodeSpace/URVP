@@ -15,14 +15,24 @@ public sealed class UpsertAzureAdUserCommand : IRequest<User>
     public string Affiliation { get; }
     public string? ProfileImageUrl { get; }
     public UserRole? RoleOverride { get; }
+    public UserRole? DirectoryGroupRole { get; }
 
+    /// <param name="roleOverride">
+    /// Explicit role, e.g. from dev/demo sign-in. Takes precedence over everything else.
+    /// </param>
+    /// <param name="directoryGroupRole">
+    /// Role resolved from AUB AD group membership at sign-in (Students-STD /
+    /// ALLACADstaff-STF). Applied when there is no <paramref name="roleOverride"/> and the
+    /// user is not a configured or stored admin.
+    /// </param>
     public UpsertAzureAdUserCommand(
         string email,
         string name,
         string userName,
         string affiliation,
         string? profileImageUrl = null,
-        UserRole? roleOverride = null)
+        UserRole? roleOverride = null,
+        UserRole? directoryGroupRole = null)
     {
         Email = email;
         Name = name;
@@ -30,5 +40,6 @@ public sealed class UpsertAzureAdUserCommand : IRequest<User>
         Affiliation = affiliation;
         ProfileImageUrl = profileImageUrl;
         RoleOverride = roleOverride;
+        DirectoryGroupRole = directoryGroupRole;
     }
 }

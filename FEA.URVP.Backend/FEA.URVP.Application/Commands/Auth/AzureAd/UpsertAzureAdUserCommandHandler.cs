@@ -32,20 +32,24 @@ public sealed class UpsertAzureAdUserCommandHandler
         var userName = request.UserName.Trim();
         var affiliation = request.Affiliation.Trim();
 
-        UserRole userRole;
-        if (request.RoleOverride.HasValue)
-        {
-            userRole = request.RoleOverride.Value;
-        }
-        else
-        {
-            var adminEmails = _configuration.GetSection("AdminEmails").Get<string[]>() ?? [];
-            var isAdmin = adminEmails.Any(e =>
-                string.Equals(e.Trim(), normalizedEmail, StringComparison.OrdinalIgnoreCase));
-            userRole = isAdmin ? UserRole.Admin : UserRole.Faculty;
-        }
+        var adminEmails = _configuration.GetSection("AdminEmails").Get<string[]>() ?? [];
+        var isConfiguredAdmin = adminEmails.Any(e =>
+            string.Equals(e.Trim(), normalizedEmail, StringComparison.OrdinalIgnoreCase));
 
         var user = await _users.FindByEmailAsync(normalizedEmail, cancellationToken);
+        var isStoredAdmin = user?.Role == UserRole.Admin;
+
+        // TokenValidated role: explicit override (dev) > AdminEmails / stored Admin >
+        // AD groups (Student / Faculty). When groups cannot be resolved, keep the stored
+        // role (or Faculty for a first-time user) instead of guessing.
+        UserRole? resolvedRole = request.RoleOverride;
+        if (!resolvedRole.HasValue && (isConfiguredAdmin || isStoredAdmin))
+        {
+            resolvedRole = UserRole.Admin;
+        }
+
+        resolvedRole ??= request.DirectoryGroupRole;
+        var userRole = resolvedRole ?? UserRole.Faculty;
 
         if (user is null)
         {
@@ -76,10 +80,14 @@ public sealed class UpsertAzureAdUserCommandHandler
 
         var modified = false;
 
-        // RoleOverride (e.g. dev sign-in) may update role; otherwise preserve admin-assigned roles.
-        if (request.RoleOverride.HasValue && user.Role != userRole)
+        if (resolvedRole.HasValue && user.Role != resolvedRole.Value)
         {
-            user.Role = userRole;
+            Logger.LogInformation(
+                "Updating role for {Email} from {OldRole} to {NewRole}",
+                normalizedEmail,
+                user.Role,
+                resolvedRole.Value);
+            user.Role = resolvedRole.Value;
             modified = true;
         }
 

@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { portalHref } from "@/lib/auth";
 
 type RequireAuthProps = {
@@ -59,11 +60,7 @@ export function RequireAuth({ children, userId, roles }: RequireAuthProps) {
 
   if (loading || unauthorized) {
     return (
-      <main className="flex min-h-[50vh] flex-1 items-center justify-center px-6">
-        <p className="text-muted">
-          {loading ? "Loading…" : "Redirecting…"}
-        </p>
-      </main>
+      <PageLoader label={loading ? "Loading" : "Redirecting"} />
     );
   }
 

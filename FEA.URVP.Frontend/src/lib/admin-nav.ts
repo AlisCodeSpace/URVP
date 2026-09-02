@@ -28,6 +28,11 @@ export const adminNav: AdminNavGroup[] = [
         description: "All listings and student ranking interest.",
       },
       {
+        href: "/admin/matching",
+        label: "Matching",
+        description: "Run, review, and confirm automatic placements.",
+      },
+      {
         href: "/admin/news",
         label: "News",
         description: "Stories on the News page and home ticker.",

@@ -28,8 +28,19 @@ public sealed class UpdateSemesterCommandHandler
             ?? throw new KeyNotFoundException($"Semester {request.Id} was not found.");
 
         semester.Name = request.Name.Trim();
-        semester.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
-        semester.UpdatedAt = DateTime.UtcNow;
+        semester.Description = string.IsNullOrWhiteSpace(request.Description)
+            ? null
+            : request.Description.Trim();
+
+        await SemesterSchedule.ApplyAsync(
+            _semesters,
+            semester,
+            request.CycleStart,
+            request.CycleEnd,
+            request.ApplicationWindowStart,
+            request.ApplicationWindowEnd,
+            DateTime.UtcNow,
+            cancellationToken);
 
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 

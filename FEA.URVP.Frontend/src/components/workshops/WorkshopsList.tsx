@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Heading, Text } from "@radix-ui/themes";
 import type { Workshop } from "@/lib/workshops";
 import { loadPublicWorkshops } from "@/lib/workshops-api";
+import { WorkshopCardsSkeleton } from "@/components/ui/SectionSkeletons";
 
 function isRemotePoster(src: string) {
   return /^https?:\/\//i.test(src);
@@ -132,11 +133,7 @@ export function WorkshopsList({
   }, [items]);
 
   if (!list) {
-    return (
-      <Text as="p" size="3" className="!text-muted">
-        Loading workshops…
-      </Text>
-    );
+    return <WorkshopCardsSkeleton />;
   }
 
   if (list.length === 0) {

@@ -10,8 +10,20 @@ public interface ISemesterRepository
 
     Task<IReadOnlyList<Semester>> ListAllAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>Sets IsActive = false on every semester except <paramref name="exceptId"/>.</summary>
-    Task DeactivateAllExceptAsync(Guid exceptId, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Ends the running/upcoming cycle on every semester except
+    /// <paramref name="exceptId"/> so only one cycle can be current.
+    /// </summary>
+    Task RelinquishAllExceptAsync(
+        Guid exceptId,
+        DateTime utcNow,
+        CancellationToken cancellationToken = default);
+
+    Task<Semester?> FindOverlappingCycleAsync(
+        Guid? excludeId,
+        DateTime start,
+        DateTime? end,
+        CancellationToken cancellationToken = default);
 
     void Add(Semester semester);
 

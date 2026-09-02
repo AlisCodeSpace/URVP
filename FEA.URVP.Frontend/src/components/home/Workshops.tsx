@@ -10,9 +10,10 @@ import {
   type WorkshopTeaser,
 } from "@/lib/home-content";
 import { loadPublicWorkshops } from "@/lib/workshops-api";
+import { WorkshopTeaserSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function Workshops({ items }: { items?: WorkshopTeaser[] }) {
-  const [list, setList] = useState<WorkshopTeaser[]>(items ?? defaultWorkshops);
+  const [list, setList] = useState<WorkshopTeaser[] | null>(items ?? null);
 
   useEffect(() => {
     if (items) {
@@ -20,9 +21,15 @@ export function Workshops({ items }: { items?: WorkshopTeaser[] }) {
       return;
     }
     let cancelled = false;
-    void loadPublicWorkshops().then((next) => {
-      if (!cancelled) setList(toWorkshopTeasers(next));
-    });
+    void loadPublicWorkshops()
+      .then((next) => {
+        if (cancelled) return;
+        const teasers = toWorkshopTeasers(next);
+        setList(teasers.length > 0 ? teasers : defaultWorkshops);
+      })
+      .catch(() => {
+        if (!cancelled) setList(defaultWorkshops);
+      });
     return () => {
       cancelled = true;
     };
@@ -60,6 +67,9 @@ export function Workshops({ items }: { items?: WorkshopTeaser[] }) {
           </Button>
         </div>
 
+        {list == null ? (
+          <WorkshopTeaserSkeleton />
+        ) : (
         <ul className="mt-12 divide-y divide-white/15 border-y border-white/15">
           {list.map((workshop) => (
             <li key={workshop.title}>
@@ -92,6 +102,7 @@ export function Workshops({ items }: { items?: WorkshopTeaser[] }) {
             </li>
           ))}
         </ul>
+        )}
       </div>
     </section>
   );

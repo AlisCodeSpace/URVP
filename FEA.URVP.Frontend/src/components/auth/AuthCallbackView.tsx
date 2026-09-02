@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Text } from "@radix-ui/themes";
 import { fetchAuthStatus, portalHref } from "@/lib/auth";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 export function AuthCallbackView() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [message] = useState("Completing sign-in…");
 
   useEffect(() => {
     const error = searchParams.get("error");
@@ -40,11 +39,5 @@ export function AuthCallbackView() {
     };
   }, [router, searchParams]);
 
-  return (
-    <main className="flex min-h-dvh flex-1 items-center justify-center px-6">
-      <Text as="p" size="3" className="!text-muted">
-        {message}
-      </Text>
-    </main>
-  );
+  return <PageLoader label="Completing sign-in" />;
 }

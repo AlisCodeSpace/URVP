@@ -25,10 +25,10 @@ public sealed class DeleteSemesterCommandHandler
         var semester = await _semesters.FindByIdAsync(request.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"Semester {request.Id} was not found.");
 
-        if (semester.IsActive)
+        if (semester.IsCycleActive(DateTime.UtcNow))
         {
             throw new InvalidOperationException(
-                "Cannot delete the active semester. Deactivate it first.");
+                "Cannot delete the active semester. End the cycle first.");
         }
 
         _semesters.Remove(semester);

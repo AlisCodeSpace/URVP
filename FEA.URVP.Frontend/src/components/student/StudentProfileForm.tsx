@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { IconPencil } from "@/components/ui/Icons";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { MultiSelectSearch } from "@/components/ui/MultiSelectSearch";
+import { ProfileFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import { MAX_RESEARCH_AREAS, RESEARCH_AREAS } from "@/lib/research-areas";
 import {
@@ -369,11 +370,7 @@ export function StudentProfileForm() {
   const showRequired = editing;
 
   if (loading) {
-    return (
-      <p className="text-muted" role="status">
-        Loading profile…
-      </p>
-    );
+    return <ProfileFormSkeleton />;
   }
 
   return (

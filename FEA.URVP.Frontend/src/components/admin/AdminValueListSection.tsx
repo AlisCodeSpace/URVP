@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons";
+import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
   createValueListItem,
@@ -250,7 +251,7 @@ export function AdminValueListSection({
       ) : null}
 
       {loading && !data && !draftOpen ? (
-        <p className="admin-users-status">Loading…</p>
+        <AdminTableSkeleton columns={3} />
       ) : !showTable || (!items.length && !draftOpen) ? (
         <p className="admin-users-status">No values yet.</p>
       ) : (

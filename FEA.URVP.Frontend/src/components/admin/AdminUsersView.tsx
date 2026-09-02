@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
+import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
   assignUserRole,
@@ -176,7 +177,7 @@ export function AdminUsersView() {
       ) : null}
 
       {loading && !data ? (
-        <p className="admin-users-status">Loading users…</p>
+        <AdminTableSkeleton columns={5} />
       ) : error ? (
         <div className="admin-users-status">
           <p className="admin-users-banner is-error" role="alert">

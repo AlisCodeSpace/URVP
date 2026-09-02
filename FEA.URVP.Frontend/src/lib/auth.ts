@@ -25,17 +25,6 @@ export const STUDENT_ROLES = [UserRole.Student] as const;
 export const FACULTY_PORTAL_ROLES = [UserRole.Faculty, UserRole.Admin] as const;
 export const ADMIN_ROLES = [UserRole.Admin] as const;
 
-/** Temporary: force these emails into the student portal for FE testing. */
-const STUDENT_ROLE_OVERRIDES = new Set(["aa624@aub.edu.lb"]);
-
-function applyRoleOverrides(status: AuthStatus): AuthStatus {
-  const email = status.email?.trim().toLowerCase();
-  if (!email || !STUDENT_ROLE_OVERRIDES.has(email)) return status;
-  if (status.role === UserRole.Student) return status;
-  console.warn("[auth] Temporary student role override for", email);
-  return { ...status, role: UserRole.Student };
-}
-
 export function getAuthCallbackUrl(): string {
   const origin =
     typeof window !== "undefined" && window.location?.origin
@@ -91,7 +80,7 @@ export async function fetchAuthStatus(): Promise<AuthStatus> {
     return failed;
   }
 
-  const data = applyRoleOverrides((await res.json()) as AuthStatus);
+  const data = (await res.json()) as AuthStatus;
   console.log("[auth] /api/auth/status response:", data);
   return data;
 }

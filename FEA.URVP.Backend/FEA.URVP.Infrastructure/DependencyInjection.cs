@@ -1,6 +1,8 @@
+using FEA.URVP.Application.Abstractions.Directory;
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Infrastructure.Data.Context;
+using FEA.URVP.Infrastructure.Ldap;
 using FEA.URVP.Infrastructure.Events;
 using FEA.URVP.Infrastructure.Repositories;
 using Microsoft.AspNetCore.DataProtection;
@@ -31,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
         services.AddScoped<IProjectRankingRepository, ProjectRankingRepository>();
+        services.AddScoped<IFacultyCandidateRankingRepository, FacultyCandidateRankingRepository>();
+        services.AddScoped<IMatchingRunRepository, MatchingRunRepository>();
         services.AddScoped<IFileStorageRepository, FileStorageRepository>();
         services.AddScoped<IValueListRepository, ValueListRepository>();
         services.AddScoped<IDivisionRepository, DivisionRepository>();
@@ -38,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IWorkshopRepository, WorkshopRepository>();
         services.AddScoped<ISemesterRepository, SemesterRepository>();
         services.AddScoped<IEventBus, InMemoryEventBus>();
+        services.AddScoped<IDirectoryGroupLookup, LdapDirectoryGroupLookup>();
 
         // Persist data-protection keys so OIDC correlation/state survives restarts.
         services.AddDataProtection()

@@ -4,28 +4,32 @@ import { useCallback, useEffect, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
   deleteSemester,
-  formatWindowDate,
+  formatScheduleRange,
   listSemesters,
+  parseApiDate,
   setApplicationWindow,
   setSemesterActive,
   type SemesterDto,
 } from "@/lib/semesters-api";
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
-
 function StatusBadge({
   active,
   label,
+  size = "default",
 }: {
   active: boolean;
   label: string;
+  size?: "default" | "control";
 }) {
   return (
     <span
-      className={`admin-value-status${active ? " is-active" : ""}`}
+      className={`admin-value-status${active ? " is-active" : ""}${
+        size === "control" ? " admin-value-status--control" : ""
+      }`}
       style={
         active
           ? undefined
@@ -40,27 +44,30 @@ function StatusBadge({
   );
 }
 
-// ─── Active semester control panel ────────────────────────────────────────────
+function futureOrNull(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  return parseApiDate(iso) > new Date() ? iso : null;
+}
 
 function ActiveSemesterPanel({
   semester,
-  onUpdated,
+  onReload,
   onError,
 }: {
   semester: SemesterDto;
-  onUpdated: (next: SemesterDto) => void;
+  onReload: () => Promise<void>;
   onError: (msg: string) => void;
 }) {
   const [busyCycle, setBusyCycle] = useState(false);
   const [busyWindow, setBusyWindow] = useState(false);
 
-  async function handleToggleCycle() {
+  async function handleEndCycle() {
     setBusyCycle(true);
     try {
-      const next = await setSemesterActive(semester.id, !semester.isActive);
-      onUpdated(next);
+      await setSemesterActive(semester.id, false);
+      await onReload();
     } catch (err) {
-      onError(err instanceof ApiError ? err.message : "Failed to update cycle.");
+      onError(err instanceof ApiError ? err.message : "Failed to end cycle.");
     } finally {
       setBusyCycle(false);
     }
@@ -69,11 +76,11 @@ function ActiveSemesterPanel({
   async function handleOpenApplications() {
     setBusyWindow(true);
     try {
-      const next = await setApplicationWindow(semester.id, {
+      await setApplicationWindow(semester.id, {
         applicationWindowStart: new Date().toISOString(),
-        applicationWindowEnd: null,
+        applicationWindowEnd: futureOrNull(semester.applicationWindowEnd),
       });
-      onUpdated(next);
+      await onReload();
     } catch (err) {
       onError(
         err instanceof ApiError ? err.message : "Failed to open applications.",
@@ -86,11 +93,11 @@ function ActiveSemesterPanel({
   async function handleCloseApplications() {
     setBusyWindow(true);
     try {
-      const next = await setApplicationWindow(semester.id, {
-        applicationWindowStart: semester.applicationWindowStart ?? null,
+      await setApplicationWindow(semester.id, {
+        applicationWindowStart: semester.applicationWindowStart ?? new Date().toISOString(),
         applicationWindowEnd: new Date().toISOString(),
       });
-      onUpdated(next);
+      await onReload();
     } catch (err) {
       onError(
         err instanceof ApiError ? err.message : "Failed to close applications.",
@@ -99,10 +106,6 @@ function ActiveSemesterPanel({
       setBusyWindow(false);
     }
   }
-
-  const appWindowIsOpen =
-    semester.isApplicationWindowOpen ||
-    (semester.applicationWindowStart && !semester.applicationWindowEnd);
 
   return (
     <div
@@ -116,7 +119,6 @@ function ActiveSemesterPanel({
           gap: "1.5rem",
         }}
       >
-        {/* ── Cycle card ── */}
         <div>
           <p
             style={{
@@ -131,22 +133,15 @@ function ActiveSemesterPanel({
             Academic Cycle
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
-            <StatusBadge
-              active={semester.isActive}
-              label={semester.isActive ? "Active" : "Inactive"}
-            />
+            <StatusBadge active label="Active" size="control" />
             <Button
               type="button"
-              variant={semester.isActive ? "danger" : "primary"}
+              variant="danger"
               size="sm"
               disabled={busyCycle}
-              onClick={handleToggleCycle}
+              onClick={handleEndCycle}
             >
-              {busyCycle
-                ? "Updating…"
-                : semester.isActive
-                  ? "End Cycle"
-                  : "Start Cycle"}
+              {busyCycle ? "Updating…" : "End Cycle"}
             </Button>
           </div>
           <p
@@ -156,13 +151,11 @@ function ActiveSemesterPanel({
               color: "var(--muted)",
             }}
           >
-            {semester.isActive
-              ? "Students can view projects. Control applications below."
-              : "Start this cycle to make it the current semester."}
+            {formatScheduleRange(semester.cycleStart, semester.cycleEnd)}. Ends
+            automatically at the end date, or instantly with the button.
           </p>
         </div>
 
-        {/* ── Application window card ── */}
         <div>
           <p
             style={{
@@ -180,19 +173,15 @@ function ActiveSemesterPanel({
             <StatusBadge
               active={semester.isApplicationWindowOpen}
               label={semester.isApplicationWindowOpen ? "Open" : "Closed"}
+              size="control"
             />
             {!semester.isApplicationWindowOpen ? (
               <Button
                 type="button"
                 variant="primary"
                 size="sm"
-                disabled={busyWindow || !semester.isActive}
+                disabled={busyWindow}
                 onClick={handleOpenApplications}
-                title={
-                  !semester.isActive
-                    ? "Start the cycle first"
-                    : "Open applications now"
-                }
               >
                 {busyWindow ? "Updating…" : "Open Applications"}
               </Button>
@@ -215,43 +204,28 @@ function ActiveSemesterPanel({
               color: "var(--muted)",
             }}
           >
-            {semester.applicationWindowStart
-              ? `Opened: ${formatWindowDate(semester.applicationWindowStart)}`
-              : "Not yet opened."}
-            {semester.applicationWindowEnd
-              ? ` · Closed: ${formatWindowDate(semester.applicationWindowEnd)}`
-              : semester.applicationWindowStart
-                ? " · Still open"
-                : ""}
+            {formatScheduleRange(
+              semester.applicationWindowStart,
+              semester.applicationWindowEnd,
+            )}
+            . Closes automatically at the end date, or instantly with the button.
           </p>
-          {!semester.isActive && (
-            <p
-              style={{
-                margin: "0.3rem 0 0",
-                fontSize: "0.78rem",
-                color: "#b42318",
-              }}
-            >
-              The cycle must be active to open applications.
-            </p>
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Main view ────────────────────────────────────────────────────────────────
-
 export function AdminSemestersView() {
   const [semesters, setSemesters] = useState<SemesterDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<SemesterDto | null>(null);
+  const [startingId, setStartingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       setSemesters(await listSemesters());
@@ -261,24 +235,13 @@ export function AdminSemestersView() {
         err instanceof ApiError ? err.message : "Failed to load semesters.",
       );
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
-
-  function handleUpdated(next: SemesterDto) {
-    setSemesters((prev) =>
-      prev.map((s) => {
-        if (s.id === next.id) return next;
-        // When a semester is activated, deactivate all others locally too.
-        if (next.isActive && s.isActive) return { ...s, isActive: false };
-        return s;
-      }),
-    );
-  }
 
   async function onConfirmDelete() {
     if (!pendingDelete) return;
@@ -296,13 +259,26 @@ export function AdminSemestersView() {
     }
   }
 
+  async function handleStartCycle(semester: SemesterDto) {
+    setStartingId(semester.id);
+    setError(null);
+    try {
+      await setSemesterActive(semester.id, true);
+      await load(true);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to start cycle.");
+    } finally {
+      setStartingId(null);
+    }
+  }
+
   const activeSemester = semesters.find((s) => s.isActive) ?? null;
 
   return (
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Semesters"
-        description="Manage academic cycles and control when students can submit project applications."
+        description="Schedule academic cycles and application windows with start and end dates. Each period closes automatically when its end date is reached. Edit a semester to extend or shorten it, or use the instant controls below."
         tag={
           semesters.length > 0
             ? `${semesters.length} semester${semesters.length === 1 ? "" : "s"}`
@@ -322,7 +298,6 @@ export function AdminSemestersView() {
         </p>
       ) : null}
 
-      {/* ── Active semester controls ── */}
       {!loading && activeSemester ? (
         <div>
           <p
@@ -337,15 +312,14 @@ export function AdminSemestersView() {
           </p>
           <ActiveSemesterPanel
             semester={activeSemester}
-            onUpdated={handleUpdated}
+            onReload={() => load(true)}
             onError={(msg) => setError(msg)}
           />
         </div>
       ) : null}
 
-      {/* ── Semesters table ── */}
       {loading && semesters.length === 0 ? (
-        <p className="admin-users-status">Loading semesters…</p>
+        <AdminTableSkeleton columns={5} />
       ) : semesters.length === 0 ? (
         <p className="admin-users-status">
           No semesters yet. Add one to get started.
@@ -358,8 +332,6 @@ export function AdminSemestersView() {
                 <th>Name</th>
                 <th>Cycle</th>
                 <th>Applications</th>
-                <th>Window opens</th>
-                <th>Window closes</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -382,24 +354,27 @@ export function AdminSemestersView() {
                       active={s.isActive}
                       label={s.isActive ? "Active" : "Inactive"}
                     />
+                    <p
+                      className="admin-users-meta"
+                      style={{ fontSize: "0.8rem", margin: "0.35rem 0 0" }}
+                    >
+                      {formatScheduleRange(s.cycleStart, s.cycleEnd)}
+                    </p>
                   </td>
                   <td>
                     <StatusBadge
                       active={s.isApplicationWindowOpen}
                       label={s.isApplicationWindowOpen ? "Open" : "Closed"}
                     />
-                  </td>
-                  <td style={{ fontSize: "0.87rem", color: "var(--muted)" }}>
-                    {s.applicationWindowStart
-                      ? formatWindowDate(s.applicationWindowStart)
-                      : "—"}
-                  </td>
-                  <td style={{ fontSize: "0.87rem", color: "var(--muted)" }}>
-                    {s.applicationWindowEnd
-                      ? formatWindowDate(s.applicationWindowEnd)
-                      : s.applicationWindowStart
-                        ? "Open"
-                        : "—"}
+                    <p
+                      className="admin-users-meta"
+                      style={{ fontSize: "0.8rem", margin: "0.35rem 0 0" }}
+                    >
+                      {formatScheduleRange(
+                        s.applicationWindowStart,
+                        s.applicationWindowEnd,
+                      )}
+                    </p>
                   </td>
                   <td>
                     <div className="admin-value-actions">
@@ -410,6 +385,17 @@ export function AdminSemestersView() {
                       >
                         Edit
                       </Button>
+                      {!s.isActive ? (
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          disabled={startingId === s.id}
+                          onClick={() => void handleStartCycle(s)}
+                        >
+                          {startingId === s.id ? "Starting…" : "Start Cycle"}
+                        </Button>
+                      ) : null}
                       <Button
                         type="button"
                         variant="danger"

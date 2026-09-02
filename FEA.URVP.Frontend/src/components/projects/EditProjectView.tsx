@@ -10,6 +10,7 @@ import { ApiError } from "@/lib/api";
 import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
 import type { ProjectFormValues } from "@/lib/project-form";
 import { getProject, toFormValues } from "@/lib/projects-api";
+import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function EditProjectView({
   userId,
@@ -76,9 +77,7 @@ export function EditProjectView({
               {error}
             </Text>
           ) : initialValues == null ? (
-            <Text as="p" size="3" className="!text-muted">
-              Loading project…
-            </Text>
+            <AdminFormSkeleton fields={8} />
           ) : (
             <PostProjectForm
               userId={userId}

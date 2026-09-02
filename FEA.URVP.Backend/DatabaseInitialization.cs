@@ -1,5 +1,6 @@
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.News;
+using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Entities.ValueLists;
 using FEA.URVP.Domain.Entities.Workshops;
@@ -55,6 +56,7 @@ public static class DatabaseInitialization
         {
             await SeedValueListsAsync(dbContext, logger);
             await SeedNewsAndWorkshopsAsync(dbContext, logger);
+            await SeedDefaultSemesterAsync(dbContext, logger);
         }
         catch (Exception ex) when (app.Environment.IsDevelopment())
         {
@@ -304,5 +306,40 @@ public static class DatabaseInitialization
             "Seeded content: {NewsCount} news article(s), {WorkshopCount} workshop(s).",
             addedNews,
             addedWorkshops);
+    }
+
+    /// <summary>
+    /// Ensures a running cycle exists with the student application window open.
+    /// </summary>
+    private static async Task SeedDefaultSemesterAsync(AppDbContext dbContext, ILogger logger)
+    {
+        var now = DateTime.UtcNow;
+        var semester = await dbContext.Semesters
+            .OrderByDescending(x => x.IsActive)
+            .ThenByDescending(x => x.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (semester is not null)
+        {
+            logger.LogInformation(
+                "Semester {SemesterName} already exists (active={IsActive}, window open={WindowOpen}).",
+                semester.Name,
+                semester.IsActive,
+                semester.IsApplicationWindowOpen(now));
+            return;
+        }
+
+        dbContext.Semesters.Add(new Semester
+        {
+            Name = "Fall 2026–27",
+            Description = "Default development cycle.",
+            IsActive = true,
+            CycleStart = now,
+            ApplicationWindowStart = now,
+            CreatedAt = now,
+            UpdatedAt = now,
+        });
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Seeded active semester Fall 2026–27 with applications open.");
     }
 }

@@ -21,6 +21,11 @@ public interface IProjectRepository
         int pageSize,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Tracked projects in the given status (used by matching to adjust seat counts).</summary>
+    Task<IReadOnlyList<Project>> ListByStatusAsync(
+        ProjectStatus status,
+        CancellationToken cancellationToken = default);
+
     void Add(Project project);
 
     void Remove(Project project);

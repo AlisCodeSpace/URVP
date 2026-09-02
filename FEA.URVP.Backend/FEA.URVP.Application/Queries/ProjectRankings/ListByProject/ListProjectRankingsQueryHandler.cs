@@ -10,13 +10,16 @@ public sealed class ListProjectRankingsQueryHandler
 {
     private readonly IProjectRepository _projects;
     private readonly IProjectRankingRepository _rankings;
+    private readonly IFacultyCandidateRankingRepository _candidateRankings;
 
     public ListProjectRankingsQueryHandler(
         IProjectRepository projects,
-        IProjectRankingRepository rankings)
+        IProjectRankingRepository rankings,
+        IFacultyCandidateRankingRepository candidateRankings)
     {
         _projects = projects;
         _rankings = rankings;
+        _candidateRankings = candidateRankings;
     }
 
     public async Task<IReadOnlyList<ProjectRankingStudentDto>> Handle(
@@ -37,6 +40,7 @@ public sealed class ListProjectRankingsQueryHandler
         }
 
         var rankings = await _rankings.ListByProjectAsync(project.Id, cancellationToken);
-        return rankings.Select(r => r.ToStudentDto()).ToList();
+        var facultyRanks = await _candidateRankings.ListByProjectAsync(project.Id, cancellationToken);
+        return rankings.ToStudentDtos(facultyRanks);
     }
 }

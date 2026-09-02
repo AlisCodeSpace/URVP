@@ -2,6 +2,7 @@ using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.Semesters;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Domain.Entities.Semesters;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.Semesters.SetApplicationWindow;
@@ -27,17 +28,23 @@ public sealed class SetApplicationWindowCommandHandler
         var semester = await _semesters.FindByIdAsync(request.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"Semester {request.Id} was not found.");
 
-        if (request.ApplicationWindowStart.HasValue
-            && request.ApplicationWindowEnd.HasValue
-            && request.ApplicationWindowEnd.Value <= request.ApplicationWindowStart.Value)
+        var now = DateTime.UtcNow;
+        var start = request.ApplicationWindowStart;
+        var end = request.ApplicationWindowEnd;
+
+        SemesterSchedule.EnsureRange("Application window", start, end);
+        SemesterSchedule.EnsureWindowWithinCycle(
+            semester.CycleStart, semester.CycleEnd, start, end);
+
+        if (!semester.IsCycleActive(now)
+            && start.HasValue
+            && Semester.IsWithin(start, end, now))
         {
-            throw new ArgumentException(
-                "Application window end must be after the start date.");
+            throw new InvalidOperationException(
+                "Start the academic cycle before opening applications.");
         }
 
-        semester.ApplicationWindowStart = request.ApplicationWindowStart;
-        semester.ApplicationWindowEnd = request.ApplicationWindowEnd;
-        semester.UpdatedAt = DateTime.UtcNow;
+        semester.ApplyApplicationWindow(start, end, now);
 
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 

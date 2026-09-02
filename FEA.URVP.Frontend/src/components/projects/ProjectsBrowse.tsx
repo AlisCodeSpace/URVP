@@ -6,6 +6,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
+import { ProjectCardsSkeleton } from "@/components/ui/SectionSkeletons";
 import { useStudentResearchTopics } from "@/hooks/useStudentResearchTopics";
 import { ApiError } from "@/lib/api";
 import { projectsHref } from "@/lib/auth";
@@ -502,9 +503,7 @@ export function ProjectsBrowse({
                 Open Opportunities
               </Heading>
               <Text as="p" size="2" mt="1" className="!text-muted">
-                {loadingList
-                  ? "Loading…"
-                  : `${visibleCount} result${visibleCount === 1 ? "" : "s"}`}
+                {loadingList ? "Loading" : `${visibleCount} result${visibleCount === 1 ? "" : "s"}`}
                 {query.trim() ? ` for “${query.trim()}”` : null}
               </Text>
             </div>
@@ -523,9 +522,7 @@ export function ProjectsBrowse({
             </Text>
           </div>
         ) : ranked && rankings == null ? (
-          <Text as="p" size="3" className="!text-muted">
-            Loading your rankings…
-          </Text>
+          <ProjectCardsSkeleton count={3} className="" />
         ) : rankedEmpty ? (
           <RankedEmptyCta />
         ) : loadError ? (
@@ -535,9 +532,7 @@ export function ProjectsBrowse({
             </Text>
           </div>
         ) : loadingList ? (
-          <Text as="p" size="3" className="mt-8 !text-muted">
-            Loading projects…
-          </Text>
+          <ProjectCardsSkeleton />
         ) : visibleCount === 0 ? (
           <div className={`${ranked ? "" : "mt-10 "}rounded-lg border border-dashed border-primary/20 px-6 py-16 text-center`}>
             <Heading

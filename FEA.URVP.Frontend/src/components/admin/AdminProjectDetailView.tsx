@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { Tag } from "@/components/ui/Tag";
+import { AdminFormSkeleton, RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
   getAdminProject,
@@ -52,7 +53,9 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
   if (loading && !data) {
     return (
       <div className="admin-panel admin-panel--wide">
-        <p className="admin-users-status">Loading project…</p>
+        <AdminPageHeader title="Project" description="Loading project details." />
+        <AdminFormSkeleton fields={8} />
+        <RankingsListSkeleton count={4} />
       </div>
     );
   }
@@ -111,7 +114,8 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
             Students who ranked this project
           </h3>
           <p className="admin-detail-section-desc">
-            Preference order is 1st choice through 3rd choice.
+            Preference order is 1st choice through 3rd choice. Faculty rank is
+            the project owner&apos;s ranking of the student as a candidate.
           </p>
         </header>
 
@@ -124,7 +128,8 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
             <table className="admin-users-table">
               <thead>
                 <tr>
-                  <th scope="col">Rank</th>
+                  <th scope="col">Student rank</th>
+                  <th scope="col">Faculty rank</th>
                   <th scope="col">Student</th>
                   <th scope="col">Email</th>
                   <th scope="col">Ranked on</th>
@@ -148,6 +153,15 @@ function StudentRow({ ranking }: { ranking: ProjectRankingStudentDto }) {
     <tr>
       <td>
         <span className="admin-rank-badge">{rankLabel(ranking.rank)}</span>
+      </td>
+      <td>
+        {ranking.facultyRank != null ? (
+          <span className="admin-rank-badge is-faculty">
+            {rankLabel(ranking.facultyRank)}
+          </span>
+        ) : (
+          <span className="admin-users-meta">—</span>
+        )}
       </td>
       <td>
         <div className="admin-users-name">{ranking.studentName}</div>

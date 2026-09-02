@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
+import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
   NEWS_CATEGORIES,
@@ -152,7 +153,15 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
   }
 
   if (loading) {
-    return <p className="admin-users-status">Loading article…</p>;
+    return (
+      <div className="admin-panel admin-panel--wide">
+        <AdminPageHeader
+          title={isEdit ? "Edit news" : "New news"}
+          description="Same fields as the public News page: title, excerpt, category, date, author, ticker, and body."
+        />
+        <AdminFormSkeleton fields={8} />
+      </div>
+    );
   }
 
   return (

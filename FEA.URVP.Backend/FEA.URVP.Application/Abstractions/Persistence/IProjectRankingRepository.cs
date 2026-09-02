@@ -31,6 +31,10 @@ public interface IProjectRankingRepository
         Guid facultyUserId,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<ProjectRanking>> ListByProjectIdsAsync(
+        IReadOnlyCollection<Guid> projectIds,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyDictionary<Guid, int>> CountByProjectIdsAsync(
         IReadOnlyCollection<Guid> projectIds,
         CancellationToken cancellationToken = default);

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { PageLoader } from "@/components/ui/PageLoader";
 import { portalHref } from "@/lib/auth";
 
 /** `/my-projects` → role portal (faculty list or student profile). */
@@ -21,9 +22,5 @@ export default function MyProjectsIndexPage() {
     router.replace(portalHref(status.role, status.userId));
   }, [loading, status, router]);
 
-  return (
-    <main className="flex min-h-[50vh] flex-1 items-center justify-center px-6">
-      <p className="text-muted">Redirecting…</p>
-    </main>
-  );
+  return <PageLoader label="Redirecting" />;
 }

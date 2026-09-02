@@ -9,7 +9,6 @@ internal static class StudentProfileAccess
         new(StringComparer.OrdinalIgnoreCase)
         {
             "ali.anani@aub.edu.lb",
-            "aa624@aub.edu.lb",
         };
 
     public static void EnsureCanManage(UserRole role, string email)

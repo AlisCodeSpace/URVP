@@ -15,6 +15,7 @@ import {
   type ProjectRankingDto,
   type RankOption,
 } from "@/lib/project-rankings-api";
+import { ModalRowsSkeleton } from "@/components/ui/SectionSkeletons";
 
 type ExpressInterestModalProps = {
   open: boolean;
@@ -186,9 +187,7 @@ export function ExpressInterestModal({
 
         <div className="space-y-2.5 px-6 py-5">
           {loading ? (
-            <Text as="p" size="2" className="!text-muted">
-              Loading your rankings…
-            </Text>
+            <ModalRowsSkeleton />
           ) : (
             RANK_OPTIONS.map((rank) => {
               const occupant = rankings.find((r) => r.rank === rank);

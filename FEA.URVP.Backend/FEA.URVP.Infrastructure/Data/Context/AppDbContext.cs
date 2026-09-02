@@ -1,6 +1,8 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Domain.Entities.Divisions;
+using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FEA.URVP.Domain.Entities.Files;
+using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.News;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.Projects;
@@ -32,6 +34,12 @@ public class AppDbContext : DbContext, IUnitOfWork, IDataProtectionKeyContext
     public DbSet<StudentProfile> StudentProfiles => Set<StudentProfile>();
 
     public DbSet<ProjectRanking> ProjectRankings => Set<ProjectRanking>();
+
+    public DbSet<FacultyCandidateRanking> FacultyCandidateRankings => Set<FacultyCandidateRanking>();
+
+    public DbSet<MatchingRun> MatchingRuns => Set<MatchingRun>();
+
+    public DbSet<Placement> Placements => Set<Placement>();
 
     public DbSet<FileStorage> FileStorage => Set<FileStorage>();
 

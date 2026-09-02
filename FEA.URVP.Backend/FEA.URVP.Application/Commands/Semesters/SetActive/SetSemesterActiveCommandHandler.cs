@@ -27,20 +27,26 @@ public sealed class SetSemesterActiveCommandHandler
         var semester = await _semesters.FindByIdAsync(request.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"Semester {request.Id} was not found.");
 
+        var now = DateTime.UtcNow;
+
         if (request.IsActive)
         {
-            // Deactivate all others before activating this one.
-            await _semesters.DeactivateAllExceptAsync(request.Id, cancellationToken);
+            await _semesters.RelinquishAllExceptAsync(request.Id, now, cancellationToken);
+            semester.StartCycleNow(now);
         }
-
-        semester.IsActive = request.IsActive;
-        semester.UpdatedAt = DateTime.UtcNow;
+        else
+        {
+            semester.EndCycleNow(now);
+        }
 
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 
         Logger.LogInformation(
-            "Semester {SemesterId} ({Name}) set IsActive={IsActive}",
-            semester.Id, semester.Name, semester.IsActive);
+            "Semester {SemesterId} ({Name}) cycle {Action} at {At:o}",
+            semester.Id,
+            semester.Name,
+            request.IsActive ? "started" : "ended",
+            now);
 
         return semester.ToDto();
     }

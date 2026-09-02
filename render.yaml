@@ -1,6 +1,9 @@
 # Blueprint for a two-service Render demo deploy.
 # After the first deploy, set the sync:false env vars in the dashboard:
 #   API: ConnectionStrings__SqlServerConnection, Cors__AllowedOrigins, AzureAd__*, AdminEmails__0
+# Role (Student/Faculty) is resolved via LDAP against AUB AD (win2k.aub.edu.lb), not token
+# group claims. Render cannot reach on-prem AD unless VPN/private networking is added;
+# until then LDAP lookups log a warning and the stored database role is kept.
 #   Web: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_URL, API_URL (same as NEXT_PUBLIC_API_URL)
 # Cors__AllowedOrigins must be the exact frontend origin, e.g. https://urvp-web.onrender.com
 # Azure AD redirect URI: https://<urvp-api-host>/signin-oidc-ad

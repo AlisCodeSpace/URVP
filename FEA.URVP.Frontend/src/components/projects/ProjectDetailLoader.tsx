@@ -9,6 +9,8 @@ import { ApiError } from "@/lib/api";
 import type { CatalogProject } from "@/lib/projects";
 import { projectsHref } from "@/lib/auth";
 import { getProject, toCatalogProject } from "@/lib/projects-api";
+import { NotFoundView } from "@/components/ui/NotFoundView";
+import { ProjectDetailSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function ProjectDetailLoader({ id }: { id: string }) {
   const [project, setProject] = useState<CatalogProject | null>(null);
@@ -43,25 +45,10 @@ export function ProjectDetailLoader({ id }: { id: string }) {
 
   if (notFound) {
     return (
-      <>
-        <PageHeader
-          title="Project"
-          description="This listing could not be found."
-        >
-          <Link
-            href={projectsHref()}
-            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
-          >
-            <span aria-hidden>←</span>
-            Back to projects
-          </Link>
-        </PageHeader>
-        <section className="site-container py-14 sm:py-16">
-          <Text as="p" size="3" className="!text-muted">
-            Project not found.
-          </Text>
-        </section>
-      </>
+      <NotFoundView
+        title="Project not found"
+        description="This listing is missing or no longer available. Browse open opportunities or return home."
+      />
     );
   }
 
@@ -105,9 +92,7 @@ export function ProjectDetailLoader({ id }: { id: string }) {
           </Link>
         </PageHeader>
         <section className="site-container py-14 sm:py-16">
-          <Text as="p" size="3" className="!text-muted">
-            Loading project…
-          </Text>
+          <ProjectDetailSkeleton />
         </section>
       </>
     );

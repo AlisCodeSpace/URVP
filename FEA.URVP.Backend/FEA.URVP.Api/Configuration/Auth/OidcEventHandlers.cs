@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FEA.URVP.Api.Configuration.Security;
+using FEA.URVP.Application.Abstractions.Directory;
 using FEA.URVP.Application.Commands.Auth.AzureAd;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -52,11 +53,25 @@ public static class OidcEventHandlers
                 logger.LogInformation("Processing Azure AD OIDC sign-in for user: {Email}", email);
 
                 var mediator = context.HttpContext.RequestServices.GetRequiredService<IMediator>();
+                var directory = context.HttpContext.RequestServices.GetRequiredService<IDirectoryGroupLookup>();
                 var safeName = string.IsNullOrWhiteSpace(name) ? email : name;
                 var userName = DeriveUserName(preferredUsername, email);
                 var affiliation = DeriveAffiliation(context.Principal);
+
+                logger.LogInformation(
+                    "Resolving AD groups for preferred_username {PreferredUsername}, email {Email} (sAMAccountName {SamAccountName})",
+                    preferredUsername,
+                    email,
+                    userName);
+
+                var directoryGroupRole = directory.ResolveRole(preferredUsername ?? email, email);
                 var user = await mediator.Send(
-                    new UpsertAzureAdUserCommand(email, safeName, userName, affiliation));
+                    new UpsertAzureAdUserCommand(
+                        email,
+                        safeName,
+                        userName,
+                        affiliation,
+                        directoryGroupRole: directoryGroupRole));
 
                 logger.LogInformation("User provisioned: {UserId}, Role: {Role}", user.Id, user.Role);
 

@@ -17,6 +17,16 @@ public sealed class CreateSemesterCommandValidator
         RuleFor(x => x.Description)
             .MaximumLength(1000)
             .When(x => x.Description is not null);
+
+        RuleFor(x => x.CycleEnd)
+            .GreaterThan(x => x.CycleStart)
+            .WithMessage("Academic cycle end must be after the start date.")
+            .When(x => x.CycleStart.HasValue && x.CycleEnd.HasValue);
+
+        RuleFor(x => x.ApplicationWindowEnd)
+            .GreaterThan(x => x.ApplicationWindowStart)
+            .WithMessage("Application window end must be after the start date.")
+            .When(x => x.ApplicationWindowStart.HasValue && x.ApplicationWindowEnd.HasValue);
     }
 }
 
@@ -32,6 +42,16 @@ public sealed class UpdateSemesterCommandValidator
         RuleFor(x => x.Description)
             .MaximumLength(1000)
             .When(x => x.Description is not null);
+
+        RuleFor(x => x.CycleEnd)
+            .GreaterThan(x => x.CycleStart)
+            .WithMessage("Academic cycle end must be after the start date.")
+            .When(x => x.CycleStart.HasValue && x.CycleEnd.HasValue);
+
+        RuleFor(x => x.ApplicationWindowEnd)
+            .GreaterThan(x => x.ApplicationWindowStart)
+            .WithMessage("Application window end must be after the start date.")
+            .When(x => x.ApplicationWindowStart.HasValue && x.ApplicationWindowEnd.HasValue);
     }
 }
 

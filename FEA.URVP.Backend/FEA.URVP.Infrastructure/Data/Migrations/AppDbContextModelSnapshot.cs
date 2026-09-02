@@ -56,6 +56,42 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.ToTable("Divisions", (string)null);
                 });
 
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.FacultyCandidateRankings.FacultyCandidateRanking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte>("Rank")
+                        .HasColumnType("tinyint");
+
+                    b.Property<Guid>("StudentUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentUserId");
+
+                    b.HasIndex("ProjectId", "Rank");
+
+                    b.HasIndex("ProjectId", "StudentUserId")
+                        .IsUnique();
+
+                    b.ToTable("FacultyCandidateRankings", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_FacultyCandidateRankings_Rank", "[Rank] >= 1");
+                        });
+                });
+
             modelBuilder.Entity("FEA.URVP.Domain.Entities.Files.FileStorage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -124,6 +160,109 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
                             t.HasCheckConstraint("CK_FileStorage_FileSize", "(([FileCategory] IN ('Transcript', 'CitiCertification') AND [FileSize] <= 10485760) OR ([FileCategory] = 'Poster' AND [FileSize] <= 5242880))");
                         });
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Matching.MatchingRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AlgorithmVersion")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ConfirmedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ProjectsConsidered")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SeatsAvailable")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Seed")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<int>("StudentsConsidered")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentsMatched")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TieBreaksUsed")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Warnings")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SemesterId", "Status");
+
+                    b.ToTable("MatchingRuns", (string)null);
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Matching.Placement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte>("FacultyRank")
+                        .HasColumnType("tinyint");
+
+                    b.Property<Guid>("MatchingRunId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("ResolvedByTieBreak")
+                        .HasColumnType("bit");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<byte>("StudentRank")
+                        .HasColumnType("tinyint");
+
+                    b.Property<Guid>("StudentUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchingRunId", "StudentUserId")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId", "Status");
+
+                    b.HasIndex("StudentUserId", "Status");
+
+                    b.ToTable("Placements", (string)null);
                 });
 
             modelBuilder.Entity("FEA.URVP.Domain.Entities.News.NewsArticle", b =>
@@ -315,6 +454,50 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
                             t.HasCheckConstraint("CK_Projects_VolunteersRequired", "[VolunteersRequired] >= 1");
                         });
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Semesters.Semester", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ApplicationWindowEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ApplicationWindowStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CycleEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CycleStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Semesters_IsActive");
+
+                    b.ToTable("Semesters", (string)null);
                 });
 
             modelBuilder.Entity("FEA.URVP.Domain.Entities.StudentProfiles.StudentProfile", b =>
@@ -537,44 +720,6 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.ToTable("Workshops", (string)null);
                 });
 
-            modelBuilder.Entity("FEA.URVP.Domain.Entities.Semesters.Semester", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ApplicationWindowEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ApplicationWindowStart")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsActive")
-                        .HasDatabaseName("IX_Semesters_IsActive");
-
-                    b.ToTable("Semesters", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
                 {
                     b.Property<int>("Id")
@@ -592,6 +737,63 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DataProtectionKeys");
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.FacultyCandidateRankings.FacultyCandidateRanking", b =>
+                {
+                    b.HasOne("FEA.URVP.Domain.Entities.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FEA.URVP.Domain.Entities.Users.User", "StudentUser")
+                        .WithMany()
+                        .HasForeignKey("StudentUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("StudentUser");
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Matching.MatchingRun", b =>
+                {
+                    b.HasOne("FEA.URVP.Domain.Entities.Semesters.Semester", "Semester")
+                        .WithMany()
+                        .HasForeignKey("SemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Semester");
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Matching.Placement", b =>
+                {
+                    b.HasOne("FEA.URVP.Domain.Entities.Matching.MatchingRun", "MatchingRun")
+                        .WithMany("Placements")
+                        .HasForeignKey("MatchingRunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FEA.URVP.Domain.Entities.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FEA.URVP.Domain.Entities.Users.User", "StudentUser")
+                        .WithMany()
+                        .HasForeignKey("StudentUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MatchingRun");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("StudentUser");
                 });
 
             modelBuilder.Entity("FEA.URVP.Domain.Entities.ProjectRankings.ProjectRanking", b =>
@@ -633,6 +835,11 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Matching.MatchingRun", b =>
+                {
+                    b.Navigation("Placements");
                 });
 #pragma warning restore 612, 618
         }

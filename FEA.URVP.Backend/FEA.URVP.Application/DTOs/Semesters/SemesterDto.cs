@@ -6,6 +6,8 @@ public sealed class SemesterDto
     public string Name { get; init; } = null!;
     public string? Description { get; init; }
     public bool IsActive { get; init; }
+    public DateTime? CycleStart { get; init; }
+    public DateTime? CycleEnd { get; init; }
     public DateTime? ApplicationWindowStart { get; init; }
     public DateTime? ApplicationWindowEnd { get; init; }
     public bool IsApplicationWindowOpen { get; init; }

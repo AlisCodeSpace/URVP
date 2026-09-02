@@ -62,6 +62,22 @@ public sealed class ProjectRankingRepository : IProjectRankingRepository
                      && r.Project.CreatedByUserId == facultyUserId,
                 cancellationToken);
 
+    public async Task<IReadOnlyList<ProjectRanking>> ListByProjectIdsAsync(
+        IReadOnlyCollection<Guid> projectIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (projectIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await _db.ProjectRankings
+            .AsNoTracking()
+            .Include(r => r.StudentUser)
+            .Where(r => projectIds.Contains(r.ProjectId))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyDictionary<Guid, int>> CountByProjectIdsAsync(
         IReadOnlyCollection<Guid> projectIds,
         CancellationToken cancellationToken = default)

@@ -5,6 +5,8 @@ export type SemesterDto = {
   name: string;
   description?: string | null;
   isActive: boolean;
+  cycleStart?: string | null;
+  cycleEnd?: string | null;
   applicationWindowStart?: string | null;
   applicationWindowEnd?: string | null;
   isApplicationWindowOpen: boolean;
@@ -15,6 +17,10 @@ export type SemesterDto = {
 export type SemesterWritePayload = {
   name: string;
   description?: string | null;
+  cycleStart?: string | null;
+  cycleEnd?: string | null;
+  applicationWindowStart?: string | null;
+  applicationWindowEnd?: string | null;
 };
 
 export type SetApplicationWindowPayload = {
@@ -77,9 +83,18 @@ export async function setApplicationWindow(
   });
 }
 
+/** Treat API datetimes as UTC when the payload omits a timezone. */
+export function parseApiDate(iso: string): Date {
+  const trimmed = iso.trim();
+  if (/[zZ]$/.test(trimmed) || /[+-]\d{2}:\d{2}$/.test(trimmed)) {
+    return new Date(trimmed);
+  }
+  return new Date(`${trimmed}Z`);
+}
+
 export function formatWindowDate(iso: string | null | undefined): string {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString("en-US", {
+  return parseApiDate(iso).toLocaleString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -87,4 +102,14 @@ export function formatWindowDate(iso: string | null | undefined): string {
     minute: "2-digit",
     timeZoneName: "short",
   });
+}
+
+export function formatScheduleRange(
+  start: string | null | undefined,
+  end: string | null | undefined,
+): string {
+  if (!start) return "Not scheduled";
+  const from = formatWindowDate(start);
+  if (!end) return `${from} → open`;
+  return `${from} → ${formatWindowDate(end)}`;
 }

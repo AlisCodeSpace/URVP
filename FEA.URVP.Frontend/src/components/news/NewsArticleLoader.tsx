@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import { NewsArticleView } from "@/components/news/NewsArticleView";
+import { NewsArticleSkeleton } from "@/components/ui/SectionSkeletons";
 import { loadPublicNewsArticle } from "@/lib/news-api";
 import type { NewsArticle } from "@/lib/news";
 
@@ -37,11 +38,7 @@ export function NewsArticleLoader({ slug }: { slug: string }) {
   }
 
   if (status === "loading" || !result) {
-    return (
-      <div className="site-container py-16">
-        <p className="text-muted">Loading story…</p>
-      </div>
-    );
+    return <NewsArticleSkeleton />;
   }
 
   return (
