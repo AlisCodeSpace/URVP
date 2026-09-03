@@ -1,4 +1,5 @@
 import { appBaseUrl, getApiBaseUrl, useSameOriginApi } from "@/lib/config";
+import { logger } from "@/lib/logger";
 
 export type AuthStatus = {
   isAuthenticated: boolean;
@@ -20,30 +21,62 @@ export const UserRole = {
 
 export type UserRoleValue = (typeof UserRole)[keyof typeof UserRole];
 
-/** Stable role lists for RequireAuth (avoid inline arrays → effect churn). */
+/**
+ * Stable role lists for RequireAuth (avoid inline arrays → effect churn).
+ *
+ * These describe which UI a role is *shown*, not what it may do. Every API the UI calls
+ * re-authorizes the caller server-side; see `docs/SECURITY.md`.
+ */
 export const STUDENT_ROLES = [UserRole.Student] as const;
 export const FACULTY_PORTAL_ROLES = [UserRole.Faculty, UserRole.Admin] as const;
 export const ADMIN_ROLES = [UserRole.Admin] as const;
 
+/* -------------------------------------------------------------------------- */
+/* SSO endpoints                                                              */
+/* -------------------------------------------------------------------------- */
+
+const AUTH_CALLBACK_PATH = "/auth/callback";
+
+/**
+ * Return URL handed to the backend.
+ *
+ * Root-relative in production: the backend serves the frontend, so a relative path is same-origin
+ * by construction and there is no origin for a crafted value to smuggle in. The split-origin
+ * development topology needs the absolute frontend origin, which the backend accepts only because
+ * it is listed in `Cors:AllowedOrigins`.
+ */
+function returnUrlFor(path: string): string {
+  return useSameOriginApi ? path : `${appBaseUrl}${path}`;
+}
+
 export function getAuthCallbackUrl(): string {
-  const origin =
-    typeof window !== "undefined" && window.location?.origin
-      ? window.location.origin
-      : appBaseUrl;
-  return `${origin.replace(/\/$/, "")}/auth/callback`;
+  return returnUrlFor(AUTH_CALLBACK_PATH);
 }
 
-export function getAzureAdSignInUrl(returnUrl: string = getAuthCallbackUrl()): string {
-  const url = new URL("/api/auth/azuread-sso/signin", getApiBaseUrl());
-  url.searchParams.set("returnUrl", returnUrl);
-  return url.toString();
+/**
+ * Builds an SSO endpoint URL. Relative in production, so the result is correct no matter which
+ * hostname the user reached the site through, and safe to bake into prerendered HTML.
+ */
+function ssoUrl(endpoint: string, params: Record<string, string>): string {
+  const search = new URLSearchParams(params);
+  return `${getApiBaseUrl()}${endpoint}?${search.toString()}`;
 }
 
-export function getAzureAdSignOutUrl(returnUrl: string): string {
-  const url = new URL("/api/auth/azuread-sso/signout", getApiBaseUrl());
-  url.searchParams.set("returnUrl", returnUrl);
-  return url.toString();
+export function getAzureAdSignInUrl(
+  returnUrl: string = getAuthCallbackUrl(),
+): string {
+  return ssoUrl("/api/auth/azuread-sso/signin", { returnUrl });
 }
+
+export function getAzureAdSignOutUrl(
+  returnUrl: string = returnUrlFor("/"),
+): string {
+  return ssoUrl("/api/auth/azuread-sso/signout", { returnUrl });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Demo email sign-in (non-production only)                                   */
+/* -------------------------------------------------------------------------- */
 
 /** Demo email accounts (must match backend DevAuthAccounts). */
 export const DEV_AUTH_ACCOUNTS = [
@@ -52,40 +85,51 @@ export const DEV_AUTH_ACCOUNTS = [
   { email: "admin@urvp.com", label: "Admin", role: UserRole.Admin },
 ] as const;
 
-/** Temporary: email sign-in is shown in all environments for demo. */
-export const isDevAuthEnabled = true;
+/**
+ * Demo sign-in mints a privileged session from an email address alone. Gated on `NODE_ENV` so a
+ * production build cannot render the UI, and the backend refuses the endpoint outright in
+ * Production (see `DevSignInPolicy`) so hiding the button is not the control.
+ */
+export const isDevAuthEnabled = process.env.NODE_ENV !== "production";
 
 export function getDevSignInUrl(
   email: string,
   returnUrl: string = getAuthCallbackUrl(),
 ): string {
-  const url = useSameOriginApi
-    ? new URL("/auth/dev", getApiBaseUrl())
-    : new URL("/api/auth/dev/signin", getApiBaseUrl());
-  url.searchParams.set("email", email);
-  url.searchParams.set("returnUrl", returnUrl);
-  return url.toString();
+  return ssoUrl("/api/auth/dev/signin", { email, returnUrl });
 }
+
+/* -------------------------------------------------------------------------- */
+/* Session status                                                             */
+/* -------------------------------------------------------------------------- */
 
 export async function fetchAuthStatus(): Promise<AuthStatus> {
-  const res = await fetch(`${getApiBaseUrl()}/api/auth/status`, {
-    method: "GET",
-    credentials: "include",
-    cache: "no-store",
-  });
+  try {
+    const res = await fetch(`${getApiBaseUrl()}/api/auth/status`, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
 
-  if (!res.ok) {
-    const failed = { isAuthenticated: false, error: "Failed to load session" };
-    console.log("[auth] /api/auth/status failed:", res.status, failed);
-    return failed;
+    if (!res.ok) {
+      logger.warn("Session status request was rejected.", { status: res.status });
+      return { isAuthenticated: false, error: "Failed to load session" };
+    }
+
+    return (await res.json()) as AuthStatus;
+  } catch {
+    logger.warn("Session status request failed.");
+    return { isAuthenticated: false, error: "Failed to load session" };
   }
-
-  const data = (await res.json()) as AuthStatus;
-  console.log("[auth] /api/auth/status response:", data);
-  return data;
 }
 
-export function authErrorMessage(code: string | null | undefined): string | null {
+/**
+ * Maps a backend sign-in error code to a message. The backend deliberately sends only these
+ * opaque codes; identity-provider text is never forwarded to the browser.
+ */
+export function authErrorMessage(
+  code: string | null | undefined,
+): string | null {
   if (!code) return null;
 
   switch (code) {
@@ -103,6 +147,10 @@ export function authErrorMessage(code: string | null | undefined): string | null
       return "Something went wrong during sign-in. Please try again.";
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Roles                                                                      */
+/* -------------------------------------------------------------------------- */
 
 const ROLE_LABELS: Record<number, string> = {
   [UserRole.Student]: "Student",
@@ -127,14 +175,47 @@ export function isAdmin(role: number | null | undefined): boolean {
   return role === UserRole.Admin;
 }
 
+/* -------------------------------------------------------------------------- */
+/* Route builders                                                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Route identifiers travel in the query string, not in path segments.
+ *
+ * `next build` with `output: 'export'` must enumerate every page at build time, and these
+ * identifiers only exist at runtime. Query parameters keep each route a single exported HTML file
+ * that the backend serves for any identifier.
+ *
+ * The identifiers themselves are not secrets and grant nothing: the backend re-checks ownership
+ * and role on every API call these pages make.
+ */
+export const RouteParam = {
+  User: "user",
+  Project: "project",
+  Student: "student",
+  Id: "id",
+  Slug: "slug",
+} as const;
+
+function withParams(path: string, params: Record<string, string>): string {
+  const search = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value) search.set(key, value);
+  }
+
+  const query = search.toString();
+  return query ? `${path}?${query}` : path;
+}
+
 /** Admin console, faculty portal, or student profile by role. */
 export function portalHref(
   role: number | null | undefined,
   userId?: string | null,
 ): string {
-  if (isAdmin(role)) return "/admin";
-  if (isStudent(role)) return "/student/profile";
-  if (userId) return `/my-projects/${userId}`;
+  if (isAdmin(role)) return adminHref();
+  if (isStudent(role)) return studentProfileHref();
+  if (userId) return myProjectsHref(userId);
   return "/sign-in";
 }
 
@@ -150,6 +231,22 @@ export function projectsHref(): string {
   return "/projects";
 }
 
+export function projectDetailHref(projectId: string): string {
+  return withParams("/projects/detail", { [RouteParam.Id]: projectId });
+}
+
+export function newsHref(): string {
+  return "/news";
+}
+
+export function newsArticleHref(slug: string): string {
+  return withParams("/news/article", { [RouteParam.Slug]: slug });
+}
+
+export function studentProjectsHref(): string {
+  return "/student/projects";
+}
+
 export function studentRankingsHref(): string {
   return studentProjectsHref();
 }
@@ -159,24 +256,26 @@ export function studentApplicationsHref(): string {
   return studentRankingsHref();
 }
 
-export function studentProjectsHref(): string {
-  return "/student/projects";
-}
-
 export function myProjectsHref(userId: string): string {
-  return `/my-projects/${userId}`;
+  return withParams("/my-projects", { [RouteParam.User]: userId });
 }
 
 export function newProjectHref(userId: string): string {
-  return `/my-projects/${userId}/new`;
+  return withParams("/my-projects/new", { [RouteParam.User]: userId });
 }
 
 export function viewProjectHref(userId: string, projectId: string): string {
-  return `/my-projects/${userId}/${projectId}`;
+  return withParams("/my-projects/project", {
+    [RouteParam.User]: userId,
+    [RouteParam.Project]: projectId,
+  });
 }
 
 export function editProjectHref(userId: string, projectId: string): string {
-  return `/my-projects/${userId}/${projectId}/edit`;
+  return withParams("/my-projects/project/edit", {
+    [RouteParam.User]: userId,
+    [RouteParam.Project]: projectId,
+  });
 }
 
 export function viewRankedStudentHref(
@@ -184,5 +283,29 @@ export function viewRankedStudentHref(
   projectId: string,
   studentUserId: string,
 ): string {
-  return `/my-projects/${userId}/${projectId}/students/${studentUserId}`;
+  return withParams("/my-projects/project/student", {
+    [RouteParam.User]: userId,
+    [RouteParam.Project]: projectId,
+    [RouteParam.Student]: studentUserId,
+  });
+}
+
+export function adminProjectHref(projectId: string): string {
+  return withParams("/admin/projects/detail", { [RouteParam.Id]: projectId });
+}
+
+export function adminMatchingRunHref(runId: string): string {
+  return withParams("/admin/matching/run", { [RouteParam.Id]: runId });
+}
+
+export function adminNewsEditHref(newsId: string): string {
+  return withParams("/admin/news/edit", { [RouteParam.Id]: newsId });
+}
+
+export function adminSemesterEditHref(semesterId: string): string {
+  return withParams("/admin/semesters/edit", { [RouteParam.Id]: semesterId });
+}
+
+export function adminWorkshopEditHref(workshopId: string): string {
+  return withParams("/admin/workshops/edit", { [RouteParam.Id]: workshopId });
 }

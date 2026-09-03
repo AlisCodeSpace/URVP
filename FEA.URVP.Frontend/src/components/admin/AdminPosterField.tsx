@@ -49,7 +49,7 @@ export function AdminPosterField({
           )}
         </div>
         <p className="field-hint mt-2">
-          JPG, PNG, or WebP. Cropped to 3:2 to match the workshop card.
+          JPG, PNG, or GIF. Cropped to 3:2 to match the workshop card.
         </p>
       </div>
 
@@ -59,7 +59,7 @@ export function AdminPosterField({
             ref={inputRef}
             id={fileId}
             type="file"
-            accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+            accept="image/jpeg,image/png,image/gif,.jpg,.jpeg,.png,.gif"
             className="sr-only"
             onChange={onPick}
           />

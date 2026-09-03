@@ -1,5 +1,6 @@
 import { workshops as workshopCatalog, type Workshop } from "./workshops";
 import { newsArticles, type NewsArticle } from "./news";
+import { newsArticleHref } from "./auth";
 
 export { navLinks } from "./site";
 
@@ -47,7 +48,7 @@ export function toNewsTickerItems(articles: NewsArticle[]): NewsTickerItem[] {
   return articles.map((article) => ({
     title: article.title,
     detail: article.ticker,
-    href: `/news/${article.slug}`,
+    href: newsArticleHref(article.slug),
   }));
 }
 

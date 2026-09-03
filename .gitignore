@@ -29,6 +29,10 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
+## Build artifact: the Next.js static export is copied here by
+## FEA.URVP.Frontend/scripts/publish-frontend.mjs. Never commit it.
+FEA.URVP.Backend/wwwroot/
+
 ## Secrets / local
 *.pfx
 *.pem

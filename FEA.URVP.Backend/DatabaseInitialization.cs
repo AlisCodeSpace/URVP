@@ -1,3 +1,4 @@
+using FEA.URVP.Api.Configuration.Auth;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.News;
 using FEA.URVP.Domain.Entities.Semesters;
@@ -35,7 +36,9 @@ public static class DatabaseInitialization
                 app.Environment.EnvironmentName);
         }
 
-        if (app.Configuration.GetValue("Auth:EnableDevSignIn", true))
+        // Gated by the same policy as the sign-in endpoint, so a Production database never
+        // receives demo accounts that could be used to bypass SSO.
+        if (DevSignInPolicy.IsEnabled(app.Configuration, app.Environment))
         {
             try
             {

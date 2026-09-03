@@ -68,5 +68,25 @@ public sealed class MatchingRunRepository : IMatchingRunRepository
             p => p.ProjectId == projectId && p.Status == PlacementStatus.Confirmed,
             cancellationToken);
 
+    public async Task<IReadOnlyList<Placement>> ListConfirmedByProjectAsync(
+        Guid projectId,
+        CancellationToken cancellationToken = default) =>
+        await _db.Placements
+            .AsNoTracking()
+            .Include(p => p.StudentUser)
+            .Where(p => p.ProjectId == projectId && p.Status == PlacementStatus.Confirmed)
+            .OrderBy(p => p.FacultyRank)
+            .ThenBy(p => p.StudentUser.Name)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Guid>> ListConfirmedProjectIdsByStudentAsync(
+        Guid studentUserId,
+        CancellationToken cancellationToken = default) =>
+        await _db.Placements
+            .AsNoTracking()
+            .Where(p => p.StudentUserId == studentUserId && p.Status == PlacementStatus.Confirmed)
+            .Select(p => p.ProjectId)
+            .ToListAsync(cancellationToken);
+
     public void Add(MatchingRun run) => _db.MatchingRuns.Add(run);
 }

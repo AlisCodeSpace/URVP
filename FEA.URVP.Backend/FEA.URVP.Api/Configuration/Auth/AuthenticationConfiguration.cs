@@ -1,206 +1,106 @@
 using FEA.URVP.Api.Configuration.Security;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 namespace FEA.URVP.Api.Configuration.Auth;
 
 /// <summary>
-/// Cookie + Azure AD OIDC authentication (BFF-style AUB SSO).
+/// Cookie + Azure AD OIDC authentication for the same-origin BFF.
 /// </summary>
+/// <remarks>
+/// The browser only ever holds the application session cookie. No identity or access token is
+/// returned to, or stored by, the frontend: <c>SaveTokens</c> is off and the OIDC response is
+/// consumed server-side on the callback.
+/// </remarks>
 public static class AuthenticationConfiguration
 {
     public const string CookieScheme = "UrvpCookie";
     public const string AzureAdOidcScheme = "AzureAdOidc";
+    public const string CookieName = "FEA.URVP.Auth";
+
+    private const int DefaultExpireHours = 8;
 
     public static IServiceCollection AddUrvpAuthentication(
         this IServiceCollection services,
         IConfiguration configuration,
         IWebHostEnvironment environment)
     {
-        services
+        var authenticationBuilder = services
             .AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieScheme;
                 options.DefaultAuthenticateScheme = CookieScheme;
-                options.DefaultChallengeScheme = AzureAdOidcScheme;
                 options.DefaultSignInScheme = CookieScheme;
+
+                // Challenging the cookie scheme (not OIDC) is what turns an unauthenticated API
+                // call into a 401 instead of a 302 to the identity provider that a fetch() cannot
+                // follow. Interactive sign-in still reaches OIDC because AzureAdSsoController
+                // names that scheme explicitly.
+                options.DefaultChallengeScheme = CookieScheme;
             })
-            .AddCookie(CookieScheme, options =>
-            {
-                var cookieConfig = configuration.GetSection("Auth:Cookie");
-                var expireHours = cookieConfig.GetValue<int?>("ExpireHours") ?? 8;
-                var slidingExpiration = cookieConfig.GetValue<bool?>("SlidingExpiration") ?? true;
+            .AddCookie(CookieScheme, options => ConfigureSessionCookie(options, configuration, environment));
 
-                options.Cookie.Name = "FEA.URVP.Auth";
-                options.Cookie.HttpOnly = true;
-                options.Cookie.IsEssential = true;
-                options.Cookie.Path = "/";
-                options.SlidingExpiration = slidingExpiration;
-                options.ExpireTimeSpan = TimeSpan.FromHours(expireHours);
-
-                var corsOrigins = CorsOrigins.GetAllowedOrigins(configuration);
-                var hasCrossOriginCors = corsOrigins.Length > 0;
-
-                if (environment.IsDevelopment() && !hasCrossOriginCors)
-                {
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-                    options.Cookie.SameSite = SameSiteMode.Lax;
-                }
-                else
-                {
-                    // Production, or local SPA+API on different origins.
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                    options.Cookie.SameSite = SameSiteMode.None;
-                }
-
-                var configuredSameSite = cookieConfig["SameSite"];
-                if (!string.IsNullOrWhiteSpace(configuredSameSite))
-                {
-                    var parsed = ParseSameSiteMode(configuredSameSite);
-                    if (parsed.HasValue)
-                    {
-                        options.Cookie.SameSite = parsed.Value;
-                        if (parsed.Value == SameSiteMode.None)
-                        {
-                            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-                        }
-                    }
-                }
-
-                options.Events.OnRedirectToLogin = context =>
-                {
-                    var path = context.Request.Path;
-                    if (path.StartsWithSegments("/api")
-                        || path == "/"
-                        || path.StartsWithSegments("/health")
-                        || IsBackgroundFetch(context.HttpContext.Request))
-                    {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    }
-                    else
-                    {
-                        context.Response.Redirect(context.RedirectUri);
-                    }
-
-                    return Task.CompletedTask;
-                };
-
-                options.Events.OnRedirectToAccessDenied = context =>
-                {
-                    if (context.Request.Path.StartsWithSegments("/api") || IsBackgroundFetch(context.HttpContext.Request))
-                    {
-                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                    }
-                    else
-                    {
-                        context.Response.Redirect(context.RedirectUri);
-                    }
-
-                    return Task.CompletedTask;
-                };
-            })
-            .AddOpenIdConnect(AzureAdOidcScheme, options =>
-            {
-                var instance = configuration["AzureAd:Instance"] ?? "https://login.microsoftonline.com/";
-                var tenantId = configuration["AzureAd:TenantId"];
-                var clientId = configuration["AzureAd:ClientId"];
-                var callbackPath = configuration["AzureAd:CallbackPath"] ?? "/signin-oidc-ad";
-
-                if (string.IsNullOrWhiteSpace(tenantId))
-                {
-                    throw new InvalidOperationException("AzureAd:TenantId is required for Azure AD authentication");
-                }
-
-                if (string.IsNullOrWhiteSpace(clientId))
-                {
-                    throw new InvalidOperationException("AzureAd:ClientId is required for Azure AD authentication");
-                }
-
-                var authority = $"{instance.TrimEnd('/')}/{tenantId}/v2.0";
-                options.Authority = authority;
-                options.MetadataAddress = $"{authority}/.well-known/openid-configuration";
-                options.ClientId = clientId;
-                options.CallbackPath = callbackPath;
-                options.SignInScheme = CookieScheme;
-                options.RequireHttpsMetadata = !environment.IsDevelopment();
-
-                options.BackchannelHttpHandler = new HttpClientHandler
-                {
-                    UseProxy = true,
-                    ServerCertificateCustomValidationCallback = environment.IsDevelopment()
-                        ? static (_, _, _, _) => true
-                        : null
-                };
-
-                // id_token-only flow with form_post (no client secret).
-                options.ResponseType = "id_token";
-                options.ResponseMode = "form_post";
-
-                // form_post is cross-site; correlation/nonce cookies must be SameSite=None + Secure.
-                options.CorrelationCookie.SameSite = SameSiteMode.None;
-                options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
-                options.NonceCookie.SameSite = SameSiteMode.None;
-                options.NonceCookie.SecurePolicy = CookieSecurePolicy.Always;
-
-                if (configuration.GetValue("AzureAd:ForceAccountSelection", false))
-                {
-                    options.Prompt = "select_account";
-                }
-
-                options.SaveTokens = false;
-                options.GetClaimsFromUserInfoEndpoint = false;
-                options.UseTokenLifetime = false;
-
-                options.Scope.Clear();
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
-                options.Scope.Add("email");
-
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    NameClaimType = "preferred_username",
-                    RoleClaimType = "role"
-                };
-
-                options.Events = OidcEventHandlers.CreateAzureAdOidcEvents(configuration);
-            });
+        // The OIDC handler implements IAuthenticationRequestHandler, so its options are built on
+        // every request to test for the callback path. Registering it without a tenant and client
+        // id would therefore turn one missing setting into a 500 on every route, health probes
+        // included. StartupSecurityValidation refuses to boot outside Development when the
+        // settings are absent, so skipping the scheme here only ever affects local work.
+        if (AzureAdOidcConfiguration.IsConfigured(configuration))
+        {
+            authenticationBuilder.AddOpenIdConnect(AzureAdOidcScheme, options =>
+                AzureAdOidcConfiguration.Configure(options, configuration, environment));
+        }
 
         return services;
     }
 
-    private static bool IsBackgroundFetch(HttpRequest request)
+    private static void ConfigureSessionCookie(
+        CookieAuthenticationOptions options,
+        IConfiguration configuration,
+        IWebHostEnvironment environment)
     {
-        if (request.Headers.ContainsKey("RSC"))
+        var cookieConfig = configuration.GetSection("Auth:Cookie");
+        var expireHours = cookieConfig.GetValue<int?>("ExpireHours") ?? DefaultExpireHours;
+        if (expireHours <= 0)
         {
-            return true;
+            expireHours = DefaultExpireHours;
         }
 
-        if (request.Headers.ContainsKey("Next-Router-Prefetch"))
+        options.Cookie.Name = CookieName;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+        options.Cookie.Path = "/";
+        options.ExpireTimeSpan = TimeSpan.FromHours(expireHours);
+        options.SlidingExpiration = cookieConfig.GetValue<bool?>("SlidingExpiration") ?? true;
+
+        var (sameSite, secure) = SessionCookiePolicy.Resolve(configuration, environment);
+        options.Cookie.SameSite = sameSite;
+        options.Cookie.SecurePolicy = secure;
+
+        // Escape hatch for a deployment that genuinely splits frontend and API origins. Never
+        // weakens Secure: SameSite=None requires it, and everything else keeps the resolved value.
+        var configuredSameSite = SessionCookiePolicy.ParseSameSiteMode(cookieConfig["SameSite"]);
+        if (configuredSameSite.HasValue)
         {
-            return true;
+            options.Cookie.SameSite = configuredSameSite.Value;
+            if (configuredSameSite.Value == SameSiteMode.None)
+            {
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            }
         }
 
-        return string.Equals(
-            request.Headers["X-Requested-With"],
-            "XMLHttpRequest",
-            StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static SameSiteMode? ParseSameSiteMode(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
+        options.Events.OnRedirectToLogin = context =>
         {
-            return null;
-        }
+            AuthFailureLogger.LogUnauthenticated(context.HttpContext, "no valid session cookie");
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return Task.CompletedTask;
+        };
 
-        return value.Trim().ToLowerInvariant() switch
+        options.Events.OnRedirectToAccessDenied = context =>
         {
-            "strict" => SameSiteMode.Strict,
-            "lax" => SameSiteMode.Lax,
-            "none" => SameSiteMode.None,
-            "unspecified" => SameSiteMode.Unspecified,
-            _ => null
+            AuthFailureLogger.LogForbidden(context.HttpContext);
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
         };
     }
 }

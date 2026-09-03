@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
+import { ClientRedirect } from "@/components/routing/ClientRedirect";
 import { studentRankingsHref } from "@/lib/auth";
 
 /** Legacy route — rankings replaced applications. */
 export default function StudentApplicationsRedirectPage() {
-  redirect(studentRankingsHref());
+  return <ClientRedirect href={studentRankingsHref()} />;
 }

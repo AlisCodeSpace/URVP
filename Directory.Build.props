@@ -1,0 +1,12 @@
+<Project>
+
+  <PropertyGroup>
+    <!--
+      Emits packages.lock.json per project so CI can restore in locked mode. Without a lock file,
+      a floating transitive dependency can change between the build that was tested and the build
+      that ships, which is exactly the gap a dependency audit is meant to close.
+    -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+</Project>

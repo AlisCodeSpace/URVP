@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
+import { adminWorkshopEditHref } from "@/lib/auth";
 import {
   deleteWorkshop,
   listWorkshops,
@@ -148,7 +149,7 @@ export function AdminWorkshopsView() {
                     <td>
                       <div className="admin-value-actions">
                         <Button
-                          href={`/admin/workshops/${item.id}`}
+                          href={adminWorkshopEditHref(item.id)}
                           variant="outline"
                           size="sm"
                         >

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
+import { adminSemesterEditHref } from "@/lib/auth";
 import {
   deleteSemester,
   formatScheduleRange,
@@ -379,7 +380,7 @@ export function AdminSemestersView() {
                   <td>
                     <div className="admin-value-actions">
                       <Button
-                        href={`/admin/semesters/${s.id}`}
+                        href={adminSemesterEditHref(s.id)}
                         variant="outline"
                         size="sm"
                       >

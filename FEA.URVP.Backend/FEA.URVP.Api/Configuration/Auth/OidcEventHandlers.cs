@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using FEA.URVP.Api.Configuration.Security;
+using FEA.URVP.Api.Services;
 using FEA.URVP.Application.Abstractions.Directory;
 using FEA.URVP.Application.Commands.Auth.AzureAd;
 using MediatR;
@@ -10,8 +10,15 @@ namespace FEA.URVP.Api.Configuration.Auth;
 /// <summary>
 /// Azure AD OIDC event handlers: user provisioning and claims enrichment.
 /// </summary>
+/// <remarks>
+/// Failure paths redirect to a fixed set of opaque error codes. Identity-provider exception text
+/// is logged server-side but never reaches the browser, because it can disclose tenant
+/// configuration, internal endpoints and token contents.
+/// </remarks>
 public static class OidcEventHandlers
 {
+    private const string LoggerCategory = "FEA.URVP.Api.Configuration.Auth.OidcEventHandlers";
+
     public static OpenIdConnectEvents CreateAzureAdOidcEvents(IConfiguration configuration)
     {
         var events = new OpenIdConnectEvents();
@@ -19,10 +26,7 @@ public static class OidcEventHandlers
         events.OnRedirectToIdentityProvider = async context =>
         {
             var logger = GetLogger(context.HttpContext);
-            logger.LogInformation(
-                "Redirecting to Azure AD. Authority: {Authority}, ClientId: {ClientId}",
-                context.Options.Authority,
-                context.Options.ClientId);
+            logger.LogDebug("Redirecting to Azure AD authority {Authority}", context.Options.Authority);
 
             await EnsureAuthorizationEndpointAsync(context, logger);
         };
@@ -45,12 +49,10 @@ public static class OidcEventHandlers
 
                 if (string.IsNullOrEmpty(email))
                 {
-                    logger.LogWarning("Azure AD token validation failed: no email claim found");
+                    logger.LogWarning("Azure AD token validated but carried no email claim; rejecting sign-in.");
                     context.Fail("Email claim not found in Azure AD token");
                     return;
                 }
-
-                logger.LogInformation("Processing Azure AD OIDC sign-in for user: {Email}", email);
 
                 var mediator = context.HttpContext.RequestServices.GetRequiredService<IMediator>();
                 var directory = context.HttpContext.RequestServices.GetRequiredService<IDirectoryGroupLookup>();
@@ -58,13 +60,8 @@ public static class OidcEventHandlers
                 var userName = DeriveUserName(preferredUsername, email);
                 var affiliation = DeriveAffiliation(context.Principal);
 
-                logger.LogInformation(
-                    "Resolving AD groups for preferred_username {PreferredUsername}, email {Email} (sAMAccountName {SamAccountName})",
-                    preferredUsername,
-                    email,
-                    userName);
-
                 var directoryGroupRole = directory.ResolveRole(preferredUsername ?? email, email);
+
                 var user = await mediator.Send(
                     new UpsertAzureAdUserCommand(
                         email,
@@ -73,8 +70,15 @@ public static class OidcEventHandlers
                         affiliation,
                         directoryGroupRole: directoryGroupRole));
 
-                logger.LogInformation("User provisioned: {UserId}, Role: {Role}", user.Id, user.Role);
+                logger.LogInformation(
+                    "Azure AD sign-in provisioned user {UserId} ({Email}) with role {Role}",
+                    user.Id,
+                    email,
+                    user.Role);
 
+                // The principal is rebuilt from database state so the session cookie carries only
+                // claims this application controls. Group or role claims asserted by the token
+                // are deliberately discarded.
                 var claims = new List<Claim>
                 {
                     new(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -91,43 +95,58 @@ public static class OidcEventHandlers
                     claims.Add(new Claim("profileImageUrl", user.ProfileImageUrl));
                 }
 
-                var claimsIdentity = new ClaimsIdentity(claims, context.Principal?.Identity?.AuthenticationType);
+                var claimsIdentity = new ClaimsIdentity(
+                    claims,
+                    context.Principal?.Identity?.AuthenticationType,
+                    ClaimTypes.Name,
+                    ClaimTypes.Role);
+
                 context.Principal = new ClaimsPrincipal(claimsIdentity);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error during Azure AD OIDC token validation and user provisioning");
+                logger.LogError(ex, "Error during Azure AD token validation and user provisioning");
                 context.Fail("An error occurred during authentication");
             }
         };
 
-        events.OnAuthenticationFailed = async context =>
+        events.OnAuthenticationFailed = context =>
         {
-            var logger = GetLogger(context.HttpContext);
-            logger.LogError(
+            GetLogger(context.HttpContext).LogError(
                 context.Exception,
-                "Azure AD OIDC authentication failed: {Message}",
-                context.Exception?.Message);
+                "Azure AD OIDC authentication failed");
 
-            RedirectToFrontendError(context.Response, configuration, "authentication_failed");
+            AuthFailureLogger.LogAuthenticationFailed(context.HttpContext, "oidc_token_validation");
+
+            RedirectToFrontendError(context.HttpContext, configuration, "authentication_failed");
             context.HandleResponse();
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         };
 
         events.OnRemoteFailure = context =>
         {
             var logger = GetLogger(context.HttpContext);
+
+            // A failure to unprotect the state/correlation payload almost always means the data
+            // protection key ring changed or the correlation cookie was dropped, which the user
+            // can recover from by retrying. It is reported separately so support can distinguish
+            // it from a genuine protocol error.
             var isStateProtectionError =
                 context.Failure?.Message?.Contains("unprotect", StringComparison.OrdinalIgnoreCase) == true
-                || context.Failure?.Message?.Contains("State", StringComparison.OrdinalIgnoreCase) == true;
+                || context.Failure?.Message?.Contains("state", StringComparison.OrdinalIgnoreCase) == true;
 
             logger.LogError(
                 context.Failure,
                 "Azure AD OIDC remote failure. StateProtectionError: {IsStateProtectionError}",
                 isStateProtectionError);
 
-            var errorCode = isStateProtectionError ? "state_protection_failed" : "remote_failure";
-            RedirectToFrontendError(context.Response, configuration, errorCode);
+            AuthFailureLogger.LogAuthenticationFailed(context.HttpContext, "oidc_remote_failure");
+
+            RedirectToFrontendError(
+                context.HttpContext,
+                configuration,
+                isStateProtectionError ? "state_protection_failed" : "remote_failure");
+
             context.HandleResponse();
             return Task.CompletedTask;
         };
@@ -150,8 +169,7 @@ public static class OidcEventHandlers
             if (config is null)
             {
                 logger.LogError("Azure AD: OpenIdConnect configuration is null.");
-                context.HandleResponse();
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                FailRedirect(context);
                 return;
             }
 
@@ -164,8 +182,7 @@ public static class OidcEventHandlers
             if (string.IsNullOrWhiteSpace(authority))
             {
                 logger.LogError("Azure AD: Cannot compute fallback authorize endpoint; Authority is empty.");
-                context.HandleResponse();
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                FailRedirect(context);
                 return;
             }
 
@@ -175,29 +192,37 @@ public static class OidcEventHandlers
 
             var fallback = $"{authorityBase}/oauth2/v2.0/authorize";
             context.ProtocolMessage.IssuerAddress = fallback;
-            logger.LogWarning("Azure AD: Using fallback authorization endpoint: {Endpoint}", fallback);
+            logger.LogWarning("Azure AD: Using fallback authorization endpoint {Endpoint}", fallback);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Azure AD: Error loading OpenIdConnect configuration during redirect");
-            context.HandleResponse();
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            FailRedirect(context);
         }
     }
 
+    /// <summary>
+    /// Aborts the challenge without echoing provider detail. The exception handler is not
+    /// involved, so a generic status is set directly.
+    /// </summary>
+    private static void FailRedirect(RedirectContext context)
+    {
+        context.HandleResponse();
+        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+    }
+
     private static void RedirectToFrontendError(
-        HttpResponse response,
+        HttpContext httpContext,
         IConfiguration configuration,
         string errorCode)
     {
-        var frontendCallbackPath = configuration["AzureAd:FrontendCallbackPath"] ?? "/auth/callback";
-        var allowedOrigins = CorsOrigins.GetAllowedOrigins(configuration);
-        var frontendOrigin = allowedOrigins.FirstOrDefault() ?? string.Empty;
-        var redirectUrl = !string.IsNullOrEmpty(frontendOrigin)
-            ? $"{frontendOrigin}{frontendCallbackPath}?error={errorCode}"
-            : $"{frontendCallbackPath}?error={errorCode}";
+        var callbackPath = configuration["AzureAd:FrontendCallbackPath"] ?? "/auth/callback";
+        var validator = httpContext.RequestServices.GetRequiredService<ReturnUrlValidationService>();
 
-        response.Redirect(redirectUrl);
+        var target = validator.BuildFrontendUrl(
+            $"{callbackPath}?error={Uri.EscapeDataString(errorCode)}");
+
+        httpContext.Response.Redirect(target);
     }
 
     private static string DeriveUserName(string? preferredUsername, string email)
@@ -223,5 +248,5 @@ public static class OidcEventHandlers
     private static ILogger GetLogger(HttpContext httpContext) =>
         httpContext.RequestServices
             .GetRequiredService<ILoggerFactory>()
-            .CreateLogger("FEA.URVP.Api.Configuration.Auth.OidcEventHandlers");
+            .CreateLogger(LoggerCategory);
 }

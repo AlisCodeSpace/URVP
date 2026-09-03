@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
+import { adminProjectHref } from "@/lib/auth";
 import {
   listAdminProjects,
   type AdminProjectListItemDto,
@@ -224,7 +225,7 @@ function ProjectRow({ project }: { project: AdminProjectListItemDto }) {
       </td>
       <td>
         <div className="admin-value-actions">
-          <Button href={`/admin/projects/${project.id}`} variant="primary" size="sm">
+          <Button href={adminProjectHref(project.id)} variant="primary" size="sm">
             View
           </Button>
         </div>

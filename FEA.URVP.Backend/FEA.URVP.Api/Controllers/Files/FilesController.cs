@@ -1,3 +1,4 @@
+using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.Files.Upload;
 using FEA.URVP.Application.Queries.Files.GetById;
@@ -6,6 +7,7 @@ using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FEA.URVP.Api.Controllers.Files;
 
@@ -14,6 +16,19 @@ namespace FEA.URVP.Api.Controllers.Files;
 [Authorize]
 public sealed class FilesController : ApiControllerBase
 {
+    /// <summary>
+    /// Content types that may render in the browser. Anything else is forced to download, so a
+    /// stored file can never be interpreted as an active document on this origin. SVG is absent
+    /// deliberately: it is scriptable, and upload validation rejects it.
+    /// </summary>
+    private static readonly HashSet<string> InlineRenderableMimeTypes =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            "image/jpeg",
+            "image/png",
+            "image/gif"
+        };
+
     private readonly IMediator _mediator;
 
     public FilesController(IMediator mediator)
@@ -22,8 +37,16 @@ public sealed class FilesController : ApiControllerBase
     }
 
     /// <summary>Upload a file into SQL FileStorage (student PDFs or workshop posters).</summary>
+    /// <remarks>
+    /// The client-supplied <paramref name="entityType"/>, <paramref name="entityId"/> and
+    /// <paramref name="fileCategory"/> are untrusted routing hints. Ownership and role
+    /// authorization, magic-byte type detection and size limits are all enforced in
+    /// <see cref="UploadFileCommandHandler"/> and its validator.
+    /// </remarks>
     [HttpPost]
-    [RequestSizeLimit(FileStorageCatalog.MaxUploadBytes)]
+    [RequestSizeLimit(FileStorageCatalog.MaxTotalSizeBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = FileStorageCatalog.MaxTotalSizeBytes)]
+    [EnableRateLimiting(RateLimitingConfiguration.UploadPolicy)]
     public async Task<IActionResult> Upload(
         IFormFile file,
         [FromForm] string entityType,
@@ -42,10 +65,6 @@ public sealed class FilesController : ApiControllerBase
             return ErrorResponse<object>("File is required.");
         }
 
-        await using var stream = file.OpenReadStream();
-        using var memory = new MemoryStream();
-        await stream.CopyToAsync(memory, cancellationToken);
-
         var metadata = await _mediator.Send(
             new UploadFileCommand
             {
@@ -53,28 +72,38 @@ public sealed class FilesController : ApiControllerBase
                 EntityType = entityType,
                 EntityId = entityId,
                 FileCategory = fileCategory,
-                FileName = file.FileName,
-                ContentType = file.ContentType,
-                Content = memory.ToArray(),
+                File = file,
             },
             cancellationToken);
 
         return SuccessResponse(metadata, "File uploaded");
     }
 
-    /// <summary>Download a file stored in SQL. Workshop posters are public.</summary>
+    /// <summary>
+    /// Download a file stored in SQL.
+    /// </summary>
+    /// <remarks>
+    /// Anonymous by design because workshop posters are public assets embedded in public pages.
+    /// Every other file is authorized inside <see cref="GetFileByIdQueryHandler"/>, which
+    /// requires the owner, an administrator, or a faculty member the student has ranked.
+    /// </remarks>
     [AllowAnonymous]
     [HttpGet("{id:guid}")]
+    [EnableRateLimiting(RateLimitingConfiguration.DownloadPolicy)]
     public async Task<IActionResult> Download(Guid id, CancellationToken cancellationToken)
     {
-        var userId = GetCurrentUserId();
         var file = await _mediator.Send(
-            new GetFileByIdQuery(id, userId, UserHasRole(nameof(UserRole.Admin))),
+            new GetFileByIdQuery(id, GetCurrentUserId(), UserHasRole(nameof(UserRole.Admin))),
             cancellationToken);
 
-        if (file.MimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        // Only genuinely public files may be stored by shared caches; an authorization-gated file
+        // must not survive in a proxy where the next requester would bypass the check.
+        Response.Headers.CacheControl = file.IsPublic
+            ? "public, max-age=86400"
+            : "no-store, no-cache, must-revalidate";
+
+        if (file.IsPublic && InlineRenderableMimeTypes.Contains(file.MimeType))
         {
-            Response.Headers.CacheControl = "public, max-age=86400";
             return File(file.Content, file.MimeType);
         }
 

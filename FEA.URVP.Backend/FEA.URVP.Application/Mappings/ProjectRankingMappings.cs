@@ -6,7 +6,7 @@ namespace FEA.URVP.Application.Mappings;
 
 public static class ProjectRankingMappings
 {
-    public static ProjectRankingDto ToDto(this ProjectRanking ranking)
+    public static ProjectRankingDto ToDto(this ProjectRanking ranking, bool isMatched = false)
     {
         var project = ranking.Project
             ?? throw new InvalidOperationException("Project navigation is required to map a ranking.");
@@ -21,6 +21,7 @@ public static class ProjectRankingMappings
             FacultyAffiliation = project.AffiliationSnapshot,
             ResearchAreas = project.ResearchAreas,
             ProjectStatus = (byte)project.Status,
+            IsMatched = isMatched,
             RankedAt = ranking.CreatedAt,
             UpdatedAt = ranking.UpdatedAt,
         };

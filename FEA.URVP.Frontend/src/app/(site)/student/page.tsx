@@ -1,6 +1,6 @@
-import { redirect } from "next/navigation";
+import { ClientRedirect } from "@/components/routing/ClientRedirect";
 import { studentProfileHref } from "@/lib/auth";
 
 export default function StudentPortalIndexPage() {
-  redirect(studentProfileHref());
+  return <ClientRedirect href={studentProfileHref()} />;
 }

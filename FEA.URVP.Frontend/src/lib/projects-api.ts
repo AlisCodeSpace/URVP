@@ -143,6 +143,22 @@ export async function getProject(id: string): Promise<ProjectDto> {
   return apiFetch<ProjectDto>(`/api/projects/${id}`);
 }
 
+export type ProjectParticipantDto = {
+  studentUserId: string;
+  studentName: string;
+  studentEmail: string;
+  studentRank: number;
+  facultyRank: number;
+};
+
+export async function getProjectParticipants(
+  projectId: string,
+): Promise<ProjectParticipantDto[]> {
+  return apiFetch<ProjectParticipantDto[]>(
+    `/api/projects/${projectId}/participants`,
+  );
+}
+
 export async function createProject(
   values: ProjectFormValues,
 ): Promise<ProjectDto> {

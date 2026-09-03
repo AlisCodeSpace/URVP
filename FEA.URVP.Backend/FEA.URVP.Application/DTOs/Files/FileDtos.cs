@@ -19,4 +19,10 @@ public sealed class FileContentDto
     public string MimeType { get; init; } = null!;
     public byte[] Content { get; init; } = [];
     public byte[] ContentHash { get; init; } = [];
+
+    /// <summary>
+    /// Whether this file is public per <c>FileStorageCatalog.IsPublicFile</c>. Drives the
+    /// response cache policy so an authorization-gated file is never stored by a shared cache.
+    /// </summary>
+    public bool IsPublic { get; init; }
 }

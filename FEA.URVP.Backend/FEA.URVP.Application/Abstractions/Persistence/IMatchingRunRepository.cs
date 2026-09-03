@@ -28,5 +28,15 @@ public interface IMatchingRunRepository
     /// <summary>Confirmed placements per project across all semesters (drives seat accounting).</summary>
     Task<int> CountConfirmedByProjectAsync(Guid projectId, CancellationToken cancellationToken = default);
 
+    /// <summary>Confirmed volunteers currently participating on a project.</summary>
+    Task<IReadOnlyList<Placement>> ListConfirmedByProjectAsync(
+        Guid projectId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Project ids the student currently occupies via a confirmed placement.</summary>
+    Task<IReadOnlyList<Guid>> ListConfirmedProjectIdsByStudentAsync(
+        Guid studentUserId,
+        CancellationToken cancellationToken = default);
+
     void Add(MatchingRun run);
 }

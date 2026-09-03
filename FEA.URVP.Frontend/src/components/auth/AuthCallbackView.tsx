@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fetchAuthStatus, portalHref } from "@/lib/auth";
+import { logger } from "@/lib/logger";
 import { PageLoader } from "@/components/ui/PageLoader";
 
 export function AuthCallbackView() {
@@ -10,9 +11,11 @@ export function AuthCallbackView() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // The backend sends an opaque code here, never identity-provider text. The user-facing message
+    // is resolved from it on the sign-in page by authErrorMessage.
     const error = searchParams.get("error");
     if (error) {
-      console.warn("[auth/callback] OIDC error query:", error);
+      logger.warn("Sign-in callback reported an error code.", { code: error });
     }
 
     let cancelled = false;
@@ -26,8 +29,8 @@ export function AuthCallbackView() {
           router.replace(portalHref(status.role, status.userId));
           return;
         }
-      } catch (err) {
-        console.error("[auth/callback] /api/auth/status failed:", err);
+      } catch {
+        logger.warn("Session status could not be read after sign-in.");
         if (cancelled) return;
       }
 

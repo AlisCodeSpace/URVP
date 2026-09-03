@@ -52,6 +52,7 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
             MimeType = file.MimeType,
             Content = file.Content,
             ContentHash = file.ContentHash,
+            IsPublic = FileStorageCatalog.IsPublicFile(file.EntityType, file.FileCategory),
         };
 
     private async Task EnsureFacultyCanDownloadStudentFileAsync(

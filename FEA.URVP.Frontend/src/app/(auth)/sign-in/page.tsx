@@ -1,26 +1,20 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { RequireGuest } from "@/components/auth/RequireGuest";
 import { SignInView } from "@/components/auth/SignInView";
-import { getAzureAdSignInUrl } from "@/lib/auth";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 export const metadata: Metadata = {
   title: "Sign In | URVP",
   description: "Sign in to the URVP portal with your AUB account.",
 };
 
-type SignInPageProps = {
-  searchParams: Promise<{ error?: string }>;
-};
-
-export default async function SignInPage({ searchParams }: SignInPageProps) {
-  const params = await searchParams;
-
+export default function SignInPage() {
   return (
-    <RequireGuest>
-      <SignInView
-        signInUrl={getAzureAdSignInUrl()}
-        error={params.error}
-      />
-    </RequireGuest>
+    <Suspense fallback={<PageLoader />}>
+      <RequireGuest>
+        <SignInView />
+      </RequireGuest>
+    </Suspense>
   );
 }

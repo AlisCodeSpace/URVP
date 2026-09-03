@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Heading, Text } from "@radix-ui/themes";
 import {
   NEWS_PAGE_SIZE,
@@ -10,6 +11,7 @@ import {
   type NewsArticle,
 } from "@/lib/news";
 import { loadPublicNews } from "@/lib/news-api";
+import { newsArticleHref } from "@/lib/auth";
 import { NewsListSkeleton } from "@/components/ui/SectionSkeletons";
 
 function formatIndex(i: number) {
@@ -48,7 +50,7 @@ export function NewsFeatured({ article }: { article: NewsArticle }) {
             className="!font-[family-name:var(--font-display)] !leading-[1.08] !text-primary"
           >
             <Link
-              href={`/news/${article.slug}`}
+              href={newsArticleHref(article.slug)}
               className="transition hover:text-primary-soft"
             >
               {article.title}
@@ -63,7 +65,7 @@ export function NewsFeatured({ article }: { article: NewsArticle }) {
             {article.excerpt}
           </Text>
           <Link
-            href={`/news/${article.slug}`}
+            href={newsArticleHref(article.slug)}
             className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-secondary-deep transition hover:gap-3"
           >
             Read story
@@ -85,7 +87,7 @@ function NewsRow({
   return (
     <li>
       <Link
-        href={`/news/${article.slug}`}
+        href={newsArticleHref(article.slug)}
         className="news-row group grid gap-4 border-b border-primary/10 py-8 transition sm:grid-cols-[4.5rem_7.5rem_1fr_auto] sm:items-baseline sm:gap-6"
       >
         <span
@@ -200,7 +202,14 @@ function NewsPagination({
   );
 }
 
-export function NewsList({ page = 1 }: { page?: number }) {
+/** Reads `?page=` on the client; a static export has no server render to inspect it in. */
+function usePageParam(): number {
+  const raw = Number(useSearchParams().get("page"));
+  return Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 1;
+}
+
+export function NewsList() {
+  const page = usePageParam();
   const [articles, setArticles] = useState<NewsArticle[] | null>(null);
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
+import { adminNewsEditHref } from "@/lib/auth";
 import {
   deleteNews,
   formatNewsDate,
@@ -147,7 +148,7 @@ export function AdminNewsView() {
                     <td>
                       <div className="admin-value-actions">
                         <Button
-                          href={`/admin/news/${item.id}`}
+                          href={adminNewsEditHref(item.id)}
                           variant="outline"
                           size="sm"
                         >

@@ -1,0 +1,22 @@
+.git/
+.github/
+.vs/
+**/bin/
+**/obj/
+**/node_modules/
+**/.next/
+FEA.URVP.Frontend/out/
+
+# The image builds the export itself; a locally published copy must not shadow it.
+FEA.URVP.Backend/wwwroot/
+
+# Never ship developer or local configuration into the image.
+**/appsettings.Development.json
+**/appsettings.*.local.json
+.env
+.env.*
+!.env.example
+
+**/*.user
+**/*.suo
+docs/

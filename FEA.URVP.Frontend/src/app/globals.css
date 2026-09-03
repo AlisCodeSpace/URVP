@@ -1123,6 +1123,11 @@ select:disabled {
   font-weight: 560;
 }
 
+.rank-badge.is-matched {
+  background: color-mix(in srgb, #1b7a4a 16%, white);
+  color: #145c38;
+}
+
 .availability-slot {
   display: inline-flex;
   min-width: 4.5rem;

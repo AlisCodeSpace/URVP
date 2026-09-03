@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { notFound } from "next/navigation";
 import { NewsArticleView } from "@/components/news/NewsArticleView";
 import { NewsArticleSkeleton } from "@/components/ui/SectionSkeletons";
+import { NotFoundView } from "@/components/ui/NotFoundView";
 import { loadPublicNewsArticle } from "@/lib/news-api";
 import type { NewsArticle } from "@/lib/news";
 
@@ -33,8 +33,15 @@ export function NewsArticleLoader({ slug }: { slug: string }) {
     };
   }, [slug]);
 
+  // Rendered inline rather than via notFound(): the article is fetched in the browser, and
+  // notFound() belongs to server rendering, which a static export does not perform.
   if (status === "missing") {
-    notFound();
+    return (
+      <NotFoundView
+        title="Story not found"
+        description="This news story is no longer available. Browse the latest updates below."
+      />
+    );
   }
 
   if (status === "loading" || !result) {

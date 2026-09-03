@@ -13,10 +13,16 @@
     <Compile Remove="FEA.URVP.Application\**" />
     <Compile Remove="FEA.URVP.Domain\**" />
     <Compile Remove="FEA.URVP.Infrastructure\**" />
+    <Compile Remove="AUB.MimeDetective\bin\**" />
+    <Compile Remove="AUB.MimeDetective\obj\**" />
+    <!-- Compiled into FEA.URVP.Application with MimeTypeValidator; exclude here to avoid CS0433. -->
+    <Compile Remove="AUB.MimeDetective\**\*.cs" />
     <Content Remove="FEA.URVP.Api\**" />
     <Content Remove="FEA.URVP.Application\**" />
     <Content Remove="FEA.URVP.Domain\**" />
     <Content Remove="FEA.URVP.Infrastructure\**" />
+    <Content Remove="AUB.MimeDetective\bin\**" />
+    <Content Remove="AUB.MimeDetective\obj\**" />
     <EmbeddedResource Remove="FEA.URVP.Api\**" />
     <EmbeddedResource Remove="FEA.URVP.Application\**" />
     <EmbeddedResource Remove="FEA.URVP.Domain\**" />
@@ -32,6 +38,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="9.1.0" />
   </ItemGroup>
 
   <ItemGroup>

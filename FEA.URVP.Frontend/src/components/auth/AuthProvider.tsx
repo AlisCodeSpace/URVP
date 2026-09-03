@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { onUnauthorized } from "@/lib/api";
 import {
   fetchAuthStatus,
   getAzureAdSignOutUrl,
@@ -43,9 +44,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  // The backend rejected a call as unauthenticated, so the cached status is stale. Dropping it to
+  // signed-out clears the session metadata this provider holds and lets the route guards move the
+  // user to sign-in. The guards are UX only; the backend already refused the request.
+  useEffect(
+    () =>
+      onUnauthorized(() => {
+        setStatus({ isAuthenticated: false });
+        setLoading(false);
+      }),
+    [],
+  );
+
   const signOut = useCallback(() => {
-    const home = `${window.location.origin}/`;
-    window.location.href = getAzureAdSignOutUrl(home);
+    window.location.href = getAzureAdSignOutUrl();
   }, []);
 
   const value = useMemo(

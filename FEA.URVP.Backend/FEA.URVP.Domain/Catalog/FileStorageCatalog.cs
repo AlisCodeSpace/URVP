@@ -9,9 +9,10 @@ public static class FileStorageCatalog
     public const string CategoryCitiCertification = "CitiCertification";
     public const string CategoryPoster = "Poster";
 
-    public const long MaxDocumentBytes = 10 * 1024 * 1024; // 10 MB
-    public const long MaxImageBytes = 5 * 1024 * 1024; // 5 MB
-    public const long MaxUploadBytes = MaxDocumentBytes;
+    public const long MaxDocumentBytes = 10 * 1024 * 1024; // 10 MB (SQL check constraint)
+    public const long MaxImageBytes = 5 * 1024 * 1024; // 5 MB (SQL check constraint)
+    public const long MaxTotalSizeBytes = 25 * 1024 * 1024; // 25 MB — keep aligned with FileStorage:MaxTotalSizeBytes
+    public const long MaxUploadBytes = MaxTotalSizeBytes;
 
     public static readonly IReadOnlySet<string> EntityTypes = new HashSet<string>(StringComparer.Ordinal)
     {
@@ -45,14 +46,14 @@ public static class FileStorageCatalog
         ".jpg",
         ".jpeg",
         ".png",
-        ".webp",
+        ".gif",
     };
 
     public static readonly IReadOnlySet<string> AllowedImageMimeTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "image/jpeg",
         "image/png",
-        "image/webp",
+        "image/gif",
     };
 
     public static bool IsImageCategory(string category) =>

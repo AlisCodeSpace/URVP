@@ -4,33 +4,42 @@ using FEA.URVP.Api.Configuration.Auth;
 using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Api.Services;
 using FEA.URVP.Application.Commands.Auth.AzureAd;
+using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Domain.Catalog;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FEA.URVP.Api.Controllers.Auth;
 
 /// <summary>
-/// Email sign-in (no password) for demo accounts. Gated by Auth:EnableDevSignIn.
+/// Email sign-in (no password) for demo accounts.
 /// </summary>
+/// <remarks>
+/// Never reachable in Production. See <see cref="DevSignInPolicy"/> for why this cannot be
+/// re-enabled by configuration.
+/// </remarks>
 [ApiController]
 [Route("api/auth/dev")]
 public sealed class DevAuthController : ApiControllerBase
 {
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
     private readonly IMediator _mediator;
     private readonly ReturnUrlValidationService _returnUrlValidator;
     private readonly ILogger<DevAuthController> _logger;
 
     public DevAuthController(
         IConfiguration configuration,
+        IWebHostEnvironment environment,
         IMediator mediator,
         ReturnUrlValidationService returnUrlValidator,
         ILogger<DevAuthController> logger)
     {
         _configuration = configuration;
+        _environment = environment;
         _mediator = mediator;
         _returnUrlValidator = returnUrlValidator;
         _logger = logger;
@@ -41,12 +50,13 @@ public sealed class DevAuthController : ApiControllerBase
     /// </summary>
     [HttpGet("signin")]
     [AllowAnonymous]
+    [EnableRateLimiting(RateLimitingConfiguration.AuthPolicy)]
     public async Task<IActionResult> SignIn(
         [FromQuery, Required, EmailAddress, StringLength(256)] string email,
         [FromQuery, StringLength(2048)]
         string? returnUrl = null)
     {
-        if (!_configuration.GetValue("Auth:EnableDevSignIn", true))
+        if (!DevSignInPolicy.IsEnabled(_configuration, _environment))
         {
             return NotFound();
         }

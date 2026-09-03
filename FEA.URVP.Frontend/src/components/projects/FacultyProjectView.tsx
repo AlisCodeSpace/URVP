@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Text } from "@radix-ui/themes";
 import { RequireAuth } from "@/components/auth/RequireAuth";
+import { FacultyProjectParticipants } from "@/components/projects/FacultyProjectParticipants";
 import { FacultyProjectRankings } from "@/components/projects/FacultyProjectRankings";
 import { FacultyProjectReadonly } from "@/components/projects/FacultyProjectReadonly";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -13,7 +14,12 @@ import {
   getProjectRankings,
   type ProjectRankingStudentDto,
 } from "@/lib/project-rankings-api";
-import { getProject, type ProjectDto } from "@/lib/projects-api";
+import {
+  getProject,
+  getProjectParticipants,
+  type ProjectDto,
+  type ProjectParticipantDto,
+} from "@/lib/projects-api";
 import { ProjectDetailSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function FacultyProjectView({
@@ -28,6 +34,12 @@ export function FacultyProjectView({
     null,
   );
   const [rankingsError, setRankingsError] = useState<string | null>(null);
+  const [participants, setParticipants] = useState<
+    ProjectParticipantDto[] | null
+  >(null);
+  const [participantsError, setParticipantsError] = useState<string | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,6 +73,12 @@ export function FacultyProjectView({
     setRankingsError(null);
   }, [projectId]);
 
+  const loadParticipants = useCallback(async () => {
+    const next = await getProjectParticipants(projectId);
+    setParticipants(next);
+    setParticipantsError(null);
+  }, [projectId]);
+
   useEffect(() => {
     if (!project) return;
     let cancelled = false;
@@ -82,6 +100,28 @@ export function FacultyProjectView({
       cancelled = true;
     };
   }, [project, loadRankings]);
+
+  useEffect(() => {
+    if (!project) return;
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        await loadParticipants();
+      } catch (err) {
+        if (cancelled) return;
+        setParticipantsError(
+          err instanceof ApiError
+            ? err.message
+            : "Could not load participating students.",
+        );
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [project, loadParticipants]);
 
   return (
     <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
@@ -114,6 +154,14 @@ export function FacultyProjectView({
             <ProjectDetailSkeleton />
           ) : (
             <FacultyProjectReadonly userId={userId} project={project}>
+              <FacultyProjectParticipants
+                userId={userId}
+                projectId={projectId}
+                volunteersFilled={project.volunteersFilled}
+                participants={participants}
+                loading={participants == null && participantsError == null}
+                error={participantsError}
+              />
               <FacultyProjectRankings
                 userId={userId}
                 projectId={projectId}

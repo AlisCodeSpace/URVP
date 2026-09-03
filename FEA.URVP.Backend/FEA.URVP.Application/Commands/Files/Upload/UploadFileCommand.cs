@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using FEA.URVP.Application.DTOs.Files;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace FEA.URVP.Application.Commands.Files.Upload;
 
@@ -12,7 +13,7 @@ public sealed class UploadFileCommand : IRequest<FileMetadataDto>
     public string EntityType { get; init; } = null!;
     public Guid EntityId { get; init; }
     public string FileCategory { get; init; } = null!;
-    public string FileName { get; init; } = null!;
-    public string ContentType { get; init; } = null!;
-    public byte[] Content { get; init; } = [];
+
+    [JsonIgnore]
+    public IFormFile File { get; init; } = null!;
 }

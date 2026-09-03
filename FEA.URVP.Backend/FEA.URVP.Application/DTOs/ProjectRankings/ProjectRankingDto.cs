@@ -10,6 +10,7 @@ public sealed class ProjectRankingDto
     public string FacultyAffiliation { get; init; } = null!;
     public IReadOnlyList<string> ResearchAreas { get; init; } = [];
     public byte ProjectStatus { get; init; }
+    public bool IsMatched { get; init; }
     public DateTime RankedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 }

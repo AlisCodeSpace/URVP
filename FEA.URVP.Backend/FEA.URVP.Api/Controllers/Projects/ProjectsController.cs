@@ -5,6 +5,7 @@ using FEA.URVP.Application.Commands.Projects.Delete;
 using FEA.URVP.Application.Commands.Projects.Update;
 using FEA.URVP.Application.Queries.ProjectRankings.ListByProject;
 using FEA.URVP.Application.Queries.Projects.GetAdminDetail;
+using FEA.URVP.Application.Queries.Projects.ListParticipants;
 using FEA.URVP.Application.Queries.Projects.GetById;
 using FEA.URVP.Application.Queries.Projects.List;
 using FEA.URVP.Application.Queries.Projects.ListAdmin;
@@ -28,8 +29,12 @@ public sealed class ProjectsController : ApiControllerBase
     }
 
     /// <summary>List projects (catalog). Pass mine=true for the caller's projects.</summary>
+    /// <remarks>
+    /// Authenticated: <see cref="ProjectDto"/> carries the posting faculty member's email address,
+    /// which an anonymous catalog would let anyone harvest in bulk. Every frontend caller already
+    /// sits behind a signed-in route, so this matches what the UI presents.
+    /// </remarks>
     [HttpGet]
-    [AllowAnonymous]
     public async Task<IActionResult> List(
         [FromQuery] bool mine = false,
         [FromQuery] ProjectStatus? status = null,
@@ -112,8 +117,24 @@ public sealed class ProjectsController : ApiControllerBase
         return SuccessResponse(rankings);
     }
 
+    /// <summary>Students confirmed onto this project after matching. Project owner or admin only.</summary>
+    [HttpGet("{id:guid}/participants")]
+    public async Task<IActionResult> ListParticipants(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        var participants = await _mediator.Send(
+            new ListProjectParticipantsQuery(id, userId, UserHasRole(nameof(UserRole.Admin))),
+            cancellationToken);
+        return SuccessResponse(participants);
+    }
+
+    /// <remarks>Authenticated for the same reason as <see cref="List"/>.</remarks>
     [HttpGet("{id:guid}")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var project = await _mediator.Send(new GetProjectByIdQuery(id), cancellationToken);

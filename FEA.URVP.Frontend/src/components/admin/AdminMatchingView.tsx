@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
+import { adminMatchingRunHref } from "@/lib/auth";
 import {
   confirmMatchingRun,
   listMatchingRuns,
@@ -57,7 +58,7 @@ export function AdminMatchingView() {
     try {
       const detail = await runMatching();
       setConfirmRun(false);
-      router.push(`/admin/matching/${detail.run.id}`);
+      router.push(adminMatchingRunHref(detail.run.id));
     } catch (err) {
       setConfirmRun(false);
       setError(
@@ -91,7 +92,7 @@ export function AdminMatchingView() {
         await confirmMatchingRun(detail.run.id);
         await load();
       } else {
-        router.push(`/admin/matching/${detail.run.id}`);
+        router.push(adminMatchingRunHref(detail.run.id));
       }
     } catch (err) {
       setError(
@@ -280,7 +281,7 @@ export function AdminMatchingView() {
                   </td>
                   <td>
                     <Button
-                      href={`/admin/matching/${run.id}`}
+                      href={adminMatchingRunHref(run.id)}
                       variant="outline"
                       size="sm"
                     >

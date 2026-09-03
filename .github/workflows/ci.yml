@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+# Least privilege: this workflow only reads the repository. It deliberately does not deploy,
+# publish packages, or write to the repository. A deployment workflow must be separate, must
+# trigger only on push/merge to its own branch, and must never run from pull_request.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend build, test, audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore (locked)
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test FEA.URVP.Tests/FEA.URVP.Tests.csproj --no-build --configuration Release
+
+      # `dotnet list package --vulnerable` exits 0 even when it finds something, so the output
+      # has to be inspected rather than trusted to fail the step.
+      - name: Vulnerable packages (including transitive)
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee audit.txt
+          if grep -qiE '^\s+> ' audit.txt; then
+            echo "::error::Vulnerable NuGet packages found"
+            exit 1
+          fi
+
+  frontend:
+    name: Frontend lint, build, audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: FEA.URVP.Frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: FEA.URVP.Frontend/package-lock.json
+
+      - name: Install (reproducible)
+        run: npm ci
+
+      - name: Audit
+        run: npm audit --audit-level=high
+
+      - name: Build static export
+        run: npm run build
+
+      # The export is served as public assets, so anything sensitive in it is world-readable.
+      - name: Inspect artifact for source maps and secrets
+        run: |
+          set -euo pipefail
+
+          if find out -name '*.map' -print -quit | grep -q .; then
+            echo "::error::Source maps present in the production export"
+            exit 1
+          fi
+
+          if grep -rl 'sourceMappingURL' out >/dev/null 2>&1; then
+            echo "::error::Bundles reference source maps"
+            exit 1
+          fi
+
+          if grep -rlE 'ClientSecret|client_secret|BEGIN [A-Z ]*PRIVATE KEY|AccountKey=' out >/dev/null 2>&1; then
+            echo "::error::Secret-shaped string found in the production export"
+            exit 1
+          fi

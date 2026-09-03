@@ -112,10 +112,12 @@ function CatalogProjectCard({
   project,
   studentTopics,
   rank,
+  matched,
 }: {
   project: CatalogProject;
   studentTopics: ReadonlySet<string>;
   rank?: number;
+  matched?: boolean;
 }) {
   const open = openingsLeft(project);
   const isClosed = project.status === "Closed" || open === 0;
@@ -137,6 +139,7 @@ function CatalogProjectCard({
       eyebrow={project.status}
       eyebrowMuted={isClosed}
       rank={rank}
+      matched={matched}
       meta={project.postedAt ? `Posted ${project.postedAt}` : ""}
       metaEnd={
         hasOpeningsData ? (
@@ -369,6 +372,7 @@ export function ProjectsBrowse({
       .map((ranking) => ({
         project: byId.get(ranking.projectId) ?? catalogFromRanking(ranking),
         rank: ranking.rank,
+        matched: ranking.isMatched,
       }));
   }, [projects, rankings]);
 
@@ -566,12 +570,13 @@ export function ProjectsBrowse({
           <>
             <ul className={`grid w-full gap-5${ranked ? "" : " mt-6"}`}>
               {ranked
-                ? rankedItems.map(({ project, rank }) => (
+                ? rankedItems.map(({ project, rank, matched }) => (
                     <CatalogProjectCard
                       key={project.id}
                       project={project}
                       studentTopics={studentTopics}
                       rank={rank}
+                      matched={matched}
                     />
                   ))
                 : paged.map((project) => (

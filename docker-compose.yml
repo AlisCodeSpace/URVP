@@ -1,0 +1,26 @@
+networks:
+  urvp-local:
+    driver: bridge
+
+volumes:
+  seq-data:
+
+services:
+  # Local structured-logging sink for the backend (Serilog -> Seq).
+  # UI:        http://localhost:5341
+  # Ingestion: http://localhost:5342
+  seq:
+    image: datalust/seq:2024.1
+    container_name: urvp-seq
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_ADMINUSERNAME: ${SEQ_ADMIN_USERNAME:-admin}
+      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_ADMIN_PASSWORD:?Set SEQ_ADMIN_PASSWORD in your .env file}
+    ports:
+      - "5341:80"
+      - "5342:5341"
+    volumes:
+      - seq-data:/data
+    networks:
+      - urvp-local

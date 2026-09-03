@@ -11,15 +11,18 @@ public sealed class GetMyProjectRankingsQueryHandler
     : IRequestHandler<GetMyProjectRankingsQuery, IReadOnlyList<ProjectRankingDto>>
 {
     private readonly IProjectRankingRepository _rankings;
+    private readonly IMatchingRunRepository _runs;
     private readonly IUserRepository _users;
     private readonly ILogger<GetMyProjectRankingsQueryHandler> _logger;
 
     public GetMyProjectRankingsQueryHandler(
         IProjectRankingRepository rankings,
+        IMatchingRunRepository runs,
         IUserRepository users,
         ILogger<GetMyProjectRankingsQueryHandler> logger)
     {
         _rankings = rankings;
+        _runs = runs;
         _users = users;
         _logger = logger;
     }
@@ -39,8 +42,10 @@ public sealed class GetMyProjectRankingsQueryHandler
         ProjectRankingAccess.EnsureCanRank(user.Role, user.Email);
 
         var rankings = await _rankings.ListByStudentAsync(user.Id, cancellationToken);
+        var matchedProjectIds = (await _runs.ListConfirmedProjectIdsByStudentAsync(user.Id, cancellationToken))
+            .ToHashSet();
         _logger.LogDebug("Loaded {Count} rankings for student {UserId}", rankings.Count, user.Id);
 
-        return rankings.Select(r => r.ToDto()).ToList();
+        return rankings.Select(r => r.ToDto(matchedProjectIds.Contains(r.ProjectId))).ToList();
     }
 }

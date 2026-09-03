@@ -3,22 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { Heading, Text } from "@radix-ui/themes";
 import { LOGO_SRC } from "@/components/ui/Logo";
 import {
   authErrorMessage,
   DEV_AUTH_ACCOUNTS,
+  getAzureAdSignInUrl,
   getDevSignInUrl,
   isDevAuthEnabled,
 } from "@/lib/auth";
 
-type SignInViewProps = {
-  signInUrl: string;
-  error?: string;
-};
+export function SignInView() {
+  const signInUrl = getAzureAdSignInUrl();
 
-export function SignInView({ signInUrl, error }: SignInViewProps) {
-  const errorText = authErrorMessage(error);
+  // Read on the client: a static export has no server render in which to inspect the query string.
+  const errorText = authErrorMessage(useSearchParams().get("error"));
   const [devEmail, setDevEmail] = useState("");
   const [devError, setDevError] = useState<string | null>(null);
 

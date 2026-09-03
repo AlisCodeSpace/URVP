@@ -1,8 +1,12 @@
 using System.Reflection;
 using FEA.URVP.Application.Abstractions.Events;
+using FEA.URVP.Application.Abstractions.Files;
 using FEA.URVP.Application.Behaviors;
+using FEA.URVP.Application.Files;
+using FEA.URVP.Application.Options;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FEA.URVP.Application;
@@ -12,7 +16,9 @@ namespace FEA.URVP.Application;
 /// </summary>
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    public static IServiceCollection AddApplication(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
         var assembly = typeof(DependencyInjection).Assembly;
 
@@ -20,6 +26,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddEventHandlers(assembly);
+        services.Configure<FileStorageOptions>(configuration.GetSection(FileStorageOptions.SectionName));
+        services.AddScoped<IMimeTypeValidator, MimeTypeValidator>();
 
         return services;
     }

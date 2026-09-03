@@ -1,5 +1,7 @@
 using FEA.URVP.Api.Configuration;
 using FEA.URVP.Backend;
+using Serilog;
+using Serilog.Events;
 
 // Render (and similar Linux PaaS) often exhaust inotify watches. Config file
 // reload is not needed outside local Development.
@@ -13,24 +15,93 @@ if (!string.Equals(
 
 var builder = WebApplication.CreateBuilder(args);
 
-var port = Environment.GetEnvironmentVariable("PORT");
-if (!string.IsNullOrWhiteSpace(port))
+builder.Logging.ClearProviders();
+
+var seqServerUrl = GetEnvironmentVariable("SEQ_SERVER_URL");
+var seqApiKey = GetEnvironmentVariable("SEQ_API_KEY");
+
+var loggerConfiguration = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", builder.Environment.ApplicationName)
+    .Enrich.WithEnvironmentName()
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId();
+
+// Config-driven overrides win; these are only a safety net when appsettings
+// does not define its own Microsoft/System levels.
+if (builder.Configuration["Serilog:MinimumLevel:Override:Microsoft"] is null)
 {
-    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+    loggerConfiguration.MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
 }
 
-builder.Services.ConfigureAllServices(builder.Configuration, builder.Environment);
-
-var app = builder.Build();
-
-app.ConfigureMiddlewarePipeline();
-
-app.Lifetime.ApplicationStarted.Register(() =>
+if (builder.Configuration["Serilog:MinimumLevel:Override:System"] is null)
 {
-    _ = InitializeDatabaseInBackground(app);
-});
+    loggerConfiguration.MinimumLevel.Override("System", LogEventLevel.Warning);
+}
 
-await app.RunAsync();
+loggerConfiguration.WriteTo.Console();
+
+if (!string.IsNullOrWhiteSpace(seqServerUrl))
+{
+    loggerConfiguration.WriteTo.Seq(seqServerUrl, apiKey: seqApiKey);
+}
+
+Log.Logger = loggerConfiguration.CreateLogger();
+
+builder.Host.UseSerilog(Log.Logger);
+
+try
+{
+    Log.Information(
+        "Starting {Application} in {EnvironmentName} environment",
+        builder.Environment.ApplicationName,
+        builder.Environment.EnvironmentName);
+
+    var port = Environment.GetEnvironmentVariable("PORT");
+    if (!string.IsNullOrWhiteSpace(port))
+    {
+        builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+    }
+
+    var maxUploadBytes = builder.Configuration.GetValue(
+        "FileStorage:MaxTotalSizeBytes",
+        FEA.URVP.Domain.Catalog.FileStorageCatalog.MaxTotalSizeBytes);
+    if (maxUploadBytes <= 0)
+    {
+        maxUploadBytes = FEA.URVP.Domain.Catalog.FileStorageCatalog.MaxTotalSizeBytes;
+    }
+
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.Limits.MaxRequestBodySize = maxUploadBytes;
+
+        // Kestrel advertises "Server: Kestrel" by default. Removing it here covers the direct
+        // binding; IIS and any other reverse proxy must strip their own equivalents.
+        options.AddServerHeader = false;
+    });
+
+    builder.Services.ConfigureAllServices(builder.Configuration, builder.Environment);
+
+    var app = builder.Build();
+
+    app.ConfigureMiddlewarePipeline();
+
+    app.Lifetime.ApplicationStarted.Register(() =>
+    {
+        _ = InitializeDatabaseInBackground(app);
+    });
+
+    await app.RunAsync();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly during startup");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 static async Task InitializeDatabaseInBackground(WebApplication app)
 {
@@ -42,4 +113,21 @@ static async Task InitializeDatabaseInBackground(WebApplication app)
     {
         app.Logger.LogError(ex, "Database initialization failed. The API will keep running.");
     }
+}
+
+// SEQ_SERVER_URL / SEQ_API_KEY are read as normal process environment variables so
+// this works unmodified under Docker, Kubernetes, and CI/CD. On Windows/IIS deployments
+// that rely on machine-level environment variables (which require an IIS/app-pool
+// restart to pick up), fall back to the Machine scope without breaking the process-level path.
+static string? GetEnvironmentVariable(string name)
+{
+    var value = Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
+    if (!string.IsNullOrWhiteSpace(value))
+    {
+        return value;
+    }
+
+    return OperatingSystem.IsWindows()
+        ? Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Machine)
+        : value;
 }

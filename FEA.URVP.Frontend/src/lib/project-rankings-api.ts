@@ -21,6 +21,7 @@ export type ProjectRankingDto = {
   facultyAffiliation: string;
   researchAreas: string[];
   projectStatus: number;
+  isMatched?: boolean;
   rankedAt: string;
   updatedAt: string;
 };

@@ -1,62 +1,85 @@
-# Blueprint for a two-service Render demo deploy.
-# After the first deploy, set the sync:false env vars in the dashboard:
-#   API: ConnectionStrings__SqlServerConnection, Cors__AllowedOrigins, AzureAd__*, AdminEmails__0
+# Blueprint for the same-origin BFF deployment.
+#
+# ONE service, not two. The ASP.NET Core container serves the statically exported Next.js app
+# from its own wwwroot, so the browser sees a single origin. That is what lets the session
+# cookie stay SameSite=Strict and lets CORS be closed entirely. Splitting the frontend onto a
+# second service would force SameSite=None and reopen cross-site request forgery as a concern.
+#
+# After the first deploy, set the sync:false variables in the dashboard:
+#   ConnectionStrings__SqlServerConnection, AzureAd__TenantId, AzureAd__ClientId,
+#   AzureAd__ClientSecret, AllowedHosts, AdminEmails__0
+#
+# Azure AD redirect URI: https://<host>/signin-oidc-ad
+# SQL Server is not hosted on Render — use Azure SQL (or another SQL Server) with Encrypt=True.
+#
 # Role (Student/Faculty) is resolved via LDAP against AUB AD (win2k.aub.edu.lb), not token
 # group claims. Render cannot reach on-prem AD unless VPN/private networking is added;
 # until then LDAP lookups log a warning and the stored database role is kept.
-#   Web: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_URL, API_URL (same as NEXT_PUBLIC_API_URL)
-# Cors__AllowedOrigins must be the exact frontend origin, e.g. https://urvp-web.onrender.com
-# Azure AD redirect URI: https://<urvp-api-host>/signin-oidc-ad
-# SQL Server is not hosted on Render — use Azure SQL (or another SQL Server).
+#
+# See docs/SECURITY.md for the full production posture.
 
 services:
   - type: web
-    name: urvp-api
+    name: urvp
     runtime: docker
     dockerfilePath: ./FEA.URVP.Backend/Dockerfile
-    dockerContext: ./FEA.URVP.Backend
-    healthCheckPath: /health
+    # Repository root: the image builds the frontend export as well as the backend.
+    dockerContext: .
+    healthCheckPath: /health/live
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: DOTNET_HOSTBUILDER_RELOADCONFIGONCHANGE
         value: "false"
+
+      # Requirement: production must not migrate or seed on startup. Run migrations as a
+      # controlled release step, with a backup taken first and a tested rollback.
       - key: Database__ApplyMigrationsOnStartup
-        value: "true"
+        value: "false"
       - key: Database__SeedCatalogsOnStartup
+        value: "false"
+
+      # Cors:AllowedOrigins is already [] in appsettings.Production.json, which denies every
+      # cross-origin request and keeps the session cookie SameSite=Strict. It is deliberately
+      # not overridden here: an array setting cannot be expressed as a scalar environment
+      # variable. See docs/SECURITY.md section 9 before adding any origin.
+
+      # Render terminates TLS and gives the container a plain-HTTP port, so in-process HTTPS
+      # redirection would loop. HSTS is still emitted.
+      - key: Security__Https__RedirectToHttps
+        value: "false"
+
+      # Render's proxy addresses are not stable, so they cannot be pinned in KnownProxies.
+      # Safe here because ForwardLimit stays 1: ASP.NET reads the rightmost X-Forwarded-For
+      # entry, which is the one Render's edge appends, so a client cannot spoof its own IP by
+      # sending the header itself.
+      - key: Security__TrustedProxies__TrustAnyProxy
         value: "true"
+
       - key: AzureAd__Instance
         value: https://login.microsoftonline.com/
       - key: AzureAd__CallbackPath
         value: /signin-oidc-ad
       - key: AzureAd__FrontendCallbackPath
         value: /auth/callback
+
+      # Must be the real host, e.g. urvp.onrender.com. A wildcard is rejected at startup.
+      - key: AllowedHosts
+        sync: false
+
+      # Must include Encrypt=True and must not include TrustServerCertificate=true.
       - key: ConnectionStrings__SqlServerConnection
         sync: false
-      - key: Cors__AllowedOrigins
-        sync: false
+
+      # The app refuses to boot without these two.
       - key: AzureAd__TenantId
         sync: false
       - key: AzureAd__ClientId
         sync: false
-      - key: AdminEmails__0
+
+      # Optional, but setting it upgrades the flow to authorization code + PKCE.
+      - key: AzureAd__ClientSecret
         sync: false
 
-  - type: web
-    name: urvp-web
-    runtime: node
-    rootDir: FEA.URVP.Frontend
-    buildCommand: npm ci --include=dev && npx next build
-    startCommand: npm start
-    healthCheckPath: /
-    envVars:
-      - key: NODE_VERSION
-        value: "20"
-      - key: NPM_CONFIG_PRODUCTION
-        value: "false"
-      - key: NEXT_PUBLIC_API_URL
-        sync: false
-      - key: NEXT_PUBLIC_APP_URL
-        sync: false
-      - key: API_URL
+      - key: AdminEmails__0
         sync: false

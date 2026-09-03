@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
+import { newsArticleHref } from "@/lib/auth";
 import type { NewsArticle } from "@/lib/news";
 
 export function NewsArticleView({
@@ -119,7 +120,7 @@ export function NewsArticleView({
         <div className="site-container site-container--flush grid sm:grid-cols-2">
           {previous ? (
             <Link
-              href={`/news/${previous.slug}`}
+              href={newsArticleHref(previous.slug)}
               className="group border-b border-primary/10 px-6 py-10 transition hover:bg-background sm:border-b-0 sm:border-r"
             >
               <Text
@@ -145,7 +146,7 @@ export function NewsArticleView({
           )}
           {next ? (
             <Link
-              href={`/news/${next.slug}`}
+              href={newsArticleHref(next.slug)}
               className="group px-6 py-10 text-left transition hover:bg-background sm:text-right"
             >
               <Text
