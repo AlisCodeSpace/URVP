@@ -1,8 +1,11 @@
+using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.Workshops;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Notifications;
 using FEA.URVP.Domain.Entities.Workshops;
+using FEA.URVP.Domain.Events.Workshops;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.Workshops.Create;
@@ -11,14 +14,17 @@ public sealed class CreateWorkshopCommandHandler
     : BaseCommandHandler<CreateWorkshopCommand, WorkshopDto>
 {
     private readonly IWorkshopRepository _workshops;
+    private readonly IEventBus _eventBus;
 
     public CreateWorkshopCommandHandler(
         ILogger<CreateWorkshopCommandHandler> logger,
         IUnitOfWork unitOfWork,
-        IWorkshopRepository workshops)
+        IWorkshopRepository workshops,
+        IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _workshops = workshops;
+        _eventBus = eventBus;
     }
 
     protected override async Task<WorkshopDto> HandleInternal(
@@ -44,6 +50,12 @@ public sealed class CreateWorkshopCommandHandler
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 
         Logger.LogInformation("Created workshop {WorkshopId} ({Title})", workshop.Id, workshop.Title);
+
+        await NotificationEventPublish.TryPublishAsync(
+            _eventBus,
+            new WorkshopAnnouncedEvent(workshop.Id),
+            Logger,
+            cancellationToken);
 
         return workshop.ToDto();
     }

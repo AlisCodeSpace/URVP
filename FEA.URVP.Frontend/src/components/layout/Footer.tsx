@@ -22,7 +22,7 @@ const socialIcons = {
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-secondary/30 bg-primary-deep text-white">
+    <footer className="site-footer mt-auto border-t border-secondary/30 bg-primary-deep text-white">
       <div className="site-container grid gap-12 py-14 sm:py-16 lg:grid-cols-[1.2fr_1fr_1fr] xl:gap-16">
         <div>
           <Logo href="/" className="text-white" size={72} />

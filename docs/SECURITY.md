@@ -226,7 +226,7 @@ or a committed compose file.
 | `Security__TrustedProxies__KnownProxies__0` | Reverse-proxy IP allowed to set `X-Forwarded-*` |
 | `Security__TrustedProxies__KnownNetworks__0` | CIDR alternative to the above |
 | `Security__Health__MonitoringNetworks__0` | CIDR permitted to read detailed readiness |
-| `SEQ_SERVER_URL`, `SEQ_API_KEY` | Structured log sink |
+| `Seq:ServerUrl`, `Seq:ApiKey` | Structured log sink. Set in `appsettings` (or a gitignored `appsettings.{Environment}.local.json`); do not put an API key in source control |
 
 ### Deliberately left empty in Production
 

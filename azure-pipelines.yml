@@ -1,0 +1,48 @@
+trigger:
+- master
+- main
+- development
+- staging
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- checkout: self
+  persistCredentials: true
+  clean: true
+  fetchDepth: 0
+
+- script: |
+    git config user.email "azure-pipelines@aub.edu.lb"
+    git config user.name "Azure DevOps CI"
+  displayName: "Configure git identity"
+
+- script: |
+    echo "Mirroring to GitHub..."
+    git remote add github https://$(github_username):$(github_token)@github.com/AUB-Beirut-Campus/FEA.URVP.git
+
+    echo "Available branches in origin:"
+    git ls-remote --heads origin
+
+    # List of branches to mirror
+    for branch in master main development staging; do
+      echo "Processing branch: $branch"
+      git fetch origin $branch || echo "No $branch branch in origin"
+
+      if git show-ref --verify --quiet refs/heads/$branch; then
+        git checkout $branch
+      else
+        git checkout -b $branch origin/$branch || echo "Skipping $branch, not found"
+      fi
+
+      # Push branch if it exists
+      if git show-ref --verify --quiet refs/heads/$branch; then
+        echo "Pushing $branch to GitHub..."
+        git push github $branch --force
+      fi
+    done
+
+    echo "Pushing tags..."
+    git push github --tags --force || echo "No tags to push"
+  displayName: "Mirror to GitHub"

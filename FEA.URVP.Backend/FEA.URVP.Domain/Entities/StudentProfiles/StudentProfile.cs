@@ -32,6 +32,12 @@ public class StudentProfile
     [MaxLength(256)]
     public string? OtherLanguages { get; set; }
 
+    /// <summary>
+    /// Minimum cumulative average (AUB 100-point scale) for the dashboard
+    /// "profile ready" count. Aligns with the published 3.0 / 78 eligibility copy.
+    /// </summary>
+    public const decimal MinimumCumulativeAverage = 78m;
+
     /// <summary>True when the student has completed at least 24 credits at AUB.</summary>
     [Required]
     public bool CompletedCredits { get; set; }

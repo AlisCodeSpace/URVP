@@ -1,8 +1,11 @@
+using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.Users;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Notifications;
 using FEA.URVP.Domain.Enums;
+using FEA.URVP.Domain.Events.Users;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.Users.AssignRole;
@@ -11,14 +14,17 @@ public sealed class AssignUserRoleCommandHandler
     : BaseCommandHandler<AssignUserRoleCommand, UserDto>
 {
     private readonly IUserRepository _users;
+    private readonly IEventBus _eventBus;
 
     public AssignUserRoleCommandHandler(
         ILogger<AssignUserRoleCommandHandler> logger,
         IUnitOfWork unitOfWork,
-        IUserRepository users)
+        IUserRepository users,
+        IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _users = users;
+        _eventBus = eventBus;
     }
 
     protected override async Task<UserDto> HandleInternal(
@@ -57,6 +63,12 @@ public sealed class AssignUserRoleCommandHandler
             user.Role,
             user.Id,
             request.CurrentUserId);
+
+        await NotificationEventPublish.TryPublishAsync(
+            _eventBus,
+            new UserRoleAssignedEvent(user.Id),
+            Logger,
+            cancellationToken);
 
         return user.ToDto();
     }

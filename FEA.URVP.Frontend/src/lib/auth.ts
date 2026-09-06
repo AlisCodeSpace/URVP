@@ -223,6 +223,10 @@ export function adminHref(): string {
   return "/admin";
 }
 
+export function notificationsHref(): string {
+  return "/notifications";
+}
+
 export function studentProfileHref(): string {
   return "/student/profile";
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AdminAccountMenu } from "@/components/admin/AdminAccountMenu";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Logo } from "@/components/ui/Logo";
 import { adminNav, type AdminNavGroup } from "@/lib/admin-nav";
 
@@ -122,6 +123,7 @@ export function AdminSidebar({ open, onNavigate }: AdminSidebarProps) {
       </nav>
 
       <div className="admin-sidebar-foot">
+        <NotificationBell variant="admin" />
         <AdminAccountMenu onNavigate={onNavigate} />
       </div>
     </aside>

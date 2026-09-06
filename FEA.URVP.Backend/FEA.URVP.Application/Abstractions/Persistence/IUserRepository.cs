@@ -20,5 +20,9 @@ public interface IUserRepository
 
     Task<int> CountByRoleAsync(UserRole role, CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<Guid>> ListUserIdsByRolesAsync(
+        IReadOnlyCollection<UserRole> roles,
+        CancellationToken cancellationToken = default);
+
     void Add(User user);
 }

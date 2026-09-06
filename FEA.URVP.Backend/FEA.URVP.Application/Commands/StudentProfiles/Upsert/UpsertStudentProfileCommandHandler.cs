@@ -1,10 +1,13 @@
+using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.StudentProfiles;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Notifications;
 using FEA.URVP.Application.StudentProfiles;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.StudentProfiles;
+using FEA.URVP.Domain.Events.StudentProfiles;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.StudentProfiles.Upsert;
@@ -15,18 +18,21 @@ public sealed class UpsertStudentProfileCommandHandler
     private readonly IStudentProfileRepository _profiles;
     private readonly IUserRepository _users;
     private readonly IFileStorageRepository _files;
+    private readonly IEventBus _eventBus;
 
     public UpsertStudentProfileCommandHandler(
         ILogger<UpsertStudentProfileCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IStudentProfileRepository profiles,
         IUserRepository users,
-        IFileStorageRepository files)
+        IFileStorageRepository files,
+        IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _profiles = profiles;
         _users = users;
         _files = files;
+        _eventBus = eventBus;
     }
 
     protected override async Task<StudentProfileDto> HandleInternal(
@@ -71,6 +77,7 @@ public sealed class UpsertStudentProfileCommandHandler
             .ToList();
 
         var profile = await _profiles.FindByUserIdAsync(user.Id, cancellationToken);
+        var isNew = profile is null;
         if (profile is null)
         {
             profile = new StudentProfile
@@ -103,6 +110,15 @@ public sealed class UpsertStudentProfileCommandHandler
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 
         Logger.LogInformation("Upserted student profile for user {UserId}", user.Id);
+
+        if (isNew)
+        {
+            await NotificationEventPublish.TryPublishAsync(
+                _eventBus,
+                new StudentProfileSubmittedEvent(user.Id, user.Name),
+                Logger,
+                cancellationToken);
+        }
 
         return profile.ToDto(user, transcript.FileName, citiFileName);
     }

@@ -15,8 +15,8 @@ services:
     restart: unless-stopped
     environment:
       ACCEPT_EULA: "Y"
-      SEQ_FIRSTRUN_ADMINUSERNAME: ${SEQ_ADMIN_USERNAME:-admin}
-      SEQ_FIRSTRUN_ADMINPASSWORD: ${SEQ_ADMIN_PASSWORD:?Set SEQ_ADMIN_PASSWORD in your .env file}
+      SEQ_FIRSTRUN_ADMINUSERNAME: admin
+      SEQ_FIRSTRUN_ADMINPASSWORD: change-me-locally
     ports:
       - "5341:80"
       - "5342:5341"

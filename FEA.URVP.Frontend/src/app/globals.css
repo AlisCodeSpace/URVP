@@ -1633,6 +1633,9 @@ select:disabled {
 .admin-sidebar-foot {
   position: relative;
   z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
   padding: 0.85rem 0.75rem 1.15rem;
   border-top: 1px solid var(--admin-rail-line);
   overflow: visible;
@@ -2176,6 +2179,33 @@ a.admin-kpi:hover {
   margin: 0.2rem 0 0;
   color: var(--muted);
   font-size: 0.75rem;
+}
+
+.admin-attention-link {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.admin-attention-link:hover .admin-activity-text {
+  color: var(--primary-deep);
+}
+
+.admin-activity-mark.is-warning {
+  background: #b45309;
+}
+
+.admin-activity-mark.is-info {
+  background: var(--primary);
+}
+
+button.admin-widget-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
 }
 
 .admin-page-title {
@@ -2824,6 +2854,24 @@ body.admin-drawer-open {
   box-sizing: border-box;
 }
 
+/* Route loading sits inside the site layout, so cover/hide chrome. */
+.site-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  background: var(--background);
+}
+
+.site-loading .page-loader {
+  min-height: 0;
+}
+
+body:has(.site-loading) .site-nav,
+body:has(.site-loading) .site-footer {
+  display: none;
+}
+
 .page-loader-mark {
   position: relative;
   display: grid;
@@ -3108,4 +3156,173 @@ body.admin-drawer-open {
   .not-found-link:hover .not-found-link-arrow {
     transform: none;
   }
+}
+
+/* ── Notifications ───────────────────────────────────────────────── */
+
+.notification-bell {
+  position: relative;
+}
+
+.notification-bell-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid color-mix(in srgb, white 25%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, white 8%, transparent);
+  color: white;
+}
+
+.notification-bell-btn:hover {
+  background: color-mix(in srgb, white 14%, transparent);
+}
+
+.notification-bell-badge {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  min-width: 1.15rem;
+  padding: 0 0.25rem;
+  border-radius: 9999px;
+  background: var(--secondary);
+  color: var(--primary-deep);
+  font-size: 0.65rem;
+  font-weight: 750;
+  line-height: 1.15rem;
+  text-align: center;
+}
+
+.notification-bell-menu {
+  position: absolute;
+  right: 0;
+  z-index: 70;
+  margin-top: 0.45rem;
+  width: min(22rem, calc(100vw - 2rem));
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--primary) 14%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--primary-deep) 18%, transparent);
+}
+
+.notification-bell.is-admin .notification-bell-menu {
+  right: auto;
+  left: calc(100% + 8px);
+  bottom: 0;
+  margin-top: 0;
+}
+
+.notification-bell-head,
+.notification-bell-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  color: var(--foreground);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.notification-bell-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.notification-bell-actions button,
+.notification-bell-all {
+  color: var(--primary);
+  background: none;
+  border: 0;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+.notification-bell-empty {
+  padding: 1rem 0.9rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.notification-bell-list,
+.notification-page-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-item {
+  display: flex;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--primary) 8%, transparent);
+  background: transparent;
+  text-align: left;
+}
+
+.notification-item-dot {
+  flex-shrink: 0;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-top: 0.4rem;
+  border-radius: 9999px;
+  background: #2563eb;
+}
+
+.notification-item.is-approved .notification-item-dot {
+  background: #15803d;
+}
+
+.notification-item.is-rejected .notification-item-dot {
+  background: #b91c1c;
+}
+
+.notification-item.is-read {
+  opacity: 0.72;
+}
+
+.notification-item-title {
+  display: block;
+  color: var(--foreground);
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+
+.notification-item-message,
+.notification-item-meta {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.notification-page-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.notification-page-count {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.notification-page-error {
+  margin-bottom: 1rem;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+.notification-page-list {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
 }

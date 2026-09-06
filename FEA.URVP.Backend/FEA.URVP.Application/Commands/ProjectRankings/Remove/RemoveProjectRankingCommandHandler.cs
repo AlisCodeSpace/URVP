@@ -1,6 +1,9 @@
+using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Notifications;
 using FEA.URVP.Application.ProjectRankings;
+using FEA.URVP.Domain.Events.Rankings;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -12,18 +15,24 @@ public sealed class RemoveProjectRankingCommandHandler
     private readonly IProjectRankingRepository _rankings;
     private readonly IFacultyCandidateRankingRepository _candidateRankings;
     private readonly IUserRepository _users;
+    private readonly IProjectRepository _projects;
+    private readonly IEventBus _eventBus;
 
     public RemoveProjectRankingCommandHandler(
         ILogger<RemoveProjectRankingCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IProjectRankingRepository rankings,
         IFacultyCandidateRankingRepository candidateRankings,
-        IUserRepository users)
+        IUserRepository users,
+        IProjectRepository projects,
+        IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _rankings = rankings;
         _candidateRankings = candidateRankings;
         _users = users;
+        _projects = projects;
+        _eventBus = eventBus;
     }
 
     protected override async Task HandleCommandAsync(
@@ -55,6 +64,8 @@ public sealed class RemoveProjectRankingCommandHandler
             _candidateRankings.Remove(facultyRanking);
         }
 
+        var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken);
+
         _rankings.Remove(ranking);
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -62,5 +73,18 @@ public sealed class RemoveProjectRankingCommandHandler
             "Student {UserId} removed ranking for project {ProjectId}",
             user.Id,
             request.ProjectId);
+
+        if (project is not null)
+        {
+            await NotificationEventPublish.TryPublishAsync(
+                _eventBus,
+                new ProjectRankingRemovedEvent(
+                    project.Id,
+                    project.CreatedByUserId,
+                    project.Title,
+                    user.Name),
+                Logger,
+                cancellationToken);
+        }
     }
 }

@@ -1,0 +1,101 @@
+# ============================================================
+# FEA.URVP – Azure Build Pipeline
+# Triggers on commits/PRs to the deployment branches.
+# Produces a single pipeline artifact: app-release (Build.zip)
+# ============================================================
+
+trigger:
+  branches:
+    include:
+    - staging
+    - main
+    - master
+
+variables:
+  dotnetVersion: '10.x'
+  publishProject: 'FEA.URVP.Backend'
+  publishProjectReact: 'FEA.URVP.Frontend'
+  publishFolder: 'FEA.URVP'
+  publishZip: 'Build.zip'
+  uploadName: 'app-release'
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+# ────────────────────────────────────────────────────────────
+# STAGE: Build
+# ────────────────────────────────────────────────────────────
+- stage: Build
+  displayName: 'Build & Package'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build Backend + Frontend'
+
+    steps:
+
+    # ── .NET Backend ──────────────────────────────────────────
+    - task: UseDotNet@2
+      displayName: 'Setup .NET $(dotnetVersion)'
+      inputs:
+        packageType: sdk
+        version: $(dotnetVersion)
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore (locked)'
+      inputs:
+        command: restore
+        projects: 'FEA.URVP.sln'
+        arguments: '--locked-mode --runtime win-x64'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish Backend API'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: '$(publishProject)/FEA.URVP.Backend.csproj'
+        arguments: >
+          --configuration Release
+          --no-restore
+          --runtime win-x64
+          --self-contained false
+          --output $(Build.ArtifactStagingDirectory)/$(publishFolder)/$(publishProject)
+        zipAfterPublish: false
+        modifyOutputPath: false
+
+    # ── Next.js Frontend ──────────────────────────────────────
+    - task: UseNode@1
+      displayName: 'Setup Node.js 22.16.0'
+      inputs:
+        version: '22.16.0'
+
+    - script: |
+        npm ci
+        npm run build
+      displayName: 'NPM CI & Build Next.js export'
+      workingDirectory: $(publishProjectReact)
+
+    - script: |
+        dest="$(Build.ArtifactStagingDirectory)/$(publishFolder)/$(publishProject)/wwwroot"
+        rm -rf "$dest"
+        mkdir -p "$dest"
+        cp -r $(publishProjectReact)/out/* "$dest/"
+      displayName: 'Copy Next.js export → wwwroot'
+
+    # ── Package ───────────────────────────────────────────────
+    - task: ArchiveFiles@2
+      displayName: 'Zip build output'
+      inputs:
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/$(publishFolder)'
+        includeRootFolder: true
+        archiveType: zip
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
+        replaceExistingArchive: true
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Pipeline Artifact'
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
+        artifact: '$(uploadName)'
+        publishLocation: pipeline

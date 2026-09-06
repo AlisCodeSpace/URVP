@@ -4,6 +4,7 @@ using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FEA.URVP.Domain.Entities.Files;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.News;
+using FEA.URVP.Domain.Entities.Notifications;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.StudentProfiles;
@@ -52,6 +53,14 @@ public class AppDbContext : DbContext, IUnitOfWork, IDataProtectionKeyContext
     public DbSet<Workshop> Workshops => Set<Workshop>();
 
     public DbSet<Semester> Semesters => Set<Semester>();
+
+    public DbSet<Notification> Notifications => Set<Notification>();
+
+    public DbSet<NotificationOutbox> NotificationOutbox => Set<NotificationOutbox>();
+
+    public DbSet<UserNotificationSettings> UserNotificationSettings => Set<UserNotificationSettings>();
+
+    public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 

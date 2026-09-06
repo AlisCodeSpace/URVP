@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UserMenu } from "@/components/auth/UserMenu";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { navLinks } from "@/lib/site";
@@ -31,8 +32,8 @@ export function Navbar() {
     <header
       className={
         overlayNav
-          ? "absolute inset-x-0 top-0 z-50"
-          : "sticky top-0 z-50 border-b border-primary/10 bg-primary-deep/95 backdrop-blur-md"
+          ? "site-nav absolute inset-x-0 top-0 z-50"
+          : "site-nav sticky top-0 z-50 border-b border-primary/10 bg-primary-deep/95 backdrop-blur-md"
       }
     >
       <div className="site-container flex items-center justify-between gap-4 py-4">
@@ -74,7 +75,10 @@ export function Navbar() {
 
         <div className="hidden items-center gap-3 lg:flex">
           {loading ? null : isSignedIn && status ? (
-            <UserMenu status={status} />
+            <>
+              <NotificationBell />
+              <UserMenu status={status} />
+            </>
           ) : (
             <Button href="/sign-in" variant="secondary" size="sm">
               Log In
@@ -131,11 +135,16 @@ export function Navbar() {
           </nav>
           <div className="mt-4">
             {loading ? null : isSignedIn && status ? (
-              <UserMenu
-                status={status}
-                variant="mobile"
-                onNavigate={() => setOpen(false)}
-              />
+              <>
+                <div className="mb-3">
+                  <NotificationBell />
+                </div>
+                <UserMenu
+                  status={status}
+                  variant="mobile"
+                  onNavigate={() => setOpen(false)}
+                />
+              </>
             ) : (
               <Button
                 href="/sign-in"

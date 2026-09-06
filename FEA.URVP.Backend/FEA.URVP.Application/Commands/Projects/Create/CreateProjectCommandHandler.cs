@@ -1,9 +1,12 @@
+using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.Projects;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Notifications;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Enums;
+using FEA.URVP.Domain.Events.Projects;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.Projects.Create;
@@ -13,16 +16,19 @@ public sealed class CreateProjectCommandHandler
 {
     private readonly IProjectRepository _projects;
     private readonly IUserRepository _users;
+    private readonly IEventBus _eventBus;
 
     public CreateProjectCommandHandler(
         ILogger<CreateProjectCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IProjectRepository projects,
-        IUserRepository users)
+        IUserRepository users,
+        IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _projects = projects;
         _users = users;
+        _eventBus = eventBus;
     }
 
     protected override async Task<ProjectDto> HandleInternal(
@@ -71,6 +77,12 @@ public sealed class CreateProjectCommandHandler
             "Created project {ProjectId} by user {UserId}",
             project.Id,
             user.Id);
+
+        await NotificationEventPublish.TryPublishAsync(
+            _eventBus,
+            new ProjectOpenedEvent(project.Id),
+            Logger,
+            cancellationToken);
 
         return project.ToDto();
     }

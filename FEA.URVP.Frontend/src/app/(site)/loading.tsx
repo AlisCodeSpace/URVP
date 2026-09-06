@@ -2,7 +2,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 
 export default function SiteLoading() {
   return (
-    <main>
+    <main className="site-loading">
       <PageLoader />
     </main>
   );

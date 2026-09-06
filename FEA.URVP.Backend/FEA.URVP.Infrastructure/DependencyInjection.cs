@@ -4,6 +4,7 @@ using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Infrastructure.Data.Context;
 using FEA.URVP.Infrastructure.Ldap;
 using FEA.URVP.Infrastructure.Events;
+using FEA.URVP.Infrastructure.Notifications;
 using FEA.URVP.Infrastructure.Repositories;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +42,8 @@ public static class DependencyInjection
         services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
         services.AddScoped<IWorkshopRepository, WorkshopRepository>();
         services.AddScoped<ISemesterRepository, SemesterRepository>();
+        services.AddScoped<IAdminOverviewReadRepository, AdminOverviewReadRepository>();
+        services.AddNotificationServices(configuration);
         services.AddScoped<IEventBus, InMemoryEventBus>();
         services.AddScoped<IDirectoryGroupLookup, LdapDirectoryGroupLookup>();
 

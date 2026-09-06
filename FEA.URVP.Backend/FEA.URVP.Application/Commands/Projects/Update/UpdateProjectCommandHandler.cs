@@ -1,7 +1,11 @@
+using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.Projects;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Notifications;
+using FEA.URVP.Domain.Enums;
+using FEA.URVP.Domain.Events.Projects;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.Projects.Update;
@@ -11,16 +15,19 @@ public sealed class UpdateProjectCommandHandler
 {
     private readonly IProjectRepository _projects;
     private readonly IUserRepository _users;
+    private readonly IEventBus _eventBus;
 
     public UpdateProjectCommandHandler(
         ILogger<UpdateProjectCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IProjectRepository projects,
-        IUserRepository users)
+        IUserRepository users,
+        IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _projects = projects;
         _users = users;
+        _eventBus = eventBus;
     }
 
     protected override async Task<ProjectDto> HandleInternal(
@@ -44,6 +51,8 @@ public sealed class UpdateProjectCommandHandler
         var owner = await _users.FindByIdAsync(project.CreatedByUserId, cancellationToken)
             ?? throw new InvalidOperationException("Project owner was not found.");
 
+        var previousStatus = project.Status;
+
         project.Title = request.Title.Trim();
         project.ResearchAreas = request.ResearchAreas.ToList();
         project.IrbStage = request.IrbStage;
@@ -62,6 +71,18 @@ public sealed class UpdateProjectCommandHandler
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 
         Logger.LogInformation("Updated project {ProjectId}", project.Id);
+
+        if (previousStatus != ProjectStatus.Closed && project.Status == ProjectStatus.Closed)
+        {
+            await NotificationEventPublish.TryPublishAsync(
+                _eventBus,
+                new ProjectClosedEvent(
+                    project.Id,
+                    project.CreatedByUserId,
+                    notifyOwner: request.IsAdmin && project.CreatedByUserId != request.CurrentUserId),
+                Logger,
+                cancellationToken);
+        }
 
         return project.ToDto();
     }

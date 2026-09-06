@@ -61,6 +61,21 @@ public sealed class UserRepository : IUserRepository
     public Task<int> CountByRoleAsync(UserRole role, CancellationToken cancellationToken = default) =>
         _db.Users.CountAsync(u => u.Role == role, cancellationToken);
 
+    public async Task<IReadOnlyList<Guid>> ListUserIdsByRolesAsync(
+        IReadOnlyCollection<UserRole> roles,
+        CancellationToken cancellationToken = default)
+    {
+        if (roles.Count == 0)
+        {
+            return [];
+        }
+
+        return await _db.Users.AsNoTracking()
+            .Where(u => roles.Contains(u.Role))
+            .Select(u => u.Id)
+            .ToListAsync(cancellationToken);
+    }
+
     public void Add(User user) => _db.Users.Add(user);
 
     private static IQueryable<User> ApplySort(

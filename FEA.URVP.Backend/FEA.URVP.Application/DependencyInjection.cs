@@ -25,6 +25,8 @@ public static class DependencyInjection
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
         services.AddValidatorsFromAssembly(assembly);
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        // Registers IEventHandler<T> implementations, including the four notification
+        // lifecycle handlers (Created / Read / Deleted / SettingsUpdated).
         services.AddEventHandlers(assembly);
         services.Configure<FileStorageOptions>(configuration.GetSection(FileStorageOptions.SectionName));
         services.AddScoped<IMimeTypeValidator, MimeTypeValidator>();

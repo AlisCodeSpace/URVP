@@ -1,9 +1,12 @@
+using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.News;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Notifications;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.News;
+using FEA.URVP.Domain.Events.News;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.News.Create;
@@ -12,14 +15,17 @@ public sealed class CreateNewsArticleCommandHandler
     : BaseCommandHandler<CreateNewsArticleCommand, NewsArticleDto>
 {
     private readonly INewsArticleRepository _news;
+    private readonly IEventBus _eventBus;
 
     public CreateNewsArticleCommandHandler(
         ILogger<CreateNewsArticleCommandHandler> logger,
         IUnitOfWork unitOfWork,
-        INewsArticleRepository news)
+        INewsArticleRepository news,
+        IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _news = news;
+        _eventBus = eventBus;
     }
 
     protected override async Task<NewsArticleDto> HandleInternal(
@@ -58,6 +64,12 @@ public sealed class CreateNewsArticleCommandHandler
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 
         Logger.LogInformation("Created news article {NewsId} ({Slug})", article.Id, article.Slug);
+
+        await NotificationEventPublish.TryPublishAsync(
+            _eventBus,
+            new NewsPublishedEvent(article.Id),
+            Logger,
+            cancellationToken);
 
         return article.ToDto();
     }

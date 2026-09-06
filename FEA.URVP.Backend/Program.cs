@@ -15,10 +15,15 @@ if (!string.Equals(
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile(
+    $"appsettings.{builder.Environment.EnvironmentName}.local.json",
+    optional: true,
+    reloadOnChange: false);
+
 builder.Logging.ClearProviders();
 
-var seqServerUrl = GetEnvironmentVariable("SEQ_SERVER_URL");
-var seqApiKey = GetEnvironmentVariable("SEQ_API_KEY");
+var seqServerUrl = builder.Configuration["Seq:ServerUrl"];
+var seqApiKey = builder.Configuration["Seq:ApiKey"];
 
 var loggerConfiguration = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -113,21 +118,4 @@ static async Task InitializeDatabaseInBackground(WebApplication app)
     {
         app.Logger.LogError(ex, "Database initialization failed. The API will keep running.");
     }
-}
-
-// SEQ_SERVER_URL / SEQ_API_KEY are read as normal process environment variables so
-// this works unmodified under Docker, Kubernetes, and CI/CD. On Windows/IIS deployments
-// that rely on machine-level environment variables (which require an IIS/app-pool
-// restart to pick up), fall back to the Machine scope without breaking the process-level path.
-static string? GetEnvironmentVariable(string name)
-{
-    var value = Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
-    if (!string.IsNullOrWhiteSpace(value))
-    {
-        return value;
-    }
-
-    return OperatingSystem.IsWindows()
-        ? Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Machine)
-        : value;
 }
