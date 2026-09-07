@@ -1,5 +1,4 @@
 import type { AdminOverviewDto } from "@/lib/admin-overview-api";
-import { matchRate } from "@/lib/matching-api";
 import { formatScheduleRange } from "@/lib/semesters-api";
 
 export type AdminKpi = {
@@ -86,17 +85,13 @@ export function buildAdminKpis(overview: AdminOverviewDto): AdminKpi[] {
     },
     {
       id: "matching",
-      label: "Latest matching",
-      value: run
-        ? `${formatCount(run.studentsMatched)} / ${formatCount(run.studentsConsidered)}`
-        : "No run yet",
-      hint: run
-        ? `${matchRate(run)}% of students considered`
-        : "Run matching when rankings are ready",
+      label: "Assigned students",
+      value: formatCount(matching.confirmedPlacements),
+      hint: "Confirmed onto projects this cycle",
       delta: run
-        ? `${run.status}${run.warningCount > 0 ? ` · ${run.warningCount} warning${run.warningCount === 1 ? "" : "s"}` : ""}`
+        ? `Latest test run ${run.status}${run.warningCount > 0 ? ` · ${run.warningCount} warning${run.warningCount === 1 ? "" : "s"}` : ""}`
         : undefined,
-      href: "/admin/matching",
+      href: "/admin/projects",
     },
   ];
 }
@@ -138,7 +133,7 @@ export function catalogTiles(overview: AdminOverviewDto) {
 
 export function semesterChipTitle(overview: AdminOverviewDto): string {
   const semester = overview.semester;
-  if (!semester) return "No academic cycle is running";
+  if (!semester) return "No URVP cycle is running";
   return formatScheduleRange(semester.cycleStart, semester.cycleEnd);
 }
 

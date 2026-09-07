@@ -8,6 +8,9 @@ export type ProjectRankingStudentDto = {
   studentUserName?: string | null;
   rank: number;
   facultyRank?: number | null;
+  assignedPlacementId?: string | null;
+  assignedProjectId?: string | null;
+  assignedProjectTitle?: string | null;
   rankedAt: string;
   updatedAt: string;
 };
@@ -83,4 +86,9 @@ export function rankLabel(rank: number): string {
             ? "rd"
             : "th";
   return `${n}${suffix} choice`;
+}
+
+export function optionalRankLabel(rank: number | null | undefined): string | null {
+  if (rank == null || rank < 1) return null;
+  return rankLabel(rank);
 }

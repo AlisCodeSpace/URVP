@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.DTOs.Matching;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Domain.Entities.Matching;
 using MediatR;
 
 namespace FEA.URVP.Application.Queries.Matching.List;
@@ -20,6 +21,13 @@ public sealed class ListMatchingRunsQueryHandler
         CancellationToken cancellationToken)
     {
         var runs = await _runs.ListAsync(request.SemesterId, cancellationToken);
+        if (!request.IncludeManual)
+        {
+            runs = runs
+                .Where(r => r.AlgorithmVersion != MatchingRun.ManualAlgorithmVersion)
+                .ToList();
+        }
+
         return runs.Select(r => r.ToDto()).ToList();
     }
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import { adminWorkshopEditHref } from "@/lib/auth";
@@ -92,7 +93,7 @@ export function AdminWorkshopsView() {
         }
       />
 
-      <div className="admin-users-filters">
+      <div className="admin-users-filters admin-users-filters--actions">
         <div className="admin-users-field">
           <label className="field-label" htmlFor={searchId}>
             Search
@@ -107,9 +108,12 @@ export function AdminWorkshopsView() {
           />
         </div>
         <div className="admin-users-field flex items-end">
-          <Button href="/admin/workshops/new" variant="primary" size="sm">
-            Add workshop
-          </Button>
+          <div className="admin-list-toolbar-actions">
+            <RefreshIconButton loading={loading} onClick={() => void load()} />
+            <Button href="/admin/workshops/new" variant="primary" size="md">
+              Add workshop
+            </Button>
+          </div>
         </div>
       </div>
 

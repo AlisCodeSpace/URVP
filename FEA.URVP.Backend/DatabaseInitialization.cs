@@ -23,7 +23,7 @@ public static class DatabaseInitialization
         var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
             .CreateLogger(nameof(DatabaseInitialization));
         var applyMigrations = app.Configuration.GetValue("Database:ApplyMigrationsOnStartup", app.Environment.IsDevelopment());
-        var seedCatalogs = app.Configuration.GetValue("Database:SeedCatalogsOnStartup", true);
+        var seedCatalogs = app.Configuration.GetValue("Database:SeedCatalogsOnStartup", app.Environment.IsDevelopment());
 
         if (applyMigrations)
         {

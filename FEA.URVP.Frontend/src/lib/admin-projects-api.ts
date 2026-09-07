@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api";
+import type { PlacementDto } from "@/lib/matching-api";
 import type { MyProjectStatus } from "@/lib/project-form";
 import type { ProjectRankingStudentDto } from "@/lib/project-rankings-api";
 import type { ProjectDto } from "@/lib/projects-api";
@@ -21,6 +22,7 @@ export type AdminProjectListItemDto = {
 
 export type AdminProjectDetailDto = {
   project: ProjectDto;
+  assignments: PlacementDto[];
   rankings: ProjectRankingStudentDto[];
 };
 

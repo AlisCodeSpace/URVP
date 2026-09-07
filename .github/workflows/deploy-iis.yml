@@ -1,0 +1,136 @@
+# Deploy the same-origin BFF to AUB IIS.
+# Triggers only on push/merge (and manual dispatch) — never on pull_request.
+#
+# Self-hosted runner labels:
+#   staging    → [self-hosted, Windows, staging]
+#   production → [self-hosted, Windows, production]
+#
+# GitHub Environment variables (optional; script defaults are used when unset):
+#   IIS_SITE_NAME, IIS_PHYSICAL_PATH, PUBLIC_HOSTNAME
+#
+# azure-pipelines.yml is the ADO → GitHub mirror. This workflow publishes onto
+# the box after that mirror lands the branch.
+
+name: Deploy IIS
+
+on:
+  push:
+    branches: [staging, main, master]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: IIS environment
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-iis-${{ github.event_name == 'workflow_dispatch' && inputs.target || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to IIS
+    runs-on: ${{ ((github.event_name == 'workflow_dispatch' && inputs.target == 'staging') || (github.event_name != 'workflow_dispatch' && github.ref_name == 'staging')) && fromJSON('["self-hosted","Windows","staging"]') || fromJSON('["self-hosted","Windows","production"]') }}
+    environment: ${{ ((github.event_name == 'workflow_dispatch' && inputs.target == 'staging') || (github.event_name != 'workflow_dispatch' && github.ref_name == 'staging')) && 'staging' || 'production' }}
+
+    env:
+      DOTNET_ENVIRONMENT_NAME: ${{ ((github.event_name == 'workflow_dispatch' && inputs.target == 'staging') || (github.event_name != 'workflow_dispatch' && github.ref_name == 'staging')) && 'Staging' || 'Production' }}
+      PUBLIC_HOSTNAME: ${{ vars.PUBLIC_HOSTNAME }}
+      IIS_SITE_NAME: ${{ vars.IIS_SITE_NAME }}
+      IIS_PHYSICAL_PATH: ${{ vars.IIS_PHYSICAL_PATH }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+          cache: npm
+          cache-dependency-path: FEA.URVP.Frontend/package-lock.json
+
+      - name: Restore (locked)
+        run: dotnet restore FEA.URVP.sln --locked-mode --runtime win-x64
+
+      - name: Publish backend
+        run: >
+          dotnet publish FEA.URVP.Backend/FEA.URVP.Backend.csproj
+          --configuration Release
+          --no-restore
+          --runtime win-x64
+          --self-contained false
+          --output "${{ runner.temp }}\urvp-publish"
+
+      - name: Build Next.js export
+        working-directory: FEA.URVP.Frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy export into wwwroot
+        shell: powershell
+        run: |
+          $dest = Join-Path $env:RUNNER_TEMP 'urvp-publish\wwwroot'
+          if (Test-Path -LiteralPath $dest) {
+            Remove-Item -LiteralPath $dest -Recurse -Force
+          }
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Copy-Item -Path 'FEA.URVP.Frontend\out\*' -Destination $dest -Recurse -Force
+          if (-not (Test-Path -LiteralPath (Join-Path $dest 'index.html'))) {
+            throw 'wwwroot\index.html is missing; the Next.js export did not copy.'
+          }
+
+      - name: Publish onto IIS
+        shell: powershell
+        run: |
+          $site = if ($env:IIS_SITE_NAME) { $env:IIS_SITE_NAME } else { 'FEA.URVP' }
+          $path = if ($env:IIS_PHYSICAL_PATH) { $env:IIS_PHYSICAL_PATH } else { 'C:\inetpub\wwwroot\FEA.URVP' }
+          $source = Join-Path $env:RUNNER_TEMP 'urvp-publish'
+
+          & .\scripts\iis\Publish-IisSite.ps1 `
+            -SourcePath $source `
+            -PhysicalPath $path `
+            -SiteName $site `
+            -EnvironmentName $env:DOTNET_ENVIRONMENT_NAME
+
+      - name: Probe /health/live
+        shell: powershell
+        continue-on-error: true
+        run: |
+          $hostName = if ($env:PUBLIC_HOSTNAME) {
+            $env:PUBLIC_HOSTNAME
+          } elseif ($env:DOTNET_ENVIRONMENT_NAME -eq 'Staging') {
+            'urvp-staging.aub.edu.lb'
+          } else {
+            'urvp.aub.edu.lb'
+          }
+
+          $urls = @(
+            "https://$hostName/health/live",
+            "http://127.0.0.1/health/live"
+          )
+
+          foreach ($url in $urls) {
+            try {
+              $response = Invoke-WebRequest -UseBasicParsing -Uri $url -Headers @{ Host = $hostName } -TimeoutSec 30
+              if ($response.StatusCode -eq 200 -and $response.Content -match 'healthy') {
+                Write-Host "OK $($response.StatusCode) $url"
+                exit 0
+              }
+              Write-Warning "$url returned $($response.StatusCode) $($response.Content)"
+            } catch {
+              Write-Warning "$url failed: $($_.Exception.Message)"
+            }
+          }
+
+          Write-Warning "Could not confirm /health/live. Check the IIS binding and certificate, then hit the URL from a browser."

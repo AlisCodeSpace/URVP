@@ -224,7 +224,8 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
           </h3>
           <p className="admin-detail-section-desc">
             Student choice is how the student ranked the project; faculty choice is
-            how the project owner ranked the student.
+            how the project owner ranked the student. Confirming a test run still
+            fills seats.
           </p>
         </div>
 

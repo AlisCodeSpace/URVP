@@ -125,7 +125,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
       setValues(toValues(dto));
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Failed to load semester.",
+        err instanceof ApiError ? err.message : "Failed to load URVP cycle.",
       );
     } finally {
       setLoading(false);
@@ -143,7 +143,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
     if (!values.name.trim()) {
-      setError("Semester name is required.");
+      setError("Cycle name is required.");
       return;
     }
 
@@ -193,7 +193,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
       setError(
         err instanceof ApiError
           ? (err.errors?.[0] ?? err.message)
-          : "Could not save this semester.",
+          : "Could not save this URVP cycle.",
       );
     } finally {
       setSaving(false);
@@ -204,8 +204,8 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
     return (
       <div className="admin-panel admin-panel--wide">
         <AdminPageHeader
-          title={isEdit ? "Edit semester" : "New semester"}
-          description="Schedule the academic cycle and student application window."
+          title={isEdit ? "Edit URVP cycle" : "New URVP cycle"}
+          description="Schedule the URVP cycle and student application window."
         />
         <AdminFormSkeleton fields={6} />
       </div>
@@ -215,8 +215,8 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
   return (
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
-        title={isEdit ? "Edit semester" : "New semester"}
-        description="Set start and end dates so each period closes automatically — or leave an end blank and close it instantly from the semesters list. You can edit dates at any time to extend or shorten a period."
+        title={isEdit ? "Edit URVP cycle" : "New URVP cycle"}
+        description="Set start and end dates so each period closes automatically — or leave an end blank and close it instantly from the URVP Cycles list. You can edit dates at any time to extend or shorten a period."
       />
 
       <form className="mt-6 grid max-w-3xl gap-5" onSubmit={onSubmit} noValidate>
@@ -320,7 +320,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
 
         <ScheduleFieldset
           legend="Academic Cycle"
-          description="Projects are visible while this cycle is running. It opens at the start date and closes automatically at the end date. You can edit these dates later to extend or shorten the cycle, or end it instantly from the semesters list."
+          description="Projects are visible while this cycle is running. It opens at the start date and closes automatically at the end date. You can edit these dates later to extend or shorten the cycle, or end it instantly from the URVP Cycles list."
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField
@@ -354,7 +354,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
 
         <ScheduleFieldset
           legend="Application Window"
-          description="Students may apply only while the cycle is running and the current time is inside this window. The window closes automatically at the end date. Edit the dates to extend or shorten it, or close it instantly from the semesters list."
+          description="Students may apply only while the cycle is running and the current time is inside this window. The window closes automatically at the end date. Edit the dates to extend or shorten it, or close it instantly from the URVP Cycles list."
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField
@@ -392,7 +392,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
               ? "Saving…"
               : isEdit
                 ? "Save changes"
-                : "Create semester"}
+                : "Create cycle"}
           </Button>
           <Button href="/admin/semesters" variant="outline" size="md">
             Cancel

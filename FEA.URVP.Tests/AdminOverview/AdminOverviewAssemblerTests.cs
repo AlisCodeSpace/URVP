@@ -91,6 +91,7 @@ public sealed class AdminOverviewAssemblerTests
         Assert.Equal(6, dto.Pipeline.Single(s => s.Id == "projects").Count);
         Assert.Equal(5, dto.Pipeline.Single(s => s.Id == "rankings").Count);
         Assert.Equal(8, dto.Pipeline.Single(s => s.Id == "placements").Count);
+        Assert.Equal("Assigned students", dto.Pipeline.Single(s => s.Id == "placements").Label);
         Assert.Equal(12, dto.Projects.SeatsRemaining);
         Assert.Equal(MatchingRunStatus.Draft, dto.Matching.LatestRun?.Status);
         Assert.Contains("5 meet credits", dto.Pipeline.Single(s => s.Id == "profiles").Note);

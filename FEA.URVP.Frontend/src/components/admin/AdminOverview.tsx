@@ -62,15 +62,15 @@ export function AdminOverview() {
           <h2 className="admin-page-title">Overview</h2>
           <p className="admin-page-desc">
             {semester
-              ? `Snapshot of matching readiness, capacity, and catalog health for ${semester.name.trim()}.`
-              : "Snapshot of matching readiness, capacity, and catalog health."}
+              ? `Snapshot of assignments, capacity, and catalog health for ${semester.name.trim()}.`
+              : "Snapshot of assignments, capacity, and catalog health."}
           </p>
         </div>
         <div
           className="admin-semester-chip"
           title={data ? semesterChipTitle(data) : undefined}
         >
-          <span className="admin-semester-chip-label">Active semester</span>
+          <span className="admin-semester-chip-label">Active URVP cycle</span>
           <span className="admin-semester-chip-value">
             {loading ? "Loading…" : (semester?.name ?? "None")}
           </span>
@@ -119,7 +119,7 @@ export function AdminOverview() {
             <section className="admin-widget" aria-labelledby="pipeline-heading">
               <header className="admin-widget-head">
                 <h3 id="pipeline-heading" className="admin-widget-title">
-                  Matching pipeline
+                  Assignment pipeline
                 </h3>
                 <p className="admin-widget-sub">{profileWindowLabel(data)}</p>
               </header>
@@ -149,7 +149,7 @@ export function AdminOverview() {
                 <p className="admin-widget-sub">
                   {data.projects.seatsRequired > 0
                     ? `Open seats ${data.projects.seatsFilled}/${data.projects.seatsRequired} · ${fill}%`
-                    : "Blockers that affect a clean matching run"}
+                    : "Blockers that affect assignments"}
                 </p>
               </header>
               {data.projects.seatsRequired > 0 ? (

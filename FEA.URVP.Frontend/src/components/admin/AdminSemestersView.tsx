@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import { adminSemesterEditHref } from "@/lib/auth";
@@ -233,7 +234,7 @@ export function AdminSemestersView() {
     } catch (err) {
       setSemesters([]);
       setError(
-        err instanceof ApiError ? err.message : "Failed to load semesters.",
+        err instanceof ApiError ? err.message : "Failed to load URVP cycles.",
       );
     } finally {
       if (!silent) setLoading(false);
@@ -253,7 +254,7 @@ export function AdminSemestersView() {
       await load();
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Failed to delete semester.",
+        err instanceof ApiError ? err.message : "Failed to delete URVP cycle.",
       );
     } finally {
       setDeleting(false);
@@ -278,18 +279,19 @@ export function AdminSemestersView() {
   return (
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
-        title="Semesters"
-        description="Schedule academic cycles and application windows with start and end dates. Each period closes automatically when its end date is reached. Edit a semester to extend or shorten it, or use the instant controls below."
+        title="URVP Cycles"
+        description="Schedule URVP cycles and application windows with start and end dates. Each period closes automatically when its end date is reached. Edit a cycle to extend or shorten it, or use the instant controls below."
         tag={
           semesters.length > 0
-            ? `${semesters.length} semester${semesters.length === 1 ? "" : "s"}`
+            ? `${semesters.length} cycle${semesters.length === 1 ? "" : "s"}`
             : null
         }
       />
 
-      <div style={{ marginBottom: "1.25rem" }}>
-        <Button href="/admin/semesters/new" variant="primary" size="sm">
-          Add semester
+      <div className="admin-list-toolbar-actions" style={{ marginBottom: "1.25rem" }}>
+        <RefreshIconButton loading={loading} onClick={() => void load()} />
+        <Button href="/admin/semesters/new" variant="primary" size="md">
+          Add cycle
         </Button>
       </div>
 
@@ -309,7 +311,7 @@ export function AdminSemestersView() {
               color: "var(--primary-deep)",
             }}
           >
-            {activeSemester.name} — Active Semester Controls
+            {activeSemester.name} — Active URVP Cycle Controls
           </p>
           <ActiveSemesterPanel
             semester={activeSemester}
@@ -323,7 +325,7 @@ export function AdminSemestersView() {
         <AdminTableSkeleton columns={5} />
       ) : semesters.length === 0 ? (
         <p className="admin-users-status">
-          No semesters yet. Add one to get started.
+          No URVP cycles yet. Add one to get started.
         </p>
       ) : (
         <div className="admin-users-table-wrap">
@@ -424,7 +426,7 @@ export function AdminSemestersView() {
         open={Boolean(pendingDelete)}
         onClose={() => setPendingDelete(null)}
         onConfirm={onConfirmDelete}
-        title="Delete this semester?"
+        title="Delete this URVP cycle?"
         description={
           pendingDelete
             ? `"${pendingDelete.name}" will be permanently removed.`

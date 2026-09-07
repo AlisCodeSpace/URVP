@@ -8,16 +8,24 @@ import {
   type NotificationSettings,
 } from "@/lib/notifications-api";
 
-export function useNotificationSettings() {
+type UseNotificationSettingsOptions = {
+  enabled?: boolean;
+};
+
+export function useNotificationSettings(
+  options: UseNotificationSettingsOptions = {},
+) {
   const { status } = useAuth();
-  const enabled = Boolean(status?.isAuthenticated);
+  const enabled =
+    Boolean(status?.isAuthenticated) && (options.enabled ?? true);
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!enabled) {
       setSettings(null);
+      setLoading(false);
       return;
     }
 

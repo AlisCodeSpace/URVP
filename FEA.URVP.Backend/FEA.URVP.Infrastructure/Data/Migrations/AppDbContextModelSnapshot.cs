@@ -158,7 +158,7 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         {
                             t.HasCheckConstraint("CK_FileStorage_EntityType", "[EntityType] IN ('StudentProfile', 'Workshop')");
 
-                            t.HasCheckConstraint("CK_FileStorage_FileSize", "(([FileCategory] IN ('Transcript', 'CitiCertification') AND [FileSize] <= 10485760) OR ([FileCategory] = 'Poster' AND [FileSize] <= 5242880))");
+                            t.HasCheckConstraint("CK_FileStorage_FileSize", "(([FileCategory] IN ('Transcript', 'Cv') AND [FileSize] <= 10485760) OR ([FileCategory] = 'Poster' AND [FileSize] <= 5242880))");
                         });
                 });
 
@@ -215,6 +215,11 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SemesterId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_MatchingRuns_ManualPerSemester")
+                        .HasFilter("[AlgorithmVersion] = N'manual/v1'");
+
                     b.HasIndex("SemesterId", "Status");
 
                     b.ToTable("MatchingRuns", (string)null);
@@ -240,6 +245,11 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
                     b.Property<bool>("ResolvedByTieBreak")
                         .HasColumnType("bit");
+
+                    b.Property<byte>("Source")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)0);
 
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
@@ -603,7 +613,7 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<byte>("IrbStage")
+                    b.Property<byte?>("IrbStage")
                         .HasColumnType("tinyint");
 
                     b.Property<string>("MinQualifications")
@@ -705,9 +715,6 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("CitiFileId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<bool>("CompletedCredits")
                         .HasColumnType("bit");
 
@@ -717,6 +724,9 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.Property<decimal>("CumulativeAverage")
                         .HasPrecision(5, 2)
                         .HasColumnType("decimal(5,2)");
+
+                    b.Property<Guid?>("CvFileId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Degree")
                         .IsRequired()

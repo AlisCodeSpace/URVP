@@ -16,6 +16,7 @@ public sealed class MatchingRunDto
     public int StudentsMatched { get; init; }
     public int TieBreaksUsed { get; init; }
     public int WarningCount { get; init; }
+    public bool IsManual { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? ConfirmedAt { get; init; }
 }
@@ -39,6 +40,7 @@ public sealed class PlacementDto
     public byte StudentRank { get; init; }
     public byte FacultyRank { get; init; }
     public bool ResolvedByTieBreak { get; init; }
+    public PlacementSource Source { get; init; }
     public PlacementStatus Status { get; init; }
     public DateTime UpdatedAt { get; init; }
 }

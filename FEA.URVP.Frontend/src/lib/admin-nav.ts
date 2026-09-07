@@ -25,12 +25,12 @@ export const adminNav: AdminNavGroup[] = [
       {
         href: "/admin/projects",
         label: "Projects",
-        description: "All listings and student ranking interest.",
+        description: "Listings, rankings, and student assignments.",
       },
       {
         href: "/admin/matching",
-        label: "Matching",
-        description: "Run, review, and confirm automatic placements.",
+        label: "Matching test",
+        description: "Run the automatic matcher for testing.",
       },
       {
         href: "/admin/news",
@@ -44,8 +44,8 @@ export const adminNav: AdminNavGroup[] = [
       },
       {
         href: "/admin/semesters",
-        label: "Semesters",
-        description: "Academic terms and program windows.",
+        label: "URVP Cycles",
+        description: "Program cycles and application windows.",
       },
     ],
     children: [

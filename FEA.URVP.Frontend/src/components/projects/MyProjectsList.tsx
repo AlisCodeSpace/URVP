@@ -5,9 +5,10 @@ import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons";
+import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { ApiError } from "@/lib/api";
 import { editProjectHref, newProjectHref, viewProjectHref } from "@/lib/auth";
-import type { MyProject, MyProjectStatus } from "@/lib/project-form";
+import { isFacultyProjectLocked, type MyProject, type MyProjectStatus } from "@/lib/project-form";
 import {
   deleteProject,
   listMyProjects,
@@ -33,6 +34,7 @@ function ProjectRow({
   onDelete: (id: string) => void;
 }) {
   const deleting = busyId === project.id;
+  const locked = isFacultyProjectLocked(project);
   const areas = project.researchAreas.slice(0, 2).join(" · ");
   const extraAreas = project.researchAreas.length - 2;
 
@@ -65,25 +67,29 @@ function ProjectRow({
           >
             View
           </Button>
-          <Button
-            href={editProjectHref(userId, project.id)}
-            variant="ghost"
-            size="sm"
-          >
-            <IconPencil />
-            Edit
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            disabled={deleting || busyId !== null}
-            onClick={() => onDelete(project.id)}
-            className="!text-red-800 hover:!text-red-900"
-          >
-            <IconTrash />
-            {deleting ? "Deleting…" : "Delete"}
-          </Button>
+          {locked ? null : (
+            <>
+              <Button
+                href={editProjectHref(userId, project.id)}
+                variant="ghost"
+                size="sm"
+              >
+                <IconPencil />
+                Edit
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={deleting || busyId !== null}
+                onClick={() => onDelete(project.id)}
+                className="!text-red-800 hover:!text-red-900"
+              >
+                <IconTrash />
+                {deleting ? "Deleting…" : "Delete"}
+              </Button>
+            </>
+          )}
         </div>
       </td>
     </tr>
@@ -92,11 +98,13 @@ function ProjectRow({
 
 export function MyProjectsList({ userId }: { userId: string }) {
   const [projects, setProjects] = useState<MyProject[] | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<MyProject | null>(null);
 
   const load = useCallback(async () => {
+    setLoading(true);
     setError(null);
     try {
       const items = await listMyProjects();
@@ -108,6 +116,8 @@ export function MyProjectsList({ userId }: { userId: string }) {
           ? err.message
           : "Could not load your projects.",
       );
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -191,6 +201,10 @@ export function MyProjectsList({ userId }: { userId: string }) {
           {error}
         </Text>
       ) : null}
+
+      <div className="mb-4 flex justify-end">
+        <RefreshIconButton loading={loading} onClick={() => void load()} />
+      </div>
 
       <div className="admin-users-table-wrap">
         <table className="admin-users-table">

@@ -79,10 +79,10 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
   }
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} className="relative inline-flex self-stretch overflow-visible">
       <button
         type="button"
-        className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-white/5 px-2.5 py-1.5 text-sm font-semibold text-white transition hover:bg-white/10"
+        className="inline-flex h-full items-center gap-2 rounded-md border border-white/25 bg-white/5 px-2.5 py-1.5 text-sm font-semibold text-white transition hover:bg-white/10"
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={menuId}
@@ -104,7 +104,7 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
         <div
           id={menuId}
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-lg border border-white/25 bg-white/10 shadow-lg backdrop-blur-md"
+          className="absolute top-full right-0 left-auto z-50 mt-2 w-64 overflow-hidden rounded-lg border border-white/25 bg-white/10 shadow-lg backdrop-blur-md"
         >
           <div className="border-b border-white/15 px-4 py-3">
             <p className="truncate text-sm font-semibold text-white">{name}</p>

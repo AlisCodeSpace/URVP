@@ -62,7 +62,7 @@ public sealed class FileStorageConfiguration : IEntityTypeConfiguration<FileStor
 
             t.HasCheckConstraint(
                 "CK_FileStorage_FileSize",
-                $"(([FileCategory] IN ('{FileStorageCatalog.CategoryTranscript}', '{FileStorageCatalog.CategoryCitiCertification}') AND [FileSize] <= {FileStorageCatalog.MaxDocumentBytes}) OR ([FileCategory] = '{FileStorageCatalog.CategoryPoster}' AND [FileSize] <= {FileStorageCatalog.MaxImageBytes}))");
+                $"(([FileCategory] IN ('{FileStorageCatalog.CategoryTranscript}', '{FileStorageCatalog.CategoryCv}') AND [FileSize] <= {FileStorageCatalog.MaxDocumentBytes}) OR ([FileCategory] = '{FileStorageCatalog.CategoryPoster}' AND [FileSize] <= {FileStorageCatalog.MaxImageBytes}))");
         });
     }
 }

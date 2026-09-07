@@ -4,6 +4,7 @@ import { useState } from "react";
 import { NotificationItem } from "@/components/notifications/NotificationItem";
 import { NotificationSettingsDialog } from "@/components/notifications/NotificationSettingsDialog";
 import { Button } from "@/components/ui/Button";
+import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { useNotificationActions } from "@/hooks/useNotificationActions";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
@@ -15,7 +16,7 @@ export function NotificationsView() {
   const list = useNotifications({
     page: 1,
     pageSize: 50,
-    inAppNotifications: settings.settings?.inAppNotifications,
+    inAppNotifications: settings.settings?.inAppNotifications !== false,
   });
   const actions = useNotificationActions(list);
   useRealTimeNotifications({ enabled: list.canAccess });
@@ -28,14 +29,15 @@ export function NotificationsView() {
             ? `${list.unreadCount} unread`
             : "In-app notifications are hidden"}
         </p>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => void list.refresh()}>
-            Refresh
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void actions.markAllRead()}>
+        <div className="admin-list-toolbar-actions">
+          <RefreshIconButton
+            loading={list.loading}
+            onClick={() => void list.refresh()}
+          />
+          <Button type="button" variant="outline" size="md" onClick={() => void actions.markAllRead()}>
             Mark all read
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
+          <Button type="button" variant="outline" size="md" onClick={() => setSettingsOpen(true)}>
             Settings
           </Button>
         </div>

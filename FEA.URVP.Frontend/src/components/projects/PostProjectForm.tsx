@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import {
+  useMemo,
   useState,
   type FormEvent,
   type ReactNode,
@@ -11,6 +12,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { MultiSelectSearch } from "@/components/ui/MultiSelectSearch";
+import { useValueListOptions } from "@/hooks/useValueListOptions";
 import { ApiError } from "@/lib/api";
 import { myProjectsHref } from "@/lib/auth";
 import {
@@ -26,6 +28,7 @@ import {
   RESEARCH_ACTIVITY_TYPES,
 } from "@/lib/research-activity-types";
 import { MAX_RESEARCH_AREAS, RESEARCH_AREAS } from "@/lib/research-areas";
+import { createValueListItem } from "@/lib/value-lists-api";
 
 function Field({
   id,
@@ -72,6 +75,24 @@ export function PostProjectForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [extraAreas, setExtraAreas] = useState<string[]>([]);
+  const [creatingArea, setCreatingArea] = useState(false);
+
+  const catalogAreas = useValueListOptions("research-interests", RESEARCH_AREAS);
+  const catalogActivities = useValueListOptions(
+    "research-activity-types",
+    RESEARCH_ACTIVITY_TYPES,
+  );
+  const researchAreaOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const next: string[] = [];
+    for (const name of [...catalogAreas, ...extraAreas, ...values.researchAreas]) {
+      if (!name || seen.has(name)) continue;
+      seen.add(name);
+      next.push(name);
+    }
+    return next;
+  }, [catalogAreas, extraAreas, values.researchAreas]);
 
   const isEdit = mode === "edit";
 
@@ -80,6 +101,25 @@ export function PostProjectForm({
     value: ProjectFormValues[K],
   ) {
     setValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function persistResearchArea(name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setCreatingArea(true);
+    try {
+      await createValueListItem("research-interests", {
+        name: trimmed,
+        isActive: true,
+      });
+    } catch {
+      // Keep the area on this project even if it already exists in the table.
+    } finally {
+      setExtraAreas((prev) =>
+        prev.includes(trimmed) ? prev : [...prev, trimmed],
+      );
+      setCreatingArea(false);
+    }
   }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -91,7 +131,6 @@ export function PostProjectForm({
       !status?.userName?.trim() ||
       !values.title.trim() ||
       values.researchAreas.length === 0 ||
-      !values.irbStage ||
       !values.briefDescription.trim() ||
       values.activityTypes.length === 0 ||
       !values.volunteersRequired
@@ -258,18 +297,24 @@ export function PostProjectForm({
             <Field id="researchAreas" label="Research area" required>
               <MultiSelectSearch
                 id="researchAreas"
-                options={RESEARCH_AREAS}
+                options={researchAreaOptions}
                 values={values.researchAreas}
                 onChange={(next) => setField("researchAreas", next)}
                 placeholder="Choose from list"
                 max={MAX_RESEARCH_AREAS}
+                hint={`Select up to ${MAX_RESEARCH_AREAS}, or type a new area and press Enter to add it to the catalog.`}
+                allowCreate
+                creating={creatingArea}
+                onCreate={(name) => {
+                  void persistResearchArea(name);
+                }}
               />
             </Field>
-            <Field id="irbStage" label="IRB approval stage" required>
+            <Field id="irbStage" label="IRB approval stage">
               <FieldSelect
                 id="irbStage"
                 name="irbStage"
-                placeholder="Choose from list"
+                placeholder="Choose from list (optional)"
                 options={irbStageOptions}
                 value={values.irbStage}
                 onValueChange={(v) => setField("irbStage", v)}
@@ -315,7 +360,7 @@ export function PostProjectForm({
             <Field id="activityTypes" label="Research activity type" required>
               <MultiSelectSearch
                 id="activityTypes"
-                options={RESEARCH_ACTIVITY_TYPES}
+                options={catalogActivities}
                 values={values.activityTypes}
                 onChange={(next) => setField("activityTypes", next)}
                 placeholder="Choose from list"

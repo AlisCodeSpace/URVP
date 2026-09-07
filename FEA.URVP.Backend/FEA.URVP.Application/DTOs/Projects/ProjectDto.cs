@@ -8,7 +8,7 @@ public sealed class ProjectDto
     public Guid CreatedByUserId { get; init; }
     public string Title { get; init; } = null!;
     public IReadOnlyList<string> ResearchAreas { get; init; } = [];
-    public IrbStage IrbStage { get; init; }
+    public IrbStage? IrbStage { get; init; }
     public string IrbStageLabel { get; init; } = null!;
     public string BriefDescription { get; init; } = null!;
     public IReadOnlyList<string> ActivityTypes { get; init; } = [];

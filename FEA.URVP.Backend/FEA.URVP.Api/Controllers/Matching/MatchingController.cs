@@ -1,4 +1,5 @@
 using FEA.URVP.Api.Controllers.Base;
+using FEA.URVP.Application.Commands.Matching.Assign;
 using FEA.URVP.Application.Commands.Matching.Confirm;
 using FEA.URVP.Application.Commands.Matching.Discard;
 using FEA.URVP.Application.Commands.Matching.Run;
@@ -12,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FEA.URVP.Api.Controllers.Matching;
 
-/// <summary>Automatic student–project matching. Admin only.</summary>
+/// <summary>Student–project matching. Admin only.</summary>
 [ApiController]
 [Route("api/matching")]
 [Authorize]
@@ -29,12 +30,15 @@ public sealed class MatchingController : ApiControllerBase
     [HttpGet("runs")]
     public async Task<IActionResult> ListRuns(
         [FromQuery] Guid? semesterId,
+        [FromQuery] bool includeManual,
         CancellationToken cancellationToken)
     {
         if (!UserHasRole(nameof(UserRole.Admin)))
             return ForbiddenResponse();
 
-        var runs = await _mediator.Send(new ListMatchingRunsQuery(semesterId), cancellationToken);
+        var runs = await _mediator.Send(
+            new ListMatchingRunsQuery(semesterId, includeManual),
+            cancellationToken);
         return SuccessResponse(runs);
     }
 
@@ -94,6 +98,24 @@ public sealed class MatchingController : ApiControllerBase
 
         var run = await _mediator.Send(new DiscardMatchingRunCommand(id), cancellationToken);
         return SuccessResponse(run, "Matching run discarded");
+    }
+
+    /// <summary>Assign a student to a project immediately. Occupies a seat.</summary>
+    [HttpPost("assignments")]
+    public async Task<IActionResult> Assign(
+        [FromBody] AssignStudentToProjectCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (!UserHasRole(nameof(UserRole.Admin)))
+            return ForbiddenResponse();
+
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+            return UnauthorizedResponse();
+
+        command.CurrentUserId = userId;
+        var placement = await _mediator.Send(command, cancellationToken);
+        return SuccessResponse(placement, "Student assigned");
     }
 
     /// <summary>Mark a confirmed placement as Declined or Cancelled, releasing its seat.</summary>

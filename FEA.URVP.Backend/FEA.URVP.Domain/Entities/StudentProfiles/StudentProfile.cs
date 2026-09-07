@@ -55,8 +55,8 @@ public class StudentProfile
     /// <summary>FileStorage Id for the uploaded transcript PDF.</summary>
     public Guid? TranscriptFileId { get; set; }
 
-    /// <summary>FileStorage Id for the uploaded CITI certification PDF.</summary>
-    public Guid? CitiFileId { get; set; }
+    /// <summary>FileStorage Id for the uploaded CV PDF.</summary>
+    public Guid? CvFileId { get; set; }
 
     /// <summary>Weekly availability entries, persisted as JSON.</summary>
     [Required]

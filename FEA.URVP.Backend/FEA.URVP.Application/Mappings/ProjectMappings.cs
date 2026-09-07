@@ -44,12 +44,13 @@ public static class ProjectMappings
         UpdatedAt = project.UpdatedAt
     };
 
-    public static string ToLabel(IrbStage value) => value switch
+    public static string ToLabel(IrbStage? value) => value switch
     {
+        null => "—",
         IrbStage.IrbApproved => "IRB Approved",
         IrbStage.IrbApplicationInPreparation => "IRB Application in Preparation",
         IrbStage.IrbApplicationSubmitted => "IRB Application Submitted",
-        IrbStage.DoesNotNeedIrbApproval => "Does not need IRB Approval",
-        _ => value.ToString()
+        IrbStage.DoesNotNeedIrbApproval => "IRB Not Needed",
+        _ => value.ToString() ?? "—",
     };
 }

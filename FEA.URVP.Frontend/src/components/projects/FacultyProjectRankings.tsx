@@ -19,6 +19,7 @@ export function FacultyProjectRankings({
   rankings,
   loading,
   error,
+  locked = false,
   onRankingsChanged,
 }: {
   userId: string;
@@ -27,6 +28,7 @@ export function FacultyProjectRankings({
   rankings: ProjectRankingStudentDto[] | null;
   loading: boolean;
   error: string | null;
+  locked?: boolean;
   onRankingsChanged?: () => void;
 }) {
   const [rankTarget, setRankTarget] = useState<ProjectRankingStudentDto | null>(
@@ -49,6 +51,9 @@ export function FacultyProjectRankings({
         Rank applicants as 1st, 2nd, or 3rd choice. Automatic matching fills
         this project&apos;s {seats} seat{seats === 1 ? "" : "s"} from your
         highest tiers first, honouring each student&apos;s own ranking.
+        {locked
+          ? " Rankings are locked after matching."
+          : ""}
       </Text>
 
       {error ? (
@@ -84,14 +89,16 @@ export function FacultyProjectRankings({
                 Ranked {formatRankedAt(ranking.rankedAt)}
               </p>
               <div className="ranked-students-actions">
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setRankTarget(ranking)}
-                >
-                  {ranking.facultyRank != null ? "Adjust rank" : "Rank"}
-                </Button>
+                {locked ? null : (
+                  <Button
+                    type="button"
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setRankTarget(ranking)}
+                  >
+                    {ranking.facultyRank != null ? "Adjust rank" : "Rank"}
+                  </Button>
+                )}
                 <Button
                   href={viewRankedStudentHref(
                     userId,

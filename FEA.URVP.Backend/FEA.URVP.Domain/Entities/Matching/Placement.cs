@@ -39,6 +39,9 @@ public class Placement
     public bool ResolvedByTieBreak { get; set; }
 
     [Required]
+    public PlacementSource Source { get; set; } = PlacementSource.Algorithm;
+
+    [Required]
     public PlacementStatus Status { get; set; } = PlacementStatus.Proposed;
 
     [Required]

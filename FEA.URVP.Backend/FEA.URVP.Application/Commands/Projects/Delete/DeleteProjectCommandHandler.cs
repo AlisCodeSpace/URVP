@@ -2,6 +2,7 @@ using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Projects;
 using FEA.URVP.Domain.Events.Projects;
 using Microsoft.Extensions.Logging;
 
@@ -34,6 +35,8 @@ public sealed class DeleteProjectCommandHandler : BaseCommandHandler<DeleteProje
         {
             throw new UnauthorizedAccessException("You can only delete your own projects.");
         }
+
+        ProjectMutationAccess.EnsureFacultyCanMutate(project, request.IsAdmin);
 
         var deletedEvent = request.IsAdmin && project.CreatedByUserId != request.CurrentUserId
             ? new ProjectDeletedEvent(project.Id, project.CreatedByUserId, project.Title)

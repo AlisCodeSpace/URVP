@@ -13,7 +13,7 @@ export const irbStageOptions: readonly SelectOption[] = [
     label: "IRB Application in Preparation",
   },
   { value: "IrbApplicationSubmitted", label: "IRB Application Submitted" },
-  { value: "DoesNotNeedIrbApproval", label: "Does not need IRB Approval" },
+  { value: "DoesNotNeedIrbApproval", label: "IRB Not Needed" },
 ] as const;
 
 export const projectStatusOptions: readonly SelectOption[] = [
@@ -28,6 +28,13 @@ export const irbStages = irbStageOptions.map((o) => o.label);
 export const researchActivityTypes = [...RESEARCH_ACTIVITY_TYPES];
 
 export type MyProjectStatus = "Open" | "Matching" | "Closed";
+
+export function isFacultyProjectLocked(project: {
+  status: MyProjectStatus;
+  volunteersFilled: number;
+}): boolean {
+  return project.status !== "Open" || project.volunteersFilled > 0;
+}
 
 export type MyProject = {
   id: string;

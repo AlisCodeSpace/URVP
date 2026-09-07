@@ -26,8 +26,8 @@ public sealed class StudentProfileDto
     public string? Publications { get; init; }
     public Guid? TranscriptFileId { get; init; }
     public string? TranscriptFileName { get; init; }
-    public Guid? CitiFileId { get; init; }
-    public string? CitiFileName { get; init; }
+    public Guid? CvFileId { get; init; }
+    public string? CvFileName { get; init; }
     public IReadOnlyList<DayAvailabilityDto> Availability { get; init; } = [];
     public DateTime? CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }

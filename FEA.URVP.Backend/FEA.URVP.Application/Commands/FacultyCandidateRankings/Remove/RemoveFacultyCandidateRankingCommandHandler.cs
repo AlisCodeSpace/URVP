@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.FacultyCandidateRankings;
+using FEA.URVP.Application.Projects;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.FacultyCandidateRankings.Remove;
@@ -46,6 +47,8 @@ public sealed class RemoveFacultyCandidateRankingCommandHandler
         {
             throw new UnauthorizedAccessException("You can only rank candidates for your own projects.");
         }
+
+        ProjectMutationAccess.EnsureFacultyCanMutate(project, request.IsAdmin);
 
         var ranking = await _candidateRankings.FindByProjectAndStudentAsync(
             request.ProjectId,

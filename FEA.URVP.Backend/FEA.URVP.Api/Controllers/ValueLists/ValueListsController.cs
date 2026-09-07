@@ -55,14 +55,17 @@ public sealed class ValueListsController : ApiControllerBase
         [FromBody] CreateValueListItemCommand command,
         CancellationToken cancellationToken)
     {
-        if (!UserHasRole(nameof(UserRole.Admin)))
-        {
-            return ForbiddenResponse();
-        }
-
         if (!TryParseKind(kind, out var listKind))
         {
             return ErrorResponse<object>("Unknown value list.", [$"Kind '{kind}' is not supported."]);
+        }
+
+        var canCreate = UserHasRole(nameof(UserRole.Admin))
+            || (listKind == ValueListKind.ResearchInterest
+                && UserHasRole(nameof(UserRole.Faculty)));
+        if (!canCreate)
+        {
+            return ForbiddenResponse();
         }
 
         command.Kind = listKind;

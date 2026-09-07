@@ -55,15 +55,15 @@ public sealed class UpsertStudentProfileCommandHandler
             FileStorageCatalog.CategoryTranscript,
             cancellationToken);
 
-        string? citiFileName = null;
-        if (request.CitiFileId is Guid citiId)
+        string? cvFileName = null;
+        if (request.CvFileId is Guid cvId)
         {
-            var citi = await RequireOwnedDocumentAsync(
-                citiId,
+            var cv = await RequireOwnedDocumentAsync(
+                cvId,
                 user.Id,
-                FileStorageCatalog.CategoryCitiCertification,
+                FileStorageCatalog.CategoryCv,
                 cancellationToken);
-            citiFileName = citi.FileName;
+            cvFileName = cv.FileName;
         }
 
         var now = DateTime.UtcNow;
@@ -103,7 +103,7 @@ public sealed class UpsertStudentProfileCommandHandler
             .ToList();
         profile.Publications = NormalizeOptional(request.Publications);
         profile.TranscriptFileId = transcript.Id;
-        profile.CitiFileId = request.CitiFileId;
+        profile.CvFileId = request.CvFileId;
         profile.Availability = availability;
         profile.UpdatedAt = now;
 
@@ -120,7 +120,7 @@ public sealed class UpsertStudentProfileCommandHandler
                 cancellationToken);
         }
 
-        return profile.ToDto(user, transcript.FileName, citiFileName);
+        return profile.ToDto(user, transcript.FileName, cvFileName);
     }
 
     private async Task<Domain.Entities.Files.FileStorage> RequireOwnedDocumentAsync(

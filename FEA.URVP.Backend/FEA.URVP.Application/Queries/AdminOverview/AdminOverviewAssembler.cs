@@ -108,9 +108,9 @@ public static class AdminOverviewAssembler
         new()
         {
             Id = "placements",
-            Label = "Matched placements",
+            Label = "Assigned students",
             Count = snapshot.ConfirmedPlacements,
-            Note = "Confirmed seats this semester",
+            Note = "Confirmed onto projects this cycle",
         },
     ];
 
@@ -136,7 +136,7 @@ public static class AdminOverviewAssembler
             items.Add(new AdminOverviewAttentionItemDto
             {
                 Id = "window-open",
-                Text = "The student application window is still open. Rankings may change if you confirm a run now.",
+                Text = "The student application window is still open. Rankings may still change.",
                 Href = "/admin/semesters",
                 Severity = "warning",
             });
@@ -159,7 +159,7 @@ public static class AdminOverviewAssembler
             {
                 Id = "projects-missing-faculty-ranks",
                 Text =
-                    $"{snapshot.ProjectsWithApplicantsNoFacultyRanks} open project(s) have applicants but no faculty rankings and will be skipped.",
+                    $"{snapshot.ProjectsWithApplicantsNoFacultyRanks} open project(s) have applicants but no faculty rankings.",
                 Href = "/admin/projects",
                 Severity = "warning",
             });
@@ -171,7 +171,7 @@ public static class AdminOverviewAssembler
             {
                 Id = "unreachable-students",
                 Text =
-                    $"{snapshot.UnreachableStudents} student(s) were not ranked by any faculty on their chosen projects and cannot be placed.",
+                    $"{snapshot.UnreachableStudents} student(s) were not ranked by any faculty on their chosen projects.",
                 Href = "/admin/projects",
                 Severity = "warning",
             });

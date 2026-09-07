@@ -162,9 +162,9 @@ export function StudentProfileReadonly({
           fileName={values.transcriptFileName}
         />
         <DocumentDownload
-          label="CITI certification"
-          fileId={values.citiFileId}
-          fileName={values.citiFileName}
+          label="CV"
+          fileId={values.cvFileId}
+          fileName={values.cvFileName}
         />
       </Section>
 

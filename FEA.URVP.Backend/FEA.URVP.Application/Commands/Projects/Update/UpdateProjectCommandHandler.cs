@@ -4,6 +4,7 @@ using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.Projects;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Projects;
 using FEA.URVP.Domain.Enums;
 using FEA.URVP.Domain.Events.Projects;
 using Microsoft.Extensions.Logging;
@@ -41,6 +42,8 @@ public sealed class UpdateProjectCommandHandler
         {
             throw new UnauthorizedAccessException("You can only update your own projects.");
         }
+
+        ProjectMutationAccess.EnsureFacultyCanMutate(project, request.IsAdmin);
 
         if (request.VolunteersRequired < project.VolunteersFilled)
         {

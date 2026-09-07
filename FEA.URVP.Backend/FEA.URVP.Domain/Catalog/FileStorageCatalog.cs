@@ -6,7 +6,7 @@ public static class FileStorageCatalog
     public const string EntityWorkshop = "Workshop";
 
     public const string CategoryTranscript = "Transcript";
-    public const string CategoryCitiCertification = "CitiCertification";
+    public const string CategoryCv = "Cv";
     public const string CategoryPoster = "Poster";
 
     public const long MaxDocumentBytes = 10 * 1024 * 1024; // 10 MB (SQL check constraint)
@@ -23,7 +23,7 @@ public static class FileStorageCatalog
     public static readonly IReadOnlySet<string> DocumentCategories = new HashSet<string>(StringComparer.Ordinal)
     {
         CategoryTranscript,
-        CategoryCitiCertification,
+        CategoryCv,
     };
 
     public static readonly IReadOnlySet<string> ImageCategories = new HashSet<string>(StringComparer.Ordinal)

@@ -11,15 +11,18 @@ public sealed class GetAdminProjectDetailQueryHandler
     private readonly IProjectRepository _projects;
     private readonly IProjectRankingRepository _rankings;
     private readonly IFacultyCandidateRankingRepository _candidateRankings;
+    private readonly IMatchingRunRepository _runs;
 
     public GetAdminProjectDetailQueryHandler(
         IProjectRepository projects,
         IProjectRankingRepository rankings,
-        IFacultyCandidateRankingRepository candidateRankings)
+        IFacultyCandidateRankingRepository candidateRankings,
+        IMatchingRunRepository runs)
     {
         _projects = projects;
         _rankings = rankings;
         _candidateRankings = candidateRankings;
+        _runs = runs;
     }
 
     public async Task<AdminProjectDetailDto> Handle(
@@ -31,11 +34,19 @@ public sealed class GetAdminProjectDetailQueryHandler
 
         var rankings = await _rankings.ListByProjectAsync(project.Id, cancellationToken);
         var facultyRanks = await _candidateRankings.ListByProjectAsync(project.Id, cancellationToken);
+        var assignments = await _runs.ListConfirmedByProjectAsync(project.Id, cancellationToken);
+
+        var studentIds = rankings.Select(r => r.StudentUserId).Distinct().ToList();
+        var studentPlacements = await _runs.ListConfirmedByStudentIdsAsync(studentIds, cancellationToken);
+        var assignmentsByStudent = studentPlacements
+            .GroupBy(p => p.StudentUserId)
+            .ToDictionary(g => g.Key, g => g.First());
 
         return new AdminProjectDetailDto
         {
             Project = project.ToDto(),
-            Rankings = rankings.ToStudentDtos(facultyRanks),
+            Assignments = assignments.Select(p => p.ToDto()).ToList(),
+            Rankings = rankings.ToStudentDtos(facultyRanks, assignmentsByStudent),
         };
     }
 }

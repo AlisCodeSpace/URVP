@@ -10,7 +10,7 @@ public static class StudentProfileMappings
         this StudentProfile profile,
         User user,
         string? transcriptFileName = null,
-        string? citiFileName = null)
+        string? cvFileName = null)
     {
         var (firstName, lastName) = SplitName(user.Name);
 
@@ -34,8 +34,8 @@ public static class StudentProfileMappings
             Publications = profile.Publications,
             TranscriptFileId = profile.TranscriptFileId,
             TranscriptFileName = transcriptFileName,
-            CitiFileId = profile.CitiFileId,
-            CitiFileName = citiFileName,
+            CvFileId = profile.CvFileId,
+            CvFileName = cvFileName,
             Availability = profile.Availability
                 .Select(a => new DayAvailabilityDto
                 {

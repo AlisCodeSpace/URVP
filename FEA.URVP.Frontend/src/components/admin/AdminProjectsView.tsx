@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
+import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import { adminProjectHref } from "@/lib/auth";
@@ -83,7 +84,7 @@ export function AdminProjectsView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Projects"
-        description="All research listings and how many students have ranked each one."
+        description="Open a project to assign students and review ranking interest."
         tag={
           data
             ? `${data.totalCount} project${data.totalCount === 1 ? "" : "s"}`
@@ -120,6 +121,9 @@ export function AdminProjectsView() {
               setStatusFilter(value);
             }}
           />
+        </div>
+        <div className="admin-users-refresh">
+          <RefreshIconButton loading={loading} onClick={() => void load()} />
         </div>
       </div>
 
@@ -226,7 +230,7 @@ function ProjectRow({ project }: { project: AdminProjectListItemDto }) {
       <td>
         <div className="admin-value-actions">
           <Button href={adminProjectHref(project.id)} variant="primary" size="sm">
-            View
+            Assign students
           </Button>
         </div>
       </td>

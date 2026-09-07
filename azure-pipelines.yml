@@ -1,3 +1,5 @@
+# ADO → GitHub mirror. This does not build or deploy.
+# IIS publish is .github/workflows/deploy-iis.yml on the self-hosted runner.
 trigger:
 - master
 - main

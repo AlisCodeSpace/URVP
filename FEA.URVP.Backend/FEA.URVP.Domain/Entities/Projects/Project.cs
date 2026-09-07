@@ -21,8 +21,7 @@ public class Project
     [Required]
     public List<string> ResearchAreas { get; set; } = [];
 
-    [Required]
-    public IrbStage IrbStage { get; set; }
+    public IrbStage? IrbStage { get; set; }
 
     [Required, MaxLength(4000)]
     public string BriefDescription { get; set; } = null!;

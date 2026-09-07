@@ -51,7 +51,7 @@ public sealed class StudentProfileConfiguration : IEntityTypeConfiguration<Stude
             .HasMaxLength(4000);
 
         builder.Property(p => p.TranscriptFileId);
-        builder.Property(p => p.CitiFileId);
+        builder.Property(p => p.CvFileId);
 
         builder.Property(p => p.Availability)
             .IsRequired()

@@ -4,6 +4,8 @@ export type MatchingRunStatus = "Draft" | "Confirmed" | "Discarded";
 
 export type PlacementStatus = "Proposed" | "Confirmed" | "Declined" | "Cancelled";
 
+export type PlacementSource = "Algorithm" | "Manual";
+
 export type MatchingRunDto = {
   id: string;
   semesterId: string;
@@ -17,6 +19,7 @@ export type MatchingRunDto = {
   studentsMatched: number;
   tieBreaksUsed: number;
   warningCount: number;
+  isManual: boolean;
   createdAt: string;
   confirmedAt?: string | null;
 };
@@ -32,6 +35,7 @@ export type PlacementDto = {
   studentRank: number;
   facultyRank: number;
   resolvedByTieBreak: boolean;
+  source: PlacementSource;
   status: PlacementStatus;
   updatedAt: string;
 };
@@ -86,6 +90,16 @@ export async function updatePlacementStatus(
   return apiFetch<PlacementDto>(`/api/matching/placements/${id}/status`, {
     method: "PUT",
     body: JSON.stringify({ status }),
+  });
+}
+
+export async function assignStudentToProject(payload: {
+  projectId: string;
+  studentUserId: string;
+}): Promise<PlacementDto> {
+  return apiFetch<PlacementDto>("/api/matching/assignments", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
 

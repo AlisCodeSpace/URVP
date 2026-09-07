@@ -9,6 +9,9 @@ public sealed class ProjectRankingStudentDto
     public string? StudentUserName { get; init; }
     public byte Rank { get; init; }
     public byte? FacultyRank { get; init; }
+    public Guid? AssignedPlacementId { get; init; }
+    public Guid? AssignedProjectId { get; init; }
+    public string? AssignedProjectTitle { get; init; }
     public DateTime RankedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 }

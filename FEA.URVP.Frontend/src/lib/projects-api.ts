@@ -12,7 +12,7 @@ export type ProjectDto = {
   createdByUserId: string;
   title: string;
   researchAreas: string[];
-  irbStage: string;
+  irbStage: string | null;
   irbStageLabel: string;
   briefDescription: string;
   activityTypes: string[];
@@ -39,7 +39,7 @@ type PaginatedProjects = {
 export type ProjectWritePayload = {
   title: string;
   researchAreas: string[];
-  irbStage: string;
+  irbStage: string | null;
   briefDescription: string;
   activityTypes: string[];
   volunteersRequired: number;
@@ -57,7 +57,7 @@ function toWritePayload(values: ProjectFormValues): ProjectWritePayload {
   return {
     title: values.title.trim(),
     researchAreas: values.researchAreas,
-    irbStage: values.irbStage,
+    irbStage: values.irbStage || null,
     briefDescription: values.briefDescription.trim(),
     activityTypes: values.activityTypes,
     volunteersRequired: Number(values.volunteersRequired),
@@ -108,7 +108,7 @@ export function toFormValues(dto: ProjectDto): ProjectFormValues {
     userName: dto.userName ?? "",
     title: dto.title,
     researchAreas: [...dto.researchAreas],
-    irbStage: dto.irbStage,
+    irbStage: dto.irbStage ?? "",
     briefDescription: dto.briefDescription,
     activityTypes: [...dto.activityTypes],
     volunteersRequired: String(dto.volunteersRequired),
@@ -144,11 +144,13 @@ export async function getProject(id: string): Promise<ProjectDto> {
 }
 
 export type ProjectParticipantDto = {
+  placementId: string;
   studentUserId: string;
   studentName: string;
   studentEmail: string;
   studentRank: number;
   facultyRank: number;
+  source: "Algorithm" | "Manual";
 };
 
 export async function getProjectParticipants(

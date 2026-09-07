@@ -24,7 +24,6 @@ public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
         ConfigureStringList(builder.Property(p => p.ActivityTypes));
 
         builder.Property(p => p.IrbStage)
-            .IsRequired()
             .HasConversion<byte>();
 
         builder.Property(p => p.BriefDescription)

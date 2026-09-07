@@ -12,7 +12,7 @@ public sealed class CreateProjectCommand : IRequest<ProjectDto>
 
     public string Title { get; init; } = null!;
     public List<string> ResearchAreas { get; init; } = [];
-    public IrbStage IrbStage { get; init; }
+    public IrbStage? IrbStage { get; init; }
     public string BriefDescription { get; init; } = null!;
     public List<string> ActivityTypes { get; init; } = [];
     public int VolunteersRequired { get; init; }

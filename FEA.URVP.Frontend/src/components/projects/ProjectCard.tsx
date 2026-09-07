@@ -59,7 +59,7 @@ export function ProjectCard({
         {rank != null ? (
           <span className="rank-badge">{rankLabel(rank)}</span>
         ) : null}
-        {matched ? <span className="rank-badge is-matched">Matched</span> : null}
+        {matched ? <span className="rank-badge is-matched">Assigned</span> : null}
         {meta ? <span className="text-xs text-muted">{meta}</span> : null}
         {metaEnd ? <span className="ml-auto">{metaEnd}</span> : null}
       </div>

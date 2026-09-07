@@ -1,4 +1,5 @@
 using FEA.URVP.Application.Abstractions.Persistence;
+using FEA.URVP.Domain.Enums;
 
 namespace FEA.URVP.Application.Matching;
 
@@ -21,6 +22,15 @@ internal static class ProjectSeatSync
             if (project is null) continue;
 
             project.VolunteersFilled = await runs.CountConfirmedByProjectAsync(projectId, cancellationToken);
+            if (project.VolunteersFilled > 0 && project.Status == ProjectStatus.Open)
+            {
+                project.Status = ProjectStatus.Matching;
+            }
+            else if (project.VolunteersFilled == 0 && project.Status == ProjectStatus.Matching)
+            {
+                project.Status = ProjectStatus.Open;
+            }
+
             project.UpdatedAt = DateTime.UtcNow;
         }
     }

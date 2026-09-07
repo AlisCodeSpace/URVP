@@ -57,5 +57,10 @@ public sealed class MatchingRunConfiguration : IEntityTypeConfiguration<Matching
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(r => new { r.SemesterId, r.Status });
+
+        builder.HasIndex(r => r.SemesterId)
+            .IsUnique()
+            .HasFilter($"[AlgorithmVersion] = N'{MatchingRun.ManualAlgorithmVersion}'")
+            .HasDatabaseName("IX_MatchingRuns_ManualPerSemester");
     }
 }

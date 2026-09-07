@@ -49,12 +49,12 @@ public sealed class GetMyStudentProfileQueryHandler
             transcriptName = (await _files.FindByIdAsync(transcriptId, cancellationToken))?.FileName;
         }
 
-        string? citiName = null;
-        if (profile.CitiFileId is Guid citiId)
+        string? cvName = null;
+        if (profile.CvFileId is Guid cvId)
         {
-            citiName = (await _files.FindByIdAsync(citiId, cancellationToken))?.FileName;
+            cvName = (await _files.FindByIdAsync(cvId, cancellationToken))?.FileName;
         }
 
-        return profile.ToDto(user, transcriptName, citiName);
+        return profile.ToDto(user, transcriptName, cvName);
     }
 }

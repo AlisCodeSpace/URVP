@@ -16,26 +16,9 @@ export function Navbar() {
   const { status, loading } = useAuth();
   const isSignedIn = Boolean(status?.isAuthenticated);
 
-  const overlayNav =
-    pathname === "/" ||
-    pathname === "/workshops" ||
-    pathname === "/research-day" ||
-    pathname === "/news" ||
-    pathname === "/contact" ||
-    pathname === "/projects" ||
-    pathname.startsWith("/projects/") ||
-    pathname.startsWith("/student") ||
-    pathname.startsWith("/my-projects") ||
-    pathname.startsWith("/news/");
-
+  // Absolute over the dark page hero (home, mini pages, and 404) so the bar blends with the header.
   return (
-    <header
-      className={
-        overlayNav
-          ? "site-nav absolute inset-x-0 top-0 z-50"
-          : "site-nav sticky top-0 z-50 border-b border-primary/10 bg-primary-deep/95 backdrop-blur-md"
-      }
-    >
+    <header className="site-nav absolute inset-x-0 top-0 z-50">
       <div className="site-container flex items-center justify-between gap-4 py-4">
         <Logo
           href="/"
@@ -73,7 +56,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-stretch gap-3 lg:flex">
           {loading ? null : isSignedIn && status ? (
             <>
               <NotificationBell />

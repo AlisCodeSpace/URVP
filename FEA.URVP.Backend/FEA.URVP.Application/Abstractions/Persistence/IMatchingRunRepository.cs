@@ -38,5 +38,15 @@ public interface IMatchingRunRepository
         Guid studentUserId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Tracked per-semester run that stores admin-made assignments.</summary>
+    Task<MatchingRun?> FindManualBySemesterAsync(
+        Guid semesterId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Confirmed placements for the given students (at most one each in normal use).</summary>
+    Task<IReadOnlyList<Placement>> ListConfirmedByStudentIdsAsync(
+        IReadOnlyCollection<Guid> studentUserIds,
+        CancellationToken cancellationToken = default);
+
     void Add(MatchingRun run);
 }

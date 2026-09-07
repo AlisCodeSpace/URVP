@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Queries.AdminOverview;
+using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Enums;
@@ -136,7 +137,8 @@ public sealed class AdminOverviewReadRepository : IAdminOverviewReadRepository
             ? null
             : await _db.MatchingRuns.AsNoTracking()
                 .Include(r => r.Semester)
-                .Where(r => r.SemesterId == semester.Id)
+                .Where(r => r.SemesterId == semester.Id
+                            && r.AlgorithmVersion != MatchingRun.ManualAlgorithmVersion)
                 .OrderByDescending(r => r.CreatedAt)
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -212,6 +214,7 @@ public sealed class AdminOverviewReadRepository : IAdminOverviewReadRepository
 
         var runs = await _db.MatchingRuns.AsNoTracking()
             .Include(r => r.Semester)
+            .Where(r => r.AlgorithmVersion != MatchingRun.ManualAlgorithmVersion)
             .OrderByDescending(r => r.CreatedAt)
             .Take(2)
             .Select(r => new { r.Status, SemesterName = r.Semester.Name, r.CreatedAt })

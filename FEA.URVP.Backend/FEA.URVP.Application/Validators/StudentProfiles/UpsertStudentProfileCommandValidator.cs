@@ -65,9 +65,9 @@ public sealed class UpsertStudentProfileCommandValidator
         RuleFor(x => x.TranscriptFileId)
             .NotEmpty().WithMessage("Transcript file is required.");
 
-        RuleFor(x => x.CitiFileId)
+        RuleFor(x => x.CvFileId)
             .Must(id => id is null || id != Guid.Empty)
-            .WithMessage("CITI file id is invalid.");
+            .WithMessage("CV file id is invalid.");
 
         RuleForEach(x => x.Availability).ChildRules(day =>
         {

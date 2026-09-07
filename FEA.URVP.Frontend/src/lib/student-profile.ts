@@ -79,8 +79,8 @@ export type StudentProfileValues = {
   publications: string;
   transcriptFileId: string | null;
   transcriptFileName: string | null;
-  citiFileId: string | null;
-  citiFileName: string | null;
+  cvFileId: string | null;
+  cvFileName: string | null;
   availability: DayAvailability[];
 };
 
@@ -112,8 +112,8 @@ export function emptyStudentProfile(
     publications: "",
     transcriptFileId: null,
     transcriptFileName: null,
-    citiFileId: null,
-    citiFileName: null,
+    cvFileId: null,
+    cvFileName: null,
     availability: emptyAvailability(),
   };
 }

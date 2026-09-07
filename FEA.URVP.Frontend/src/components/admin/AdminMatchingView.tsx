@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { RunStatusBadge } from "@/components/admin/MatchingStatusBadge";
 import { Button } from "@/components/ui/Button";
-import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import { adminMatchingRunHref } from "@/lib/auth";
@@ -23,10 +23,8 @@ export function AdminMatchingView() {
   const [runs, setRuns] = useState<MatchingRunDto[]>([]);
   const [semester, setSemester] = useState<SemesterDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [running, setRunning] = useState(false);
   const [testBusy, setTestBusy] = useState<"run" | "confirm" | null>(null);
   const [testSeed, setTestSeed] = useState("42");
-  const [confirmRun, setConfirmRun] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -52,23 +50,6 @@ export function AdminMatchingView() {
     void load();
   }, [load]);
 
-  async function handleRun() {
-    setRunning(true);
-    setError(null);
-    try {
-      const detail = await runMatching();
-      setConfirmRun(false);
-      router.push(adminMatchingRunHref(detail.run.id));
-    } catch (err) {
-      setConfirmRun(false);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to run matching.",
-      );
-    } finally {
-      setRunning(false);
-    }
-  }
-
   function parseTestSeed(): number | null {
     const trimmed = testSeed.trim();
     if (!trimmed) return 42;
@@ -77,7 +58,7 @@ export function AdminMatchingView() {
     return parsed;
   }
 
-  async function handleManualTest(alsoConfirm: boolean) {
+  async function handleTest(alsoConfirm: boolean) {
     const seed = parseTestSeed();
     if (seed === null) {
       setError("Test seed must be a whole number.");
@@ -96,54 +77,47 @@ export function AdminMatchingView() {
       }
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Manual test run failed.",
+        err instanceof ApiError ? err.message : "Test matching run failed.",
       );
     } finally {
       setTestBusy(null);
     }
   }
 
-  const hasDraft = runs.some((r) => r.status === "Draft");
-  const testDisabled = loading || running || testBusy !== null || !semester;
+  const testDisabled = loading || testBusy !== null || !semester;
 
   return (
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
-        title="Matching"
-        description="Run the automatic matcher on student and faculty rankings, review the proposed placements, then confirm to fill project seats. Confirmed students are excluded from later runs, so declines can be resolved with a supplementary run."
+        title="Automatic matching (test)"
+        description="Student assignments are made on each project. This page keeps the deferred-acceptance matcher available for testing: it still produces a draft from rankings that you can review or confirm."
         tag={
           runs.length > 0 ? `${runs.length} run${runs.length === 1 ? "" : "s"}` : null
         }
       />
 
       <div
+        className="admin-list-toolbar-actions"
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.75rem",
           flexWrap: "wrap",
           marginBottom: "1.25rem",
+          gap: "0.75rem",
         }}
       >
-        <Button
-          type="button"
-          variant="primary"
-          size="sm"
-          disabled={loading || running || !semester}
-          onClick={() => setConfirmRun(true)}
-        >
-          {running ? "Running…" : "Run matching"}
+        <RefreshIconButton loading={loading} onClick={() => void load()} />
+        <Button href="/admin/projects" variant="primary" size="md">
+          Assign students on projects
         </Button>
         <span className="admin-users-meta" style={{ fontSize: "0.85rem" }}>
           {semester
-            ? `Active semester: ${semester.name}${
+            ? `Active cycle: ${semester.name}${
                 semester.isApplicationWindowOpen
-                  ? " · application window still open"
-                  : ""
+                  ? " · applications open"
+                  : " · applications closed"
               }`
             : loading
-              ? "Loading semester…"
-              : "No active semester — start a cycle before running matching."}
+              ? "Loading cycle…"
+              : "No active URVP cycle — start a cycle before running the matcher."}
         </span>
       </div>
 
@@ -153,7 +127,7 @@ export function AdminMatchingView() {
       >
         <p
           style={{
-            margin: "0 0 0.75rem",
+            margin: "0 0 0.35rem",
             fontSize: "0.8rem",
             textTransform: "uppercase",
             letterSpacing: "0.06em",
@@ -161,7 +135,15 @@ export function AdminMatchingView() {
             fontWeight: 600,
           }}
         >
-          Manual test
+          Algorithm test
+        </p>
+        <p
+          className="admin-users-meta"
+          style={{ fontSize: "0.85rem", margin: "0 0 0.85rem", maxWidth: "42rem" }}
+        >
+          Uses student and faculty rankings. A fixed seed makes results
+          reproducible. Confirming a test run still fills seats, so prefer a
+          draft review unless you intend to keep the placements.
         </p>
         <div
           style={{
@@ -194,23 +176,19 @@ export function AdminMatchingView() {
             variant="outline"
             size="sm"
             disabled={testDisabled}
-            onClick={() => void handleManualTest(false)}
+            onClick={() => void handleTest(false)}
           >
-            {testBusy === "run" ? "Running…" : "Manual test run"}
+            {testBusy === "run" ? "Running…" : "Test run"}
           </Button>
           <Button
             type="button"
             variant="outline"
             size="sm"
             disabled={testDisabled}
-            onClick={() => void handleManualTest(true)}
+            onClick={() => void handleTest(true)}
           >
-            {testBusy === "confirm" ? "Working…" : "Manual test run & confirm"}
+            {testBusy === "confirm" ? "Working…" : "Test run & confirm"}
           </Button>
-          <span className="admin-users-meta" style={{ fontSize: "0.82rem" }}>
-            Skips the production prompt. Uses a fixed seed so results are
-            reproducible.
-          </span>
         </div>
       </div>
 
@@ -224,7 +202,8 @@ export function AdminMatchingView() {
         <AdminTableSkeleton columns={6} />
       ) : runs.length === 0 ? (
         <p className="admin-users-status">
-          No matching runs yet. Run matching to generate a draft for review.
+          No algorithm test runs yet. Production assignments are made on each
+          project.
         </p>
       ) : (
         <div className="admin-users-table-wrap">
@@ -294,22 +273,6 @@ export function AdminMatchingView() {
           </table>
         </div>
       )}
-
-      <ConfirmModal
-        open={confirmRun}
-        onClose={() => setConfirmRun(false)}
-        onConfirm={handleRun}
-        title="Run matching?"
-        description={
-          hasDraft
-            ? "A draft already exists for this semester and will be discarded and replaced. Confirmed placements are kept and their seats are excluded."
-            : "This creates a draft you can review before anything becomes binding. Confirmed placements from earlier runs are kept."
-        }
-        confirmLabel="Run"
-        confirmVariant="primary"
-        busy={running}
-        busyLabel="Running…"
-      />
     </div>
   );
 }

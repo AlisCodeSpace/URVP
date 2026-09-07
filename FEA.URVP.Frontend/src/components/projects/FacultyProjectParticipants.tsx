@@ -4,7 +4,7 @@ import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
 import { RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
 import { viewRankedStudentHref } from "@/lib/auth";
-import { rankLabel } from "@/lib/project-rankings-api";
+import { optionalRankLabel } from "@/lib/project-rankings-api";
 import type { ProjectParticipantDto } from "@/lib/projects-api";
 
 export function FacultyProjectParticipants({
@@ -56,22 +56,27 @@ export function FacultyProjectParticipants({
       ) : (
         <>
           <Text as="p" size="2" mt="2" className="!text-muted">
-            Students confirmed onto this project after matching.
+            Students assigned to this project.
           </Text>
           <ul className="ranked-students-list">
-            {participants.map((participant) => (
+            {participants.map((participant) => {
+              const studentChoice = optionalRankLabel(participant.studentRank);
+              const facultyChoice = optionalRankLabel(participant.facultyRank);
+              return (
               <li
                 key={participant.studentUserId}
                 className="ranked-students-row"
               >
                 <div className="ranked-students-badges">
-                  <span className="rank-badge is-matched">Matched</span>
-                  <span className="rank-badge">
-                    Student {rankLabel(participant.studentRank)}
-                  </span>
-                  <span className="rank-badge is-faculty">
-                    Your {rankLabel(participant.facultyRank)}
-                  </span>
+                  <span className="rank-badge is-matched">Assigned</span>
+                  {studentChoice ? (
+                    <span className="rank-badge">Student {studentChoice}</span>
+                  ) : null}
+                  {facultyChoice ? (
+                    <span className="rank-badge is-faculty">
+                      Your {facultyChoice}
+                    </span>
+                  ) : null}
                 </div>
                 <p className="ranked-students-name">{participant.studentName}</p>
                 <p className="ranked-students-meta">
@@ -91,7 +96,8 @@ export function FacultyProjectParticipants({
                   </Button>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         </>
       )}

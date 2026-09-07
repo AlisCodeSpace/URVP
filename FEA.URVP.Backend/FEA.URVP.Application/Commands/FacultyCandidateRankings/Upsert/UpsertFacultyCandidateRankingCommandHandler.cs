@@ -3,6 +3,7 @@ using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.FacultyCandidateRankings;
 using FEA.URVP.Application.FacultyCandidateRankings;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Projects;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using Microsoft.Extensions.Logging;
 
@@ -54,6 +55,8 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
         {
             throw new UnauthorizedAccessException("You can only rank candidates for your own projects.");
         }
+
+        ProjectMutationAccess.EnsureFacultyCanMutate(project, request.IsAdmin);
 
         var application = await _projectRankings.FindByStudentAndProjectAsync(
             request.StudentUserId,

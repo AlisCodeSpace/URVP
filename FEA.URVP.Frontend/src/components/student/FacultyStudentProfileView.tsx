@@ -21,6 +21,7 @@ import {
   rankLabel,
   type ProjectRankingStudentDto,
 } from "@/lib/project-rankings-api";
+import { isFacultyProjectLocked } from "@/lib/project-form";
 import { getProject, type ProjectDto } from "@/lib/projects-api";
 
 export function FacultyStudentProfileView({
@@ -126,7 +127,9 @@ export function FacultyStudentProfileView({
     : "Student profile";
   const current = rankings?.find((r) => r.studentUserId === studentUserId);
   const facultyRank = current?.facultyRank ?? null;
-  const canRank = Boolean(project && current);
+  const canRank = Boolean(
+    project && current && !isFacultyProjectLocked(project),
+  );
   const seats = project?.volunteersRequired ?? 0;
   const firstChoiceUsed =
     rankings?.filter((r) => r.facultyRank === 1).length ?? 0;
@@ -193,6 +196,9 @@ export function FacultyStudentProfileView({
                       ? ` (${firstChoiceUsed} of ${seats} used)`
                       : ""}
                     .
+                    {project && isFacultyProjectLocked(project)
+                      ? " Rankings are locked after matching."
+                      : ""}
                   </Text>
                   <Text
                     as="p"
@@ -206,15 +212,17 @@ export function FacultyStudentProfileView({
                       : "Not yet ranked"}
                   </Text>
                   <div className="mt-5">
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="md"
-                      disabled={!canRank}
-                      onClick={() => setRankOpen(true)}
-                    >
-                      {facultyRank != null ? "Adjust rank" : "Rank candidate"}
-                    </Button>
+                    {project && isFacultyProjectLocked(project) ? null : (
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="md"
+                        disabled={!canRank}
+                        onClick={() => setRankOpen(true)}
+                      >
+                        {facultyRank != null ? "Adjust rank" : "Rank candidate"}
+                      </Button>
+                    )}
                   </div>
                 </section>
               ) : null}

@@ -23,6 +23,7 @@ export type ListValueListParams = {
   search?: string;
   pageNumber?: number;
   pageSize?: number;
+  activeOnly?: boolean;
 };
 
 export async function listValueListItems(
@@ -33,6 +34,7 @@ export async function listValueListItems(
   if (params.search?.trim()) query.set("search", params.search.trim());
   query.set("pageNumber", String(params.pageNumber ?? 1));
   query.set("pageSize", String(params.pageSize ?? 20));
+  if (params.activeOnly) query.set("activeOnly", "true");
 
   return apiFetch<PaginatedValueListItems>(
     `/api/value-lists/${kind}?${query.toString()}`,

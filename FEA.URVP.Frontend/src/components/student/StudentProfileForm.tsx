@@ -15,6 +15,7 @@ import { IconPencil } from "@/components/ui/Icons";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { MultiSelectSearch } from "@/components/ui/MultiSelectSearch";
 import { ProfileFormSkeleton } from "@/components/ui/SectionSkeletons";
+import { useValueListOptions } from "@/hooks/useValueListOptions";
 import { ApiError } from "@/lib/api";
 import { MAX_RESEARCH_AREAS, RESEARCH_AREAS } from "@/lib/research-areas";
 import {
@@ -168,12 +169,16 @@ export function StudentProfileForm() {
     emptyStudentProfile(status?.name, status?.email),
   );
   const [pendingTranscript, setPendingTranscript] = useState<File | null>(null);
-  const [pendingCiti, setPendingCiti] = useState<File | null>(null);
+  const [pendingCv, setPendingCv] = useState<File | null>(null);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const researchTopicOptions = useValueListOptions(
+    "research-interests",
+    RESEARCH_AREAS,
+  );
 
   useEffect(() => {
     if (!status?.isAuthenticated || !status.userId) return;
@@ -209,7 +214,7 @@ export function StudentProfileForm() {
   const readOnly = !editing;
   const transcriptDisplayName =
     pendingTranscript?.name ?? values.transcriptFileName;
-  const citiDisplayName = pendingCiti?.name ?? values.citiFileName;
+  const cvDisplayName = pendingCv?.name ?? values.cvFileName;
 
   function setField<K extends keyof StudentProfileValues>(
     key: K,
@@ -233,7 +238,7 @@ export function StudentProfileForm() {
   function startEditing() {
     setBaseline(cloneStudentProfile(values));
     setPendingTranscript(null);
-    setPendingCiti(null);
+    setPendingCv(null);
     setError(null);
     setSuccess(null);
     setEditing(true);
@@ -242,7 +247,7 @@ export function StudentProfileForm() {
   function cancelEditing() {
     setValues(cloneStudentProfile(baseline));
     setPendingTranscript(null);
-    setPendingCiti(null);
+    setPendingCv(null);
     setError(null);
     setSuccess(null);
     setEditing(false);
@@ -260,14 +265,14 @@ export function StudentProfileForm() {
     setSuccess(null);
   }
 
-  function onCitiChange(file: File | null) {
+  function onCvChange(file: File | null) {
     if (readOnly) return;
-    setPendingCiti(file);
+    setPendingCv(file);
     if (!file) {
-      setField("citiFileId", null);
-      setField("citiFileName", null);
+      setField("cvFileId", null);
+      setField("cvFileName", null);
     } else {
-      setField("citiFileName", file.name);
+      setField("cvFileName", file.name);
     }
     setSuccess(null);
   }
@@ -328,16 +333,16 @@ export function StudentProfileForm() {
         };
       }
 
-      if (pendingCiti) {
+      if (pendingCv) {
         const uploaded = await uploadStudentDocument(
           status.userId,
-          "CitiCertification",
-          pendingCiti,
+          "Cv",
+          pendingCv,
         );
         nextValues = {
           ...nextValues,
-          citiFileId: uploaded.id,
-          citiFileName: uploaded.fileName,
+          cvFileId: uploaded.id,
+          cvFileName: uploaded.fileName,
         };
       }
 
@@ -346,7 +351,7 @@ export function StudentProfileForm() {
       setValues(saved);
       setBaseline(cloneStudentProfile(saved));
       setPendingTranscript(null);
-      setPendingCiti(null);
+      setPendingCv(null);
       setEditing(false);
       setSuccess("Profile saved.");
     } catch (err) {
@@ -591,13 +596,13 @@ export function StudentProfileForm() {
         />
 
         <FileUploadField
-          id="citi"
-          label="CITI certification"
+          id="cv"
+          label="CV"
           accept=".pdf,application/pdf"
-          fileName={citiDisplayName}
+          fileName={cvDisplayName}
           disabled={readOnly}
-          onChange={onCitiChange}
-          hint="Upload your CITI Certification (.pdf). Required for students who plan to apply to the Medical Research Volunteer Program (MRVP). Obtain it via citiprogram.org (Biomedical Research – Basic/Refresher Curriculum)."
+          onChange={onCvChange}
+          hint="Upload your CV as a PDF (optional)."
         />
       </Section>
 
@@ -613,7 +618,7 @@ export function StudentProfileForm() {
         >
           <MultiSelectSearch
             id="researchTopics"
-            options={RESEARCH_AREAS}
+            options={researchTopicOptions}
             values={values.researchTopics}
             onChange={(v) => setField("researchTopics", v)}
             max={maxTopics}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons";
+import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
@@ -226,10 +227,11 @@ export function AdminValueListSection({
           />
         </div>
         <div className="admin-value-toolbar-actions">
+          <RefreshIconButton loading={loading} onClick={() => void load()} />
           <Button
             type="button"
             variant="primary"
-            size="sm"
+            size="md"
             disabled={draftOpen}
             onClick={openDraft}
           >

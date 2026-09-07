@@ -1,4 +1,5 @@
 using FEA.URVP.Domain.Entities.Matching;
+using FEA.URVP.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,6 +16,11 @@ public sealed class PlacementConfiguration : IEntityTypeConfiguration<Placement>
         builder.Property(p => p.StudentRank).IsRequired();
         builder.Property(p => p.FacultyRank).IsRequired();
         builder.Property(p => p.ResolvedByTieBreak).IsRequired();
+
+        builder.Property(p => p.Source)
+            .IsRequired()
+            .HasConversion<byte>()
+            .HasDefaultValue(PlacementSource.Algorithm);
 
         builder.Property(p => p.Status)
             .IsRequired()

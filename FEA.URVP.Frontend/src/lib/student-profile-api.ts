@@ -27,8 +27,8 @@ export type StudentProfileDto = {
   publications?: string | null;
   transcriptFileId?: string | null;
   transcriptFileName?: string | null;
-  citiFileId?: string | null;
-  citiFileName?: string | null;
+  cvFileId?: string | null;
+  cvFileName?: string | null;
   availability: { day: string; slots: string[] }[];
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -57,7 +57,7 @@ export type StudentProfileUpsertPayload = {
   researchTopics: string[];
   publications?: string | null;
   transcriptFileId: string;
-  citiFileId?: string | null;
+  cvFileId?: string | null;
   availability: { day: string; slots: string[] }[];
 };
 
@@ -98,8 +98,8 @@ export function toStudentProfileValues(
     publications: dto.publications ?? "",
     transcriptFileId: dto.transcriptFileId ?? null,
     transcriptFileName: dto.transcriptFileName ?? null,
-    citiFileId: dto.citiFileId ?? null,
-    citiFileName: dto.citiFileName ?? null,
+    cvFileId: dto.cvFileId ?? null,
+    cvFileName: dto.cvFileName ?? null,
     availability: mergeAvailabilityFromApi(dto.availability ?? []),
   };
 }
@@ -123,7 +123,7 @@ export function toUpsertPayload(
     researchTopics: values.researchTopics,
     publications: values.publications.trim() || null,
     transcriptFileId: values.transcriptFileId,
-    citiFileId: values.citiFileId,
+    cvFileId: values.cvFileId,
     availability: values.availability
       .filter((d) => d.slots.length > 0)
       .map((d) => ({ day: d.day, slots: d.slots })),
@@ -158,7 +158,7 @@ export async function upsertMyStudentProfile(
 
 export async function uploadStudentDocument(
   userId: string,
-  category: "Transcript" | "CitiCertification",
+  category: "Transcript" | "Cv",
   file: File,
 ): Promise<FileMetadataDto> {
   const body = new FormData();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
 import {
@@ -19,14 +19,15 @@ type UseNotificationsOptions = {
 export function useNotifications(filters: UseNotificationsOptions = {}) {
   const { status } = useAuth();
   const canAccess = Boolean(status?.isAuthenticated);
-  const ownSettings = useNotificationSettings();
-  const settings = filters.inAppNotifications === undefined ? ownSettings.settings : {
-    emailNotifications: true,
-    inAppNotifications: filters.inAppNotifications,
-  };
-  const settingsLoading =
-    filters.inAppNotifications === undefined && ownSettings.loading;
-  const inAppEnabled = settings?.inAppNotifications !== false;
+  const explicitInApp = filters.inAppNotifications;
+  const ownSettings = useNotificationSettings({
+    enabled: explicitInApp === undefined,
+  });
+  const inAppEnabled =
+    explicitInApp !== undefined
+      ? explicitInApp
+      : ownSettings.settings?.inAppNotifications !== false;
+  const settingsLoading = explicitInApp === undefined && ownSettings.loading;
 
   const [items, setItems] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -37,6 +38,7 @@ export function useNotifications(filters: UseNotificationsOptions = {}) {
   const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? 20;
   const unreadOnly = filters.unreadOnly ?? false;
+  const requestIdRef = useRef(0);
 
   const refresh = useCallback(async () => {
     if (!canAccess) {
@@ -46,13 +48,14 @@ export function useNotifications(filters: UseNotificationsOptions = {}) {
       return;
     }
 
-    if (settings && !inAppEnabled) {
+    if (!inAppEnabled) {
       setItems([]);
       setUnreadCount(0);
       setTotalCount(0);
       return;
     }
 
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -60,15 +63,19 @@ export function useNotifications(filters: UseNotificationsOptions = {}) {
         listNotifications({ page, pageSize, unreadOnly }),
         getUnreadCount(),
       ]);
+      if (requestId !== requestIdRef.current) return;
       setItems(pageResult.items);
       setTotalCount(pageResult.totalCount);
       setUnreadCount(unread.count);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load notifications.");
+      if (requestId !== requestIdRef.current) return;
+      setError(
+        err instanceof Error ? err.message : "Failed to load notifications.",
+      );
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
-  }, [canAccess, inAppEnabled, page, pageSize, settings, unreadOnly]);
+  }, [canAccess, inAppEnabled, page, pageSize, unreadOnly]);
 
   useEffect(() => {
     if (!canAccess || settingsLoading) return;

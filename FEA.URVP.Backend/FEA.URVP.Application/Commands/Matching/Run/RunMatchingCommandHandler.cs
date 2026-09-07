@@ -122,6 +122,7 @@ public sealed class RunMatchingCommandHandler
         StudentRank = a.StudentRank,
         FacultyRank = a.FacultyRank,
         ResolvedByTieBreak = a.ResolvedByTieBreak,
+        Source = PlacementSource.Algorithm,
         CreatedAt = now,
         UpdatedAt = now,
     };

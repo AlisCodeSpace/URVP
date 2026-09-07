@@ -5,12 +5,19 @@ using FEA.URVP.Domain.Enums;
 namespace FEA.URVP.Domain.Entities.Matching;
 
 /// <summary>
-/// One execution of the automatic matching algorithm for a semester.
-/// A run is created as a draft, reviewed, then confirmed or discarded.
+/// One execution of the automatic matching algorithm for a semester,
+/// or the per-semester bucket that holds admin-made manual assignments.
+/// Algorithm runs are created as a draft, reviewed, then confirmed or discarded.
 /// Inputs that affect reproducibility (seed, algorithm version) are stored with it.
 /// </summary>
 public class MatchingRun
 {
+    /// <summary>
+    /// Algorithm version used for the per-semester run that stores admin assignments.
+    /// There is at most one such run per semester.
+    /// </summary>
+    public const string ManualAlgorithmVersion = "manual/v1";
+
     [Key]
     public Guid Id { get; set; } = Guid.NewGuid();
 

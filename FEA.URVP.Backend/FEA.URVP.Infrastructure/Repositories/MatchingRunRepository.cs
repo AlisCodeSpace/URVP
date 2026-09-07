@@ -74,6 +74,7 @@ public sealed class MatchingRunRepository : IMatchingRunRepository
         await _db.Placements
             .AsNoTracking()
             .Include(p => p.StudentUser)
+            .Include(p => p.Project)
             .Where(p => p.ProjectId == projectId && p.Status == PlacementStatus.Confirmed)
             .OrderBy(p => p.FacultyRank)
             .ThenBy(p => p.StudentUser.Name)
@@ -87,6 +88,32 @@ public sealed class MatchingRunRepository : IMatchingRunRepository
             .Where(p => p.StudentUserId == studentUserId && p.Status == PlacementStatus.Confirmed)
             .Select(p => p.ProjectId)
             .ToListAsync(cancellationToken);
+
+    public Task<MatchingRun?> FindManualBySemesterAsync(
+        Guid semesterId,
+        CancellationToken cancellationToken = default) =>
+        _db.MatchingRuns
+            .Include(r => r.Placements)
+            .FirstOrDefaultAsync(
+                r => r.SemesterId == semesterId
+                     && r.AlgorithmVersion == MatchingRun.ManualAlgorithmVersion,
+                cancellationToken);
+
+    public async Task<IReadOnlyList<Placement>> ListConfirmedByStudentIdsAsync(
+        IReadOnlyCollection<Guid> studentUserIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (studentUserIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await _db.Placements
+            .AsNoTracking()
+            .Include(p => p.Project)
+            .Where(p => studentUserIds.Contains(p.StudentUserId) && p.Status == PlacementStatus.Confirmed)
+            .ToListAsync(cancellationToken);
+    }
 
     public void Add(MatchingRun run) => _db.MatchingRuns.Add(run);
 }

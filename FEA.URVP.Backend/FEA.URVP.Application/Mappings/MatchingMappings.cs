@@ -19,6 +19,7 @@ public static class MatchingMappings
         StudentsMatched = run.StudentsMatched,
         TieBreaksUsed = run.TieBreaksUsed,
         WarningCount = run.Warnings.Count,
+        IsManual = run.AlgorithmVersion == MatchingRun.ManualAlgorithmVersion,
         CreatedAt = run.CreatedAt,
         ConfirmedAt = run.ConfirmedAt,
     };
@@ -47,6 +48,7 @@ public static class MatchingMappings
         StudentRank = placement.StudentRank,
         FacultyRank = placement.FacultyRank,
         ResolvedByTieBreak = placement.ResolvedByTieBreak,
+        Source = placement.Source,
         Status = placement.Status,
         UpdatedAt = placement.UpdatedAt,
     };

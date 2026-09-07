@@ -26,6 +26,6 @@ public sealed class UpsertStudentProfileCommand : IRequest<StudentProfileDto>
     public List<string> ResearchTopics { get; init; } = [];
     public string? Publications { get; init; }
     public Guid TranscriptFileId { get; init; }
-    public Guid? CitiFileId { get; init; }
+    public Guid? CvFileId { get; init; }
     public List<DayAvailabilityInput> Availability { get; init; } = [];
 }

@@ -14,6 +14,7 @@ import {
   getProjectRankings,
   type ProjectRankingStudentDto,
 } from "@/lib/project-rankings-api";
+import { isFacultyProjectLocked } from "@/lib/project-form";
 import {
   getProject,
   getProjectParticipants,
@@ -169,6 +170,7 @@ export function FacultyProjectView({
                 rankings={rankings}
                 loading={rankings == null && rankingsError == null}
                 error={rankingsError}
+                locked={isFacultyProjectLocked(project)}
                 onRankingsChanged={() => {
                   void loadRankings().catch((err: unknown) => {
                     setRankingsError(

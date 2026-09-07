@@ -11,6 +11,10 @@ type MultiSelectSearchProps = {
   max: number;
   disabled?: boolean;
   hint?: string;
+  /** Allow typing a name that is not yet in the catalog. */
+  allowCreate?: boolean;
+  onCreate?: (name: string) => void;
+  creating?: boolean;
 };
 
 export function MultiSelectSearch({
@@ -22,6 +26,9 @@ export function MultiSelectSearch({
   max,
   disabled = false,
   hint,
+  allowCreate = false,
+  onCreate,
+  creating = false,
 }: MultiSelectSearchProps) {
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -32,8 +39,9 @@ export function MultiSelectSearch({
   const allowSet = useMemo(() => new Set(catalog), [catalog]);
 
   const selected = useMemo(
-    () => values.filter((v) => allowSet.has(v)),
-    [values, allowSet],
+    () =>
+      allowCreate ? values.filter((v) => v.trim().length > 0) : values.filter((v) => allowSet.has(v)),
+    [values, allowSet, allowCreate],
   );
 
   const filtered = useMemo(() => {
@@ -47,6 +55,16 @@ export function MultiSelectSearch({
 
   const atMax = selected.length >= max;
 
+  const canCreate = useMemo(() => {
+    if (!allowCreate || atMax || creating) return false;
+    const name = query.trim();
+    if (!name) return false;
+    return (
+      !selected.some((item) => item.toLowerCase() === name.toLowerCase()) &&
+      !catalog.some((item) => item.toLowerCase() === name.toLowerCase())
+    );
+  }, [allowCreate, atMax, creating, query, selected, catalog]);
+
   useEffect(() => {
     function onPointerDown(event: MouseEvent) {
       if (!rootRef.current?.contains(event.target as Node)) {
@@ -58,12 +76,24 @@ export function MultiSelectSearch({
   }, []);
 
   function add(item: string) {
-    if (disabled || atMax || selected.includes(item) || !allowSet.has(item)) {
+    const name = item.trim();
+    if (disabled || atMax || !name) return;
+    if (selected.some((value) => value.toLowerCase() === name.toLowerCase())) {
       return;
     }
-    onChange([...selected, item]);
+    if (!allowCreate && !allowSet.has(name)) {
+      return;
+    }
+    onChange([...selected, name]);
     setQuery("");
     inputRef.current?.focus();
+  }
+
+  function createFromQuery() {
+    const name = query.trim();
+    if (!canCreate || !name) return;
+    onCreate?.(name);
+    add(name);
   }
 
   function remove(item: string) {
@@ -126,6 +156,10 @@ export function MultiSelectSearch({
               if (e.key === "Escape") setOpen(false);
               if (e.key === "Enter") {
                 e.preventDefault();
+                if (canCreate) {
+                  createFromQuery();
+                  return;
+                }
                 const first = filtered[0];
                 if (first) add(first);
               }
@@ -143,7 +177,20 @@ export function MultiSelectSearch({
 
       {open && !atMax ? (
         <ul id={listId} role="listbox" className="multi-select-menu">
-          {filtered.length === 0 ? (
+          {canCreate ? (
+            <li>
+              <button
+                type="button"
+                role="option"
+                className="multi-select-option"
+                disabled={creating}
+                onClick={createFromQuery}
+              >
+                {creating ? "Adding…" : `Add “${query.trim()}”`}
+              </button>
+            </li>
+          ) : null}
+          {filtered.length === 0 && !canCreate ? (
             <li className="multi-select-empty">No matching options</li>
           ) : (
             filtered.map((item) => (

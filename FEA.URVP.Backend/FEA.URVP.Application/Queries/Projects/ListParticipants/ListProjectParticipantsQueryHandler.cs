@@ -40,11 +40,13 @@ public sealed class ListProjectParticipantsQueryHandler
         return placements
             .Select(p => new ProjectParticipantDto
             {
+                PlacementId = p.Id,
                 StudentUserId = p.StudentUserId,
                 StudentName = p.StudentUser.Name,
                 StudentEmail = p.StudentUser.Email,
                 StudentRank = p.StudentRank,
                 FacultyRank = p.FacultyRank,
+                Source = p.Source,
             })
             .ToList();
     }

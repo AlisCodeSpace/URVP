@@ -28,7 +28,8 @@ public sealed class CreateProjectCommandValidator : AbstractValidator<CreateProj
             .WithMessage("One or more research areas are not allowed.");
 
         RuleFor(x => x.IrbStage)
-            .IsInEnum();
+            .IsInEnum()
+            .When(x => x.IrbStage.HasValue);
 
         RuleFor(x => x.BriefDescription)
             .NotEmpty().WithMessage("Brief description is required.")
