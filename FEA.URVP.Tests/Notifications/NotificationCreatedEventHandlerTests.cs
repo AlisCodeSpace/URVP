@@ -21,7 +21,7 @@ public sealed class NotificationCreatedEventHandlerTests
     {
         var userId = Guid.NewGuid();
         var notificationId = Guid.NewGuid();
-        var (handler, outbox, email, notifications) = CreateHandler(emailEnabled: true);
+        var (handler, outbox, email, notifications) = CreateHandler(userEmailEnabled: true);
 
         notifications.GetUnreadCountAsync(userId, Arg.Any<CancellationToken>()).Returns(1);
 
@@ -43,7 +43,7 @@ public sealed class NotificationCreatedEventHandlerTests
     {
         var userId = Guid.NewGuid();
         var notificationId = Guid.NewGuid();
-        var (handler, outbox, _, _) = CreateHandler(emailEnabled: false);
+        var (handler, outbox, _, _) = CreateHandler(userEmailEnabled: false);
 
         await handler.HandleAsync(CreatedEvent(notificationId, userId), CancellationToken.None);
 
@@ -54,7 +54,7 @@ public sealed class NotificationCreatedEventHandlerTests
     public async Task Outbox_and_cache_failures_do_not_throw()
     {
         var userId = Guid.NewGuid();
-        var (handler, outbox, _, notifications) = CreateHandler(emailEnabled: true);
+        var (handler, outbox, _, notifications) = CreateHandler(userEmailEnabled: true);
         notifications.GetUnreadCountAsync(userId, Arg.Any<CancellationToken>()).Returns(1);
         outbox.QueueEmailNotificationAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("queue down"));
@@ -63,6 +63,18 @@ public sealed class NotificationCreatedEventHandlerTests
             handler.HandleAsync(CreatedEvent(Guid.NewGuid(), userId), CancellationToken.None));
 
         Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task Global_email_disabled_skips_outbox_even_when_prefs_on()
+    {
+        var userId = Guid.NewGuid();
+        var notificationId = Guid.NewGuid();
+        var (handler, outbox, _, _) = CreateHandler(userEmailEnabled: true, emailGloballyEnabled: false);
+
+        await handler.HandleAsync(CreatedEvent(notificationId, userId), CancellationToken.None);
+
+        await outbox.DidNotReceive().QueueEmailNotificationAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 
     private static NotificationCreatedEvent CreatedEvent(Guid notificationId, Guid userId) =>
@@ -79,13 +91,15 @@ public sealed class NotificationCreatedEventHandlerTests
         NotificationCreatedEventHandler Handler,
         INotificationOutboxService Outbox,
         IEmailService Email,
-        INotificationRepository Notifications) CreateHandler(bool emailEnabled)
+        INotificationRepository Notifications) CreateHandler(
+        bool userEmailEnabled,
+        bool emailGloballyEnabled = true)
     {
         var notifications = Substitute.For<INotificationRepository>();
         notifications.GetSettingsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new UserNotificationSettings
             {
-                EmailNotifications = emailEnabled,
+                EmailNotifications = userEmailEnabled,
                 InAppNotifications = true,
             });
 
@@ -93,6 +107,7 @@ public sealed class NotificationCreatedEventHandlerTests
             new NotificationBusinessRulesService(
                 notifications,
                 Options.Create(new NotificationSettingsOptions()),
+                Options.Create(new EmailOptions { Enabled = emailGloballyEnabled }),
                 NullLogger<NotificationBusinessRulesService>.Instance));
 
         var outbox = Substitute.For<INotificationOutboxService>();

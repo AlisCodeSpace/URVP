@@ -69,6 +69,30 @@ public sealed class NotificationOutboxServiceTests
     }
 
     [Fact]
+    public async Task ProcessOutbox_disabled_email_skips_send_and_completes()
+    {
+        var notification = NewNotification();
+        var item = NewOutbox(notification.Id);
+        var (service, outbox, email) = CreateService(notification, item, sendSucceeds: true, emailEnabled: false);
+
+        await service.ProcessOutboxAsync(CancellationToken.None);
+
+        await email.DidNotReceive().SendEmailAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string?>(),
+            Arg.Any<string?>(),
+            Arg.Any<CancellationToken>());
+        await outbox.Received().UpdateStatusAsync(
+            item.Id,
+            NotificationOutboxStatus.Completed,
+            "Email sending is disabled.",
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task QueueEmailNotification_inserts_pending_email_row()
     {
         NotificationOutbox? created = null;
@@ -120,7 +144,8 @@ public sealed class NotificationOutboxServiceTests
         IEmailService Email) CreateService(
         Notification notification,
         NotificationOutbox item,
-        bool sendSucceeds)
+        bool sendSucceeds,
+        bool emailEnabled = true)
     {
         var outbox = Substitute.For<INotificationOutboxRepository>();
         outbox.GetPendingItemsAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
@@ -152,7 +177,7 @@ public sealed class NotificationOutboxServiceTests
             email,
             users,
             new ImmediateUnitOfWork(),
-            Options.Create(new EmailOptions()),
+            Options.Create(new EmailOptions { Enabled = emailEnabled }),
             NullLogger<NotificationOutboxService>.Instance);
 
         return (service, outbox, email);

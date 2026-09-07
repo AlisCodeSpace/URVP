@@ -83,6 +83,7 @@ public sealed class MarkAsReadCommandHandlerTests
             new NotificationBusinessRulesService(
                 repo,
                 Options.Create(new NotificationSettingsOptions()),
+                Options.Create(new EmailOptions { Enabled = true }),
                 NullLogger<NotificationBusinessRulesService>.Instance));
 
         return new MarkAsReadCommandHandler(

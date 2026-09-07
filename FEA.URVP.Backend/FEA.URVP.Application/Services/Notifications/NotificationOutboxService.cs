@@ -116,6 +116,20 @@ public sealed class NotificationOutboxService : INotificationOutboxService
             return;
         }
 
+        if (!_emailOptions.Enabled)
+        {
+            await _outbox.UpdateStatusAsync(
+                item.Id,
+                NotificationOutboxStatus.Completed,
+                "Email sending is disabled.",
+                cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation(
+                "Skipped email for notification {NotificationId}; Email:Enabled is false",
+                item.NotificationId);
+            return;
+        }
+
         var notification = await _notifications.GetByIdAsync(item.NotificationId, cancellationToken);
         if (notification is null)
         {

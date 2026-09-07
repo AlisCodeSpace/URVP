@@ -120,6 +120,7 @@ public sealed class CreateNotificationCommandHandlerTests
             new NotificationBusinessRulesService(
                 repo,
                 Options.Create(new NotificationSettingsOptions()),
+                Options.Create(new EmailOptions { Enabled = true }),
                 NullLogger<NotificationBusinessRulesService>.Instance));
 
         return new CreateNotificationCommandHandler(

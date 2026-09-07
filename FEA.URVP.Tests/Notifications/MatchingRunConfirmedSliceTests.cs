@@ -111,6 +111,7 @@ public sealed class MatchingRunConfirmedSliceTests
             new NotificationBusinessRulesService(
                 notifications,
                 Options.Create(new NotificationSettingsOptions()),
+                Options.Create(new EmailOptions { Enabled = true }),
                 NullLogger<NotificationBusinessRulesService>.Instance));
 
         var createHandler = new CreateNotificationCommandHandler(

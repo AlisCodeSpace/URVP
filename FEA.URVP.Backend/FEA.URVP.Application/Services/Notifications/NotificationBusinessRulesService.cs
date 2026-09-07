@@ -12,15 +12,18 @@ public sealed class NotificationBusinessRulesService
 {
     private readonly INotificationRepository _notifications;
     private readonly NotificationSettingsOptions _settings;
+    private readonly EmailOptions _emailOptions;
     private readonly ILogger<NotificationBusinessRulesService> _logger;
 
     public NotificationBusinessRulesService(
         INotificationRepository notifications,
         IOptions<NotificationSettingsOptions> settings,
+        IOptions<EmailOptions> emailOptions,
         ILogger<NotificationBusinessRulesService> logger)
     {
         _notifications = notifications;
         _settings = settings.Value;
+        _emailOptions = emailOptions.Value;
         _logger = logger;
     }
 
@@ -68,6 +71,11 @@ public sealed class NotificationBusinessRulesService
         Guid userId,
         CancellationToken cancellationToken = default)
     {
+        if (!_emailOptions.Enabled)
+        {
+            return false;
+        }
+
         var settings = await _notifications.GetSettingsAsync(userId, cancellationToken);
         return settings?.EmailNotifications ?? true;
     }
