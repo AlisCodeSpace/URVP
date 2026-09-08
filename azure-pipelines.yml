@@ -77,13 +77,8 @@ stages:
         fi
       displayName: 'Vulnerable NuGet packages'
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore for win-x64 publish'
-      inputs:
-        command: restore
-        projects: 'FEA.URVP.sln'
-        arguments: '--locked-mode --runtime win-x64'
-
+    # Do not pass --no-restore: lock files have no net10.0/win-x64 graph, so a
+    # prior locked restore leaves assets that publish -r win-x64 cannot use.
     - task: DotNetCoreCLI@2
       displayName: 'Publish Backend API'
       inputs:
@@ -92,7 +87,6 @@ stages:
         projects: '$(publishProject)/FEA.URVP.Backend.csproj'
         arguments: >
           --configuration Release
-          --no-restore
           --runtime win-x64
           --self-contained false
           --output $(Build.ArtifactStagingDirectory)/$(publishFolder)/$(publishProject)
