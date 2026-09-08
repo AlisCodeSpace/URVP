@@ -47,6 +47,11 @@ export const adminNav: AdminNavGroup[] = [
         label: "URVP Cycles",
         description: "Program cycles and application windows.",
       },
+      {
+        href: "/admin/email",
+        label: "Email",
+        description: "SMTP credentials for outgoing mail.",
+      },
     ],
     children: [
       {

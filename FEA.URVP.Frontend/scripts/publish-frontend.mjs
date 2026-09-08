@@ -1,10 +1,3 @@
-// Copies the static export into the backend's wwwroot, which is what makes the deployment
-// same-origin: ASP.NET Core then serves the app and the API from one origin, so the session
-// cookie stays first-party and no CORS grant is needed in Production.
-//
-// The destination is wiped first. A stale file left behind from an earlier build would keep
-// being served as a public asset, and hashed bundle names mean it would never be overwritten.
-
 import { cp, mkdir, rm, stat } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

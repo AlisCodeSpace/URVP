@@ -1,17 +1,4 @@
 #Requires -Version 5.1
-<#
-.SYNOPSIS
-  Sets ASPNETCORE_ENVIRONMENT so it survives an IIS wipe-and-unzip deploy.
-
-.DESCRIPTION
-  Writes the variable in two places:
-    1. applicationHost.config at the IIS site (commit:apphost) — this is outside
-       the site folder, so a full unzip of the site directory cannot remove it.
-    2. The published web.config — so the first deploy on a box that does not yet
-       have the apphost entry still starts in the right environment.
-
-  Re-running is idempotent.
-#>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]

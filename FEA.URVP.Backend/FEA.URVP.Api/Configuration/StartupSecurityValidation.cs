@@ -1,6 +1,7 @@
 using FEA.URVP.Api.Configuration.Auth;
 using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Services;
+using FEA.URVP.Infrastructure.DataProtection;
 
 namespace FEA.URVP.Api.Configuration;
 
@@ -40,6 +41,7 @@ public static class StartupSecurityValidation
         ValidateAllowedHosts(configuration, logger);
         ValidateConnectionString(configuration, logger, environment);
         ValidateStartupMigrations(configuration, logger);
+        ValidateDataProtection(configuration, logger);
         ValidateFrontendPresence(app, logger);
     }
 
@@ -169,6 +171,20 @@ public static class StartupSecurityValidation
                 + "will run automatically on every start, with no backup or rollback step. Prefer a "
                 + "controlled release task.");
         }
+    }
+
+    private static void ValidateDataProtection(IConfiguration configuration, ILogger logger)
+    {
+        if (DataProtectionConfiguration.EncryptsKeysAtRest(configuration))
+        {
+            return;
+        }
+
+        logger.LogWarning(
+            "Data Protection keys are stored in SQL without encryption at rest. Set {Key} to a "
+            + "certificate thumbprint in the LocalMachine store so a database dump cannot unprotect "
+            + "session cookies, OIDC correlation cookies, or antiforgery tokens.",
+            DataProtectionConfiguration.CertificateThumbprintKey);
     }
 
     private static void ValidateFrontendPresence(WebApplication app, ILogger logger)

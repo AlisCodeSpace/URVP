@@ -1,12 +1,14 @@
 using FEA.URVP.Application.Abstractions.Directory;
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
+using FEA.URVP.Application.Abstractions.Security;
 using FEA.URVP.Infrastructure.Data.Context;
+using FEA.URVP.Infrastructure.DataProtection;
 using FEA.URVP.Infrastructure.Ldap;
 using FEA.URVP.Infrastructure.Events;
 using FEA.URVP.Infrastructure.Notifications;
 using FEA.URVP.Infrastructure.Repositories;
-using Microsoft.AspNetCore.DataProtection;
+using FEA.URVP.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,14 +45,12 @@ public static class DependencyInjection
         services.AddScoped<IWorkshopRepository, WorkshopRepository>();
         services.AddScoped<ISemesterRepository, SemesterRepository>();
         services.AddScoped<IAdminOverviewReadRepository, AdminOverviewReadRepository>();
+        services.AddScoped<IEmailSettingsRepository, EmailSettingsRepository>();
+        services.AddSingleton<ISmtpCredentialProtector, DataProtectionSmtpCredentialProtector>();
         services.AddNotificationServices(configuration);
         services.AddScoped<IEventBus, InMemoryEventBus>();
         services.AddScoped<IDirectoryGroupLookup, LdapDirectoryGroupLookup>();
-
-        // Persist data-protection keys so OIDC correlation/state survives restarts.
-        services.AddDataProtection()
-            .SetApplicationName("FEA.URVP.Backend")
-            .PersistKeysToDbContext<AppDbContext>();
+        services.AddUrvpDataProtection(configuration);
 
         return services;
     }

@@ -1,15 +1,4 @@
 #Requires -Version 5.1
-<#
-.SYNOPSIS
-  Copies a published FEA.URVP build onto an IIS site without dropping server-only files.
-
-.DESCRIPTION
-  Stops the site, replaces site files, then restores:
-    - appsettings.*.local.json (secrets / connection overrides kept off Git)
-    - logs\ (ANCM stdout)
-
-  Then writes ASPNETCORE_ENVIRONMENT into web.config and applicationHost.config.
-#>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
@@ -66,6 +55,14 @@ try {
     Write-Host "Stopping IIS site '$SiteName'"
     $poolName = $site.applicationPool
     if ($poolName) {
+        try {
+            Set-ItemProperty -Path "IIS:\AppPools\$poolName" -Name processModel.loadUserProfile -Value $true
+            Write-Host "Ensured Load User Profile = true on app pool '$poolName' (required for Data Protection DPAPI)."
+        }
+        catch {
+            Write-Warning "Could not set Load User Profile on app pool '$poolName'. Data Protection DPAPI will fail until it is enabled. $_"
+        }
+
         $pool = Get-WebAppPoolState -Name $poolName -ErrorAction SilentlyContinue
         if ($null -ne $pool -and $pool.Value -ne 'Stopped') {
             Write-Host "Stopping app pool '$poolName'"

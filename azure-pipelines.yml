@@ -1,50 +1,188 @@
-# ADO → GitHub mirror. This does not build or deploy.
-# IIS publish is .github/workflows/deploy-iis.yml on the self-hosted runner.
+name: $(Build.SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
 trigger:
-- master
-- main
-- development
-- staging
+  batch: true
+  branches:
+    include:
+      - Dev
+      - Staging
+      - Master
 
-pool:
-  vmImage: ubuntu-latest
+pr:
+  branches:
+    include:
+      - Dev
+      - Staging
+      - Master
 
-steps:
-- checkout: self
-  persistCredentials: true
-  clean: true
-  fetchDepth: 0
+variables:
+  dotnetVersion: '10.x'
+  nodeVersion: '22.16.0'
+  publishProject: 'FEA.URVP.Backend'
+  publishProjectReact: 'FEA.URVP.Frontend'
+  publishFolder: 'FEA.URVP'
+  publishZip: 'Build.zip'
+  uploadName: 'app-release'
+  iisSiteName: 'FEA.URVP'
+  iisPhysicalPath: 'C:\inetpub\wwwroot\FEA.URVP'
+  iisAgentPool: 'Default'
+  publicHostnameStaging: 'urvp-staging.aub.edu.lb'
+  publicHostnameProduction: 'urvp.aub.edu.lb'
 
-- script: |
-    git config user.email "azure-pipelines@aub.edu.lb"
-    git config user.name "Azure DevOps CI"
-  displayName: "Configure git identity"
+stages:
 
-- script: |
-    echo "Mirroring to GitHub..."
-    git remote add github https://$(github_username):$(github_token)@github.com/AUB-Beirut-Campus/FEA.URVP.git
+- stage: Build
+  displayName: 'CI & Package'
+  jobs:
+  - job: BuildJob
+    displayName: 'Build, test, audit, package'
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - checkout: self
 
-    echo "Available branches in origin:"
-    git ls-remote --heads origin
+    - task: UseDotNet@2
+      displayName: 'Setup .NET $(dotnetVersion)'
+      inputs:
+        packageType: sdk
+        version: $(dotnetVersion)
 
-    # List of branches to mirror
-    for branch in master main development staging; do
-      echo "Processing branch: $branch"
-      git fetch origin $branch || echo "No $branch branch in origin"
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore (locked)'
+      inputs:
+        command: restore
+        projects: 'FEA.URVP.sln'
+        arguments: '--locked-mode'
 
-      if git show-ref --verify --quiet refs/heads/$branch; then
-        git checkout $branch
-      else
-        git checkout -b $branch origin/$branch || echo "Skipping $branch, not found"
-      fi
+    - task: DotNetCoreCLI@2
+      displayName: 'Build'
+      inputs:
+        command: build
+        projects: 'FEA.URVP.sln'
+        arguments: '--no-restore --configuration Release'
 
-      # Push branch if it exists
-      if git show-ref --verify --quiet refs/heads/$branch; then
-        echo "Pushing $branch to GitHub..."
-        git push github $branch --force
-      fi
-    done
+    - task: DotNetCoreCLI@2
+      displayName: 'Test'
+      inputs:
+        command: test
+        projects: 'FEA.URVP.Tests/FEA.URVP.Tests.csproj'
+        arguments: '--no-build --configuration Release'
 
-    echo "Pushing tags..."
-    git push github --tags --force || echo "No tags to push"
-  displayName: "Mirror to GitHub"
+    - script: |
+        set -euo pipefail
+        dotnet list FEA.URVP.sln package --vulnerable --include-transitive 2>&1 | tee nuget-audit.txt
+        if grep -qiE '^\s+> ' nuget-audit.txt; then
+          echo "##vso[task.logissue type=error]Vulnerable NuGet packages found"
+          exit 1
+        fi
+      displayName: 'Vulnerable NuGet packages'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore for win-x64 publish'
+      inputs:
+        command: restore
+        projects: 'FEA.URVP.sln'
+        arguments: '--locked-mode --runtime win-x64'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish Backend API'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: '$(publishProject)/FEA.URVP.Backend.csproj'
+        arguments: >
+          --configuration Release
+          --no-restore
+          --runtime win-x64
+          --self-contained false
+          --output $(Build.ArtifactStagingDirectory)/$(publishFolder)/$(publishProject)
+        zipAfterPublish: false
+        modifyOutputPath: false
+
+    - task: UseNode@1
+      displayName: 'Setup Node.js $(nodeVersion)'
+      inputs:
+        version: '$(nodeVersion)'
+
+    - script: |
+        npm ci
+        npm run audit:ci
+        npm run build
+      displayName: 'NPM CI, audit, and Next.js export'
+      workingDirectory: $(publishProjectReact)
+
+    - script: |
+        set -euo pipefail
+        cd "$(publishProjectReact)"
+
+        if find out -name '*.map' -print -quit | grep -q .; then
+          echo "##vso[task.logissue type=error]Source maps present in the production export"
+          exit 1
+        fi
+
+        if grep -rl 'sourceMappingURL' out >/dev/null 2>&1; then
+          echo "##vso[task.logissue type=error]Bundles reference source maps"
+          exit 1
+        fi
+
+        if grep -rlE 'ClientSecret|client_secret|BEGIN [A-Z ]*PRIVATE KEY|AccountKey=' out >/dev/null 2>&1; then
+          echo "##vso[task.logissue type=error]Secret-shaped string found in the production export"
+          exit 1
+        fi
+      displayName: 'Inspect export for source maps and secrets'
+
+    - script: |
+        dest="$(Build.ArtifactStagingDirectory)/$(publishFolder)/$(publishProject)/wwwroot"
+        rm -rf "$dest"
+        mkdir -p "$dest"
+        cp -r $(publishProjectReact)/out/* "$dest/"
+        test -f "$dest/index.html"
+      displayName: 'Copy Next.js export → wwwroot'
+
+    - task: ArchiveFiles@2
+      displayName: 'Zip build output'
+      inputs:
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/$(publishFolder)'
+        includeRootFolder: true
+        archiveType: zip
+        archiveFile: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
+        replaceExistingArchive: true
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish Pipeline Artifact'
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
+        artifact: '$(uploadName)'
+        publishLocation: pipeline
+
+- stage: DeployStaging
+  displayName: 'Deploy Staging'
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/Staging'), ne(variables['Build.Reason'], 'PullRequest'))
+  lockBehavior: sequential
+  jobs:
+  - template: pipelines/deploy-iis.yml
+    parameters:
+      environmentName: Staging
+      aspNetEnvironment: Staging
+      agentPool: ${{ variables.iisAgentPool }}
+      capability: staging
+      publicHostname: $(publicHostnameStaging)
+      iisSiteName: $(iisSiteName)
+      iisPhysicalPath: $(iisPhysicalPath)
+
+- stage: DeployProduction
+  displayName: 'Deploy Production'
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/Master'), ne(variables['Build.Reason'], 'PullRequest'))
+  lockBehavior: sequential
+  jobs:
+  - template: pipelines/deploy-iis.yml
+    parameters:
+      environmentName: Production
+      aspNetEnvironment: Production
+      agentPool: ${{ variables.iisAgentPool }}
+      capability: production
+      publicHostname: $(publicHostnameProduction)
+      iisSiteName: $(iisSiteName)
+      iisPhysicalPath: $(iisPhysicalPath)

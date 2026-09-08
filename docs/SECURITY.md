@@ -192,9 +192,15 @@ the window nor the budget.
 
 ## 7. Data protection, database, secrets
 
-- Data Protection keys are persisted to the database via `PersistKeysToDbContext<AppDbContext>()`
-  with the application name `FEA.URVP.Backend`, so cookies and antiforgery tokens survive a restart
-  and are shared across instances.
+- Data Protection keys are persisted to SQL (`DataProtectionKeys`) via
+  `PersistKeysToDbContext<AppDbContext>()` with the application name `FEA.URVP.Backend`, so cookies,
+  OIDC correlation/nonce cookies, and antiforgery tokens survive an IIS recycle and a wipe-and-unzip
+  deploy, and are shared across instances of the same environment.
+- Newly generated keys are encrypted at rest: Windows (including AUB IIS) uses DPAPI for the app
+  pool identity; Linux needs `DataProtection:CertificateThumbprint` pointing at a certificate in
+  the machine store. Existing plaintext rows remain readable, so turning encryption on does not
+  invalidate current sessions. On IIS the app pool must have **Load User Profile = true** (the
+  deploy script sets this).
 - All data access goes through EF Core with parameterized queries. No SQL is built from user input.
 - The connection string requires `Encrypt=True`. `TrustServerCertificate=true` is set **only** in
   `appsettings.Development.json`; startup logs an error if it appears outside Development.
@@ -240,6 +246,7 @@ or a committed compose file.
 | `Security__TrustedProxies__KnownNetworks__0` | CIDR alternative to the above |
 | `Security__Health__MonitoringNetworks__0` | CIDR permitted to read detailed readiness |
 | `Seq:ServerUrl`, `Seq:ApiKey` | Structured log sink. Set in `appsettings` (or a gitignored `appsettings.{Environment}.local.json`); do not put an API key in source control |
+| `DataProtection:CertificateThumbprint` | Required on Linux so key XML is encrypted before it is written to SQL. Not needed on AUB IIS: Windows DPAPI wraps keys automatically |
 
 ### Deliberately left empty in Production
 
@@ -294,10 +301,12 @@ does not work with `output: 'export'`.
 ### AUB IIS (Staging / Production)
 
 1. DNS for `urvp-staging.aub.edu.lb` / `urvp.aub.edu.lb`, wildcard TLS at IIS, SQL database +
-   domain login for the app-pool identity, .NET 10 Hosting Bundle, GitHub Actions runner on the
-   box labelled `self-hosted, Windows, staging` (and `production` on the prod box).
+   domain login for the app-pool identity, .NET 10 Hosting Bundle, and an Azure Pipelines
+   self-hosted agent on the box. Register the agent in pool `Default` (override `iisAgentPool`)
+   with user-defined capability `staging` (and `production` on the prod box).
 2. Create the IIS site **before** the first deploy (`FEA.URVP` at `C:\inetpub\wwwroot\FEA.URVP` by
-   default). Bind the hostname. The deploy script will not create the site.
+   default). Bind the hostname. The deploy script will not create the site. It will set
+   **Load User Profile = true** on the site's app pool so Data Protection DPAPI can unwrap keys.
 3. `ASPNETCORE_ENVIRONMENT` is written by `scripts/iis/Set-AspNetCoreEnvironment.ps1` into
    `applicationHost.config` (`/commit:apphost`) **and** into the published `web.config`. The
    committed `web.config` does not contain the variable, so a wipe of the site folder cannot
@@ -306,9 +315,11 @@ does not work with `output: 'export'`.
    `appsettings.Staging.json` / `appsettings.Production.json`). Deep links are anonymous HTML
    fallbacks; they must not 401.
 5. Register the Azure AD redirect URIs in section 2. This project has no B2C handler.
-6. `azure-pipelines.yml` mirrors ADO branches to GitHub. `.github/workflows/deploy-iis.yml`
-   publishes onto IIS on push to `staging` / `main` / `master`. It never runs from a pull request.
-   Optional GitHub Environment variables: `IIS_SITE_NAME`, `IIS_PHYSICAL_PATH`, `PUBLIC_HOSTNAME`.
+6. `azure-pipelines.yml` is the only CI/CD definition. Push to `Dev` runs CI and packages
+   `app-release`. Push to `Staging` also deploys to Staging IIS; push to `Master` deploys to
+   Production IIS. Deploy stages never run from a pull request. Optional pipeline variables:
+   `iisSiteName`, `iisPhysicalPath`, `iisAgentPool`, `publicHostnameStaging`,
+   `publicHostnameProduction`. Put an Environment approval check on `Production`.
 7. After the first Staging push, confirm: HTTPS site, `/health/live` is 200, `/api/...` uses the
    session cookie, Azure AD round-trips to `/signin-oidc-ad`, and a SPA deep link such as
    `/projects` returns HTML rather than 401.
@@ -322,8 +333,8 @@ client secret, Seq API key, or a DBA-supplied connection string there — never 
 - **Do not apply database migrations during application startup.**
   `Database:ApplyMigrationsOnStartup` is `false` in Staging and Production. Run migrations as a
   controlled release step with a backup taken first and a tested rollback path.
-- `.github/workflows/ci.yml` runs build, test, and audits with `permissions: contents: read`.
-  It does not deploy.
+- The Build stage in `azure-pipelines.yml` runs restore, test, NuGet/npm audits, and the
+  production export inspection. It does not deploy.
 - Never force-push a protected deployment branch.
 - `.dockerignore` keeps `appsettings.Development.json`, `.env`, and any locally published
   `wwwroot` out of the Linux image. Publish also excludes `appsettings.Development.json`.
@@ -336,18 +347,18 @@ client secret, Seq API key, or a DBA-supplied connection string there — never 
 | **`id_token` / `form_post` when no client secret is set.** | The AUB app registration is a public client. No access or refresh token is ever requested, and the token never reaches JavaScript. Weaker than code + PKCE only in lacking proof-of-possession on the authorization response, which the correlation and nonce cookies mitigate. | Add a secret or certificate to the registration; the code already prefers code + PKCE. |
 | **`style-src 'unsafe-inline'`.** | Next.js emits inline `<style>` for critical CSS, and style injection is far lower impact than script injection. `script-src` has no `unsafe-inline`. | If Next.js gains nonce support for style tags. |
 | **Detailed readiness is admin-only by default.** | `Security:Health:MonitoringNetworks` is empty, so an external monitor sees only `healthy`/`unhealthy`. | Add the monitoring CIDR when a monitoring system needs dependency detail. |
-| **IIS deploy uses a self-hosted runner.** | The AUB box is the environment; GitHub-hosted runners cannot reach IIS. | If the runner is down, Staging/Production will not update until it is restored. |
+| **IIS deploy uses a self-hosted Azure Pipelines agent.** | The AUB box is the environment; Microsoft-hosted agents cannot reach IIS. | If the agent is down, Staging/Production will not update until it is restored. |
 | **`Security:TrustedProxies:TrustAnyProxy` is `true` on Render.** | Render's edge addresses are not stable, so they cannot be pinned. `ForwardLimit` stays 1, so only the edge-appended `X-Forwarded-For` entry is honoured and a client cannot choose its own IP. | Any host with a stable proxy address — pin it in `KnownProxies` and set this back to `false`. |
 | **24 `react-hooks/set-state-in-effect` lint errors.** | Pre-existing component patterns newly flagged by a linter upgrade, not security defects. The one in `AuthProvider` is a false positive — the `setState` runs inside a subscription callback, which the rule's own guidance endorses. | Address as normal frontend maintenance. |
 | **`xunit` 2.9.3 is marked deprecated** in favour of xunit.v3. | Test-only dependency with no known vulnerability. | Migrate when convenient. |
-| **No secret scanning or SAST/CodeQL yet.** | Requires organisation-level configuration. | Enable CodeQL and secret scanning on the repository. |
+| **No secret scanning or SAST yet.** | Requires organisation-level configuration. | Enable secret scanning and code scanning in Azure DevOps. |
 
 ## 13. Verification
 
 Commands actually executed against this implementation.
 
 ```bash
-# Backend build and tests (154 tests, 108 of them security tests)
+# Backend build and tests (158 tests, 112 of them security tests)
 dotnet build FEA.URVP.Backend/FEA.URVP.Api/FEA.URVP.Api.csproj
 dotnet test  FEA.URVP.Tests/FEA.URVP.Tests.csproj
 

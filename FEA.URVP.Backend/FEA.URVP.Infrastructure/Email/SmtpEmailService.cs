@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Mail;
 using FEA.URVP.Application.Abstractions.Notifications;
 using FEA.URVP.Application.Abstractions.Persistence;
+using FEA.URVP.Application.Abstractions.Security;
+using FEA.URVP.Application.Email;
 using FEA.URVP.Application.Options;
 using FEA.URVP.Domain.Entities.Notifications;
 using Microsoft.Extensions.Logging;
@@ -12,17 +14,23 @@ namespace FEA.URVP.Infrastructure.Email;
 public sealed class SmtpEmailService : IEmailService
 {
     private readonly EmailOptions _options;
+    private readonly IEmailSettingsRepository _emailSettings;
+    private readonly ISmtpCredentialProtector _protector;
     private readonly IEmailLogRepository _emailLogs;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<SmtpEmailService> _logger;
 
     public SmtpEmailService(
         IOptions<EmailOptions> options,
+        IEmailSettingsRepository emailSettings,
+        ISmtpCredentialProtector protector,
         IEmailLogRepository emailLogs,
         IUnitOfWork unitOfWork,
         ILogger<SmtpEmailService> logger)
     {
         _options = options.Value;
+        _emailSettings = emailSettings;
+        _protector = protector;
         _emailLogs = emailLogs;
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -63,8 +71,11 @@ public sealed class SmtpEmailService : IEmailService
                 return false;
             }
 
+            var auth = await ResolveAuthAsync(cancellationToken);
+
             success = await TrySendAsync(
                 _options.Smtp,
+                auth,
                 to,
                 name,
                 subject,
@@ -74,7 +85,7 @@ public sealed class SmtpEmailService : IEmailService
             if (!success && _options.SmtpFallback is { IsConfigured: true } fallback)
             {
                 _logger.LogWarning("Primary SMTP failed for {To}; trying fallback host", to);
-                success = await TrySendAsync(fallback, to, name, subject, html, cancellationToken);
+                success = await TrySendAsync(fallback, auth, to, name, subject, html, cancellationToken);
             }
 
             if (!success)
@@ -96,8 +107,42 @@ public sealed class SmtpEmailService : IEmailService
         }
     }
 
+    private async Task<SmtpAuthCredentials.Auth?> ResolveAuthAsync(CancellationToken cancellationToken)
+    {
+        string? storedUserName = null;
+        string? storedPassword = null;
+
+        try
+        {
+            var stored = await _emailSettings.GetAsync(cancellationToken);
+            storedUserName = stored?.UserName;
+            if (stored?.ProtectedPassword is { Length: > 0 } payload
+                && _protector.TryUnprotect(payload, out var plaintext))
+            {
+                storedPassword = plaintext;
+            }
+            else if (stored?.HasPassword == true)
+            {
+                _logger.LogError(
+                    "Stored SMTP password could not be decrypted. Re-enter it on the admin Email page.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load stored SMTP credentials; falling back to configuration.");
+        }
+
+        return SmtpAuthCredentials.Resolve(
+            _options.Smtp.UserName,
+            _options.Smtp.Password,
+            storedUserName,
+            storedPassword,
+            _options.From);
+    }
+
     private async Task<bool> TrySendAsync(
         SmtpServerOptions smtp,
+        SmtpAuthCredentials.Auth? auth,
         string to,
         string name,
         string subject,
@@ -114,9 +159,9 @@ public sealed class SmtpEmailService : IEmailService
             };
 #pragma warning restore SYSLIB0014
 
-            if (!string.IsNullOrWhiteSpace(smtp.UserName))
+            if (auth is { } credentials)
             {
-                client.Credentials = new NetworkCredential(smtp.UserName, smtp.Password);
+                client.Credentials = new NetworkCredential(credentials.UserName, credentials.Password);
             }
 
             using var message = new MailMessage

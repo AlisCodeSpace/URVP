@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Domain.Entities.Divisions;
+using FEA.URVP.Domain.Entities.Email;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FEA.URVP.Domain.Entities.Files;
 using FEA.URVP.Domain.Entities.Matching;
@@ -61,6 +62,8 @@ public class AppDbContext : DbContext, IUnitOfWork, IDataProtectionKeyContext
     public DbSet<UserNotificationSettings> UserNotificationSettings => Set<UserNotificationSettings>();
 
     public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
+
+    public DbSet<EmailSettings> EmailSettings => Set<EmailSettings>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 

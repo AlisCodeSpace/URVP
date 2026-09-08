@@ -26,6 +26,7 @@
     <ProjectReference Include="..\FEA.URVP.Backend\FEA.URVP.Api\FEA.URVP.Api.csproj" />
     <ProjectReference Include="..\FEA.URVP.Backend\FEA.URVP.Application\FEA.URVP.Application.csproj" />
     <ProjectReference Include="..\FEA.URVP.Backend\FEA.URVP.Domain\FEA.URVP.Domain.csproj" />
+    <ProjectReference Include="..\FEA.URVP.Backend\FEA.URVP.Infrastructure\FEA.URVP.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
