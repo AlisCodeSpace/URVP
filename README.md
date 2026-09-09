@@ -31,7 +31,7 @@ Role and ownership checks live in command/query handlers, not in the frontend. F
 | `FEA.URVP.Frontend/` | Next.js 16 App Router (static export) |
 | `FEA.URVP.Tests/` | xUnit tests |
 | `scripts/sql/` | Schema and catalog SQL for environments that do not migrate on startup |
-| `scripts/iis/` | Optional IIS helpers (one-time site env / wipe-and-copy). Not a build artifact. |
+| `scripts/iis/` | Classic Release PowerShell (`Deploy-IisSite.ps1`), same pattern as RICH Connect. Not a build artifact. |
 | `docs/SECURITY.md` | Production security posture (required reading for deploy) |
 | `azure-pipelines.yml` | Azure DevOps Build (CI + `app-release` zip). IIS is a separate Release. |
 
@@ -145,15 +145,9 @@ Filter in Seq with `Application = 'FEA.URVP.Backend'`. Production leaves `Seq:Se
 
 ## CI/CD and environments
 
-Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `win-x64` backend, copies the Next.js export into `wwwroot`, and publishes `Build.zip` as **`app-release` only**. The zip root is the IIS site (`FEA.URVP.Backend.dll`, `web.config`, `wwwroot`) — same shape as RICH Connect.
+Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `win-x64` backend, copies the Next.js export into `wwwroot`, and publishes `Build.zip` as **`app-release` only**. The zip is the same shape as RICH Connect: `FEA.URVP\FEA.URVP.Backend\` (dll, `web.config`, `wwwroot`). The classic Release extracts it to `C:\inetpub\wwwroot\`.
 
-**Classic Release:** clone RICH Connect’s release. Point the artifact at this Build. IIS Web App Deploy **Package** = `Build.zip` (the file inside `app-release`). Website name `FEA.URVP`. Do not add a second artifact, do not extract, do not pick a nested folder. In Additional Arguments paste:
-
-```
--skip:objectName=file,absolutePath=.*appsettings\..*\.local\.json -skip:objectName=dir,absolutePath=.*\\logs
-```
-
-That leaves `appsettings.*.local.json` and `logs\` on the server.
+**Classic Release:** empty job named **Setup IIS**, artifact **Build** → this pipeline’s `app-release`. Agent pool = same as RICH Connect. One **PowerShell** task: paste `scripts/iis/Deploy-IisSite.ps1`. For production, change `$siteDnsName` to `urvp.aub.edu.lb` and `$environmentName` to `Production`.
 
 | Branch | Build | Release |
 | --- | --- | --- |
