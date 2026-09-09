@@ -31,7 +31,7 @@ Role and ownership checks live in command/query handlers, not in the frontend. F
 | `FEA.URVP.Frontend/` | Next.js 16 App Router (static export) |
 | `FEA.URVP.Tests/` | xUnit tests |
 | `scripts/sql/` | Schema and catalog SQL for environments that do not migrate on startup |
-| `scripts/iis/` | IIS publish helpers used by the classic Azure DevOps Release |
+| `scripts/iis/` | Optional IIS helpers (one-time site env / wipe-and-copy). Not a build artifact. |
 | `docs/SECURITY.md` | Production security posture (required reading for deploy) |
 | `azure-pipelines.yml` | Azure DevOps Build (CI + `app-release` zip). IIS is a separate Release. |
 
@@ -145,7 +145,7 @@ Filter in Seq with `Application = 'FEA.URVP.Backend'`. Production leaves `Seq:Se
 
 ## CI/CD and environments
 
-Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `win-x64` backend, copies the Next.js export into `wwwroot`, and publishes `Build.zip` as `app-release`. IIS deploy is a **classic Release pipeline** in Azure DevOps (same split as RICH Connect), not a YAML stage.
+Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `win-x64` backend, copies the Next.js export into `wwwroot`, and publishes `Build.zip` as **`app-release` only** (same drop as RICH Connect). IIS deploy is a **classic Release** in Azure DevOps: link that artifact, extract the zip, and publish `FEA.URVP\FEA.URVP.Backend` onto the existing IIS site. Do not add a second artifact.
 
 | Branch | Build | Release |
 | --- | --- | --- |

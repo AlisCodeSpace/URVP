@@ -199,8 +199,8 @@ the window nor the budget.
 - Newly generated keys are encrypted at rest: Windows (including AUB IIS) uses DPAPI for the app
   pool identity; Linux needs `DataProtection:CertificateThumbprint` pointing at a certificate in
   the machine store. Existing plaintext rows remain readable, so turning encryption on does not
-  invalidate current sessions. On IIS the app pool must have **Load User Profile = true** (the
-  deploy script sets this).
+  invalidate current sessions. On IIS the app pool must have **Load User Profile = true** (set
+  once on the pool; `scripts/iis/Publish-IisSite.ps1` can set it if you run that helper).
 - All data access goes through EF Core with parameterized queries. No SQL is built from user input.
 - The connection string requires `Encrypt=True`. `TrustServerCertificate=true` is set **only** in
   `appsettings.Development.json`; startup logs an error if it appears outside Development.
@@ -230,7 +230,7 @@ or a committed compose file.
 
 | Variable | Notes |
 | --- | --- |
-| `ASPNETCORE_ENVIRONMENT` | Must be `Staging` or `Production`. Set at the IIS site in `applicationHost.config` (the deploy script uses `/commit:apphost`) so a wipe-and-unzip of the site folder cannot drop it. Do not rely on a value only in `web.config`. |
+| `ASPNETCORE_ENVIRONMENT` | Must be `Staging` or `Production`. Set once on the IIS site in `applicationHost.config` so a wipe-and-unzip of the site folder cannot drop it. Do not rely on a value only in `web.config`. `scripts/iis/Set-AspNetCoreEnvironment.ps1` can write this if you are not using IIS Manager. |
 | `ConnectionStrings__SqlServerConnection` | Must include `Encrypt=True` and must **not** include `TrustServerCertificate=true`. Staging/Production files use Windows auth against the AUB SQL hosts; override with `appsettings.{Environment}.local.json` if the DBA gives a different database or login. |
 | `AzureAd__TenantId` | Directory (tenant) GUID. App refuses to boot without it |
 | `AzureAd__ClientId` | Application (client) GUID. App refuses to boot without it |
@@ -305,22 +305,22 @@ does not work with `output: 'export'`.
    self-hosted Windows agent on the box (same pool/machine RICH Connect already uses, typically
    `Default` on SOLDSTAGE-SRV). Do **not** require a YAML demand named `staging`.
 2. Create the IIS site **before** the first deploy (`FEA.URVP` at `C:\inetpub\wwwroot\FEA.URVP` by
-   default). Bind the hostname. The deploy script will not create the site. It will set
+   default). Bind the hostname. The classic Release will not create the site. Set
    **Load User Profile = true** on the site's app pool so Data Protection DPAPI can unwrap keys.
-3. `ASPNETCORE_ENVIRONMENT` is written by `scripts/iis/Set-AspNetCoreEnvironment.ps1` into
-   `applicationHost.config` (`/commit:apphost`) **and** into the published `web.config`. The
-   committed `web.config` does not contain the variable, so a wipe of the site folder cannot
-   revert the site to Development.
+3. Set `ASPNETCORE_ENVIRONMENT` once on the IIS site in `applicationHost.config` (`Staging` or
+   `Production`). The committed `web.config` does not contain the variable, so a wipe of the site
+   folder cannot revert the site to Development. Optional helper:
+   `scripts/iis/Set-AspNetCoreEnvironment.ps1`.
 4. Same-origin SPA hosting is already in the backend (`Security:Frontend:Enabled` in
    `appsettings.Staging.json` / `appsettings.Production.json`). Deep links are anonymous HTML
    fallbacks; they must not 401.
 5. Register the Azure AD redirect URIs in section 2. This project has no B2C handler.
 6. Split like RICH Connect: `azure-pipelines.yml` is the **Build** only (restore, test, audits,
-   package `app-release` / `iis-scripts`). IIS is a **classic Release** in Azure DevOps. Continuous
-   deployment: `Staging` branch → Staging IIS; `Master` → Production IIS with a pre-deployment
-   approval. Do not deploy from `Dev` or from a pull request. Site name `FEA.URVP`, path
-   `C:\inetpub\wwwroot\FEA.URVP`. Staging host `urvp-staging.aub.edu.lb`; production
-   `urvp.aub.edu.lb`.
+   package `app-release` / `Build.zip`). IIS is a **classic Release** in Azure DevOps: that one
+   artifact, extract, deploy `FEA.URVP\FEA.URVP.Backend`. Continuous deployment: `Staging` branch →
+   Staging IIS; `Master` → Production IIS with a pre-deployment approval. Do not deploy from `Dev`
+   or from a pull request. Site name `FEA.URVP`, path `C:\inetpub\wwwroot\FEA.URVP`. Staging host
+   `urvp-staging.aub.edu.lb`; production `urvp.aub.edu.lb`.
 7. After the first Staging release, confirm: HTTPS site, `/health/live` is 200, `/api/...` uses the
    session cookie, Azure AD round-trips to `/signin-oidc-ad`, and a SPA deep link such as
    `/projects` returns HTML rather than 401.

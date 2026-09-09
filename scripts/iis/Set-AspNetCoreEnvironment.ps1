@@ -1,4 +1,9 @@
 #Requires -Version 5.1
+<#
+.SYNOPSIS
+    Optional IIS helper. Not a build artifact. Writes ASPNETCORE_ENVIRONMENT to applicationHost.config
+    and web.config so a wipe-and-unzip cannot revert the site to Development.
+#>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]

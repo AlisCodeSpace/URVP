@@ -1,6 +1,5 @@
 # FEA.URVP – Azure Build Pipeline (same split as RICH Connect).
-# Publishes app-release (Build.zip) and iis-scripts for the classic Release.
-# IIS deploy is a classic Release pipeline in Azure DevOps, not a YAML stage.
+# Publishes app-release (Build.zip) only. IIS deploy is a classic Release in Azure DevOps.
 
 name: $(Build.SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
@@ -132,11 +131,6 @@ stages:
         test -f "$dest/index.html"
       displayName: 'Copy Next.js export → wwwroot'
 
-    - script: |
-        mkdir -p "$(Build.ArtifactStagingDirectory)/$(publishFolder)/iis-scripts"
-        cp scripts/iis/*.ps1 "$(Build.ArtifactStagingDirectory)/$(publishFolder)/iis-scripts/"
-      displayName: 'Copy IIS publish scripts into artifact'
-
     - task: ArchiveFiles@2
       displayName: 'Zip build output'
       inputs:
@@ -151,12 +145,4 @@ stages:
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
         ArtifactName: '$(uploadName)'
-        publishLocation: Container
-
-    # Separate folder so the classic Release can run the publish script without unzipping first.
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish iis-scripts (classic Release)'
-      inputs:
-        PathtoPublish: 'scripts/iis'
-        ArtifactName: 'iis-scripts'
         publishLocation: Container

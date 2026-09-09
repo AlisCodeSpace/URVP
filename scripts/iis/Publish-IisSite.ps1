@@ -1,4 +1,9 @@
 #Requires -Version 5.1
+<#
+.SYNOPSIS
+    Optional IIS helper. Not a build artifact — the classic Release deploys app-release like RICH Connect.
+    Use this if you want wipe-and-copy, preserved appsettings.*.local.json, and Load User Profile from PowerShell.
+#>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
