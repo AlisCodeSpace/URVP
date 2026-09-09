@@ -31,9 +31,9 @@ Role and ownership checks live in command/query handlers, not in the frontend. F
 | `FEA.URVP.Frontend/` | Next.js 16 App Router (static export) |
 | `FEA.URVP.Tests/` | xUnit tests |
 | `scripts/sql/` | Schema and catalog SQL for environments that do not migrate on startup |
-| `scripts/iis/` | IIS publish helpers used by Azure Pipelines |
+| `scripts/iis/` | IIS publish helpers used by the classic Azure DevOps Release |
 | `docs/SECURITY.md` | Production security posture (required reading for deploy) |
-| `azure-pipelines.yml` | CI, package, and IIS deploy |
+| `azure-pipelines.yml` | Azure DevOps Build (CI + `app-release` zip). IIS is a separate Release. |
 
 ## Prerequisites
 
@@ -145,13 +145,13 @@ Filter in Seq with `Application = 'FEA.URVP.Backend'`. Production leaves `Seq:Se
 
 ## CI/CD and environments
 
-Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `win-x64` backend, copies the Next.js export into `wwwroot`, and deploys a zip to IIS.
+Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `win-x64` backend, copies the Next.js export into `wwwroot`, and publishes `Build.zip` as `app-release`. IIS deploy is a **classic Release pipeline** in Azure DevOps (same split as RICH Connect), not a YAML stage.
 
-| Branch | Environment | Host |
+| Branch | Build | Release |
 | --- | --- | --- |
-| `Dev` | CI only (no IIS deploy) | — |
-| `Staging` | Staging | `urvp-staging.aub.edu.lb` |
-| `Master` | Production | `urvp.aub.edu.lb` |
+| `Dev` | CI + package | Do not deploy |
+| `Staging` | CI + package | Staging IIS (`urvp-staging.aub.edu.lb`) |
+| `Master` | CI + package | Production IIS (`urvp.aub.edu.lb`) |
 
 Health: `GET /health/live` and `GET /health/ready`. Anonymous callers get `{"status":"healthy"}` with no dependency detail.
 

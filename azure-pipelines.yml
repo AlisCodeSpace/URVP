@@ -1,3 +1,7 @@
+# FEA.URVP – Azure Build Pipeline (same split as RICH Connect).
+# Publishes app-release (Build.zip) and iis-scripts for the classic Release.
+# IIS deploy is a classic Release pipeline in Azure DevOps, not a YAML stage.
+
 name: $(Build.SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
@@ -23,11 +27,6 @@ variables:
   publishFolder: 'FEA.URVP'
   publishZip: 'Build.zip'
   uploadName: 'app-release'
-  iisSiteName: 'FEA.URVP'
-  iisPhysicalPath: 'C:\inetpub\wwwroot\FEA.URVP'
-  iisAgentPool: 'Default'
-  publicHostnameStaging: 'urvp-staging.aub.edu.lb'
-  publicHostnameProduction: 'urvp.aub.edu.lb'
 
 stages:
 
@@ -133,6 +132,11 @@ stages:
         test -f "$dest/index.html"
       displayName: 'Copy Next.js export → wwwroot'
 
+    - script: |
+        mkdir -p "$(Build.ArtifactStagingDirectory)/$(publishFolder)/iis-scripts"
+        cp scripts/iis/*.ps1 "$(Build.ArtifactStagingDirectory)/$(publishFolder)/iis-scripts/"
+      displayName: 'Copy IIS publish scripts into artifact'
+
     - task: ArchiveFiles@2
       displayName: 'Zip build output'
       inputs:
@@ -143,40 +147,23 @@ stages:
         replaceExistingArchive: true
 
     - task: PublishPipelineArtifact@1
-      displayName: 'Publish Pipeline Artifact'
+      displayName: 'Publish app-release'
       inputs:
         targetPath: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
         artifact: '$(uploadName)'
         publishLocation: pipeline
 
-- stage: DeployStaging
-  displayName: 'Deploy Staging'
-  dependsOn: Build
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/Staging'), ne(variables['Build.Reason'], 'PullRequest'))
-  lockBehavior: sequential
-  jobs:
-  - template: pipelines/deploy-iis.yml
-    parameters:
-      environmentName: Staging
-      aspNetEnvironment: Staging
-      agentPool: ${{ variables.iisAgentPool }}
-      capability: staging
-      publicHostname: $(publicHostnameStaging)
-      iisSiteName: $(iisSiteName)
-      iisPhysicalPath: $(iisPhysicalPath)
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish app-release (classic Release)'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
+        ArtifactName: '$(uploadName)'
+        publishLocation: Container
 
-- stage: DeployProduction
-  displayName: 'Deploy Production'
-  dependsOn: Build
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/Master'), ne(variables['Build.Reason'], 'PullRequest'))
-  lockBehavior: sequential
-  jobs:
-  - template: pipelines/deploy-iis.yml
-    parameters:
-      environmentName: Production
-      aspNetEnvironment: Production
-      agentPool: ${{ variables.iisAgentPool }}
-      capability: production
-      publicHostname: $(publicHostnameProduction)
-      iisSiteName: $(iisSiteName)
-      iisPhysicalPath: $(iisPhysicalPath)
+    # Separate folder so the classic Release can run the publish script without unzipping first.
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish iis-scripts (classic Release)'
+      inputs:
+        PathtoPublish: 'scripts/iis'
+        ArtifactName: 'iis-scripts'
+        publishLocation: Container

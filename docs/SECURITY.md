@@ -302,8 +302,8 @@ does not work with `output: 'export'`.
 
 1. DNS for `urvp-staging.aub.edu.lb` / `urvp.aub.edu.lb`, wildcard TLS at IIS, SQL database +
    domain login for the app-pool identity, .NET 10 Hosting Bundle, and an Azure Pipelines
-   self-hosted agent on the box. Register the agent in pool `Default` (override `iisAgentPool`)
-   with user-defined capability `staging` (and `production` on the prod box).
+   self-hosted Windows agent on the box (same pool/machine RICH Connect already uses, typically
+   `Default` on SOLDSTAGE-SRV). Do **not** require a YAML demand named `staging`.
 2. Create the IIS site **before** the first deploy (`FEA.URVP` at `C:\inetpub\wwwroot\FEA.URVP` by
    default). Bind the hostname. The deploy script will not create the site. It will set
    **Load User Profile = true** on the site's app pool so Data Protection DPAPI can unwrap keys.
@@ -315,12 +315,13 @@ does not work with `output: 'export'`.
    `appsettings.Staging.json` / `appsettings.Production.json`). Deep links are anonymous HTML
    fallbacks; they must not 401.
 5. Register the Azure AD redirect URIs in section 2. This project has no B2C handler.
-6. `azure-pipelines.yml` is the only CI/CD definition. Push to `Dev` runs CI and packages
-   `app-release`. Push to `Staging` also deploys to Staging IIS; push to `Master` deploys to
-   Production IIS. Deploy stages never run from a pull request. Optional pipeline variables:
-   `iisSiteName`, `iisPhysicalPath`, `iisAgentPool`, `publicHostnameStaging`,
-   `publicHostnameProduction`. Put an Environment approval check on `Production`.
-7. After the first Staging push, confirm: HTTPS site, `/health/live` is 200, `/api/...` uses the
+6. Split like RICH Connect: `azure-pipelines.yml` is the **Build** only (restore, test, audits,
+   package `app-release` / `iis-scripts`). IIS is a **classic Release** in Azure DevOps. Continuous
+   deployment: `Staging` branch → Staging IIS; `Master` → Production IIS with a pre-deployment
+   approval. Do not deploy from `Dev` or from a pull request. Site name `FEA.URVP`, path
+   `C:\inetpub\wwwroot\FEA.URVP`. Staging host `urvp-staging.aub.edu.lb`; production
+   `urvp.aub.edu.lb`.
+7. After the first Staging release, confirm: HTTPS site, `/health/live` is 200, `/api/...` uses the
    session cookie, Azure AD round-trips to `/signin-oidc-ad`, and a SPA deep link such as
    `/projects` returns HTML rather than 401.
 
