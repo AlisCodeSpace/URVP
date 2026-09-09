@@ -146,15 +146,8 @@ stages:
         archiveFile: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
         replaceExistingArchive: true
 
-    - task: PublishPipelineArtifact@1
-      displayName: 'Publish app-release'
-      inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
-        artifact: '$(uploadName)'
-        publishLocation: pipeline
-
     - task: PublishBuildArtifacts@1
-      displayName: 'Publish app-release (classic Release)'
+      displayName: 'Publish app-release'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/$(publishZip)'
         ArtifactName: '$(uploadName)'
