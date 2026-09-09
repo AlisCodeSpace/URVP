@@ -316,17 +316,21 @@ does not work with `output: 'export'`.
    fallbacks; they must not 401.
 5. Register the Azure AD redirect URIs in section 2. This project has no B2C handler.
 6. Split like RICH Connect: `azure-pipelines.yml` is the **Build** only (restore, test, audits,
-   package `app-release` / `Build.zip`). IIS is a **classic Release** in Azure DevOps: that one
-   artifact, extract, deploy `FEA.URVP\FEA.URVP.Backend`. Continuous deployment: `Staging` branch →
-   Staging IIS; `Master` → Production IIS with a pre-deployment approval. Do not deploy from `Dev`
-   or from a pull request. Site name `FEA.URVP`, path `C:\inetpub\wwwroot\FEA.URVP`. Staging host
-   `urvp-staging.aub.edu.lb`; production `urvp.aub.edu.lb`.
+   package `app-release` / `Build.zip` with the site at the zip root). IIS is a **classic Release**
+   in Azure DevOps: clone RICH Connect, artifact `app-release`, IIS Web App Deploy Package =
+   `Build.zip`. Additional Arguments:
+   `-skip:objectName=file,absolutePath=.*appsettings\..*\.local\.json -skip:objectName=dir,absolutePath=.*\\logs`.
+   Continuous deployment: `Staging` branch → Staging IIS; `Master` → Production IIS with a
+   pre-deployment approval. Do not deploy from `Dev` or from a pull request. Site name `FEA.URVP`,
+   path `C:\inetpub\wwwroot\FEA.URVP`. Staging host `urvp-staging.aub.edu.lb`; production
+   `urvp.aub.edu.lb`.
 7. After the first Staging release, confirm: HTTPS site, `/health/live` is 200, `/api/...` uses the
    session cookie, Azure AD round-trips to `/signin-oidc-ad`, and a SPA deep link such as
    `/projects` returns HTML rather than 401.
 
-`appsettings.{Environment}.local.json` (gitignored) and `logs\` survive wipe-and-unzip. Put a
-client secret, Seq API key, or a DBA-supplied connection string there — never in Git.
+`appsettings.{Environment}.local.json` (gitignored) and `logs\` stay on the box when the classic
+Release uses the MSDeploy skip arguments above. Put a client secret, Seq API key, or a DBA-supplied
+connection string there — never in Git.
 
 - For a local IIS-shaped build, `npm run build:deploy` in `FEA.URVP.Frontend` runs the export and
   copies it to `FEA.URVP.Backend/wwwroot`. That directory is gitignored.

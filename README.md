@@ -145,7 +145,15 @@ Filter in Seq with `Application = 'FEA.URVP.Backend'`. Production leaves `Seq:Se
 
 ## CI/CD and environments
 
-Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `win-x64` backend, copies the Next.js export into `wwwroot`, and publishes `Build.zip` as **`app-release` only** (same drop as RICH Connect). IIS deploy is a **classic Release** in Azure DevOps: link that artifact, extract the zip, and publish `FEA.URVP\FEA.URVP.Backend` onto the existing IIS site. Do not add a second artifact.
+Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `win-x64` backend, copies the Next.js export into `wwwroot`, and publishes `Build.zip` as **`app-release` only**. The zip root is the IIS site (`FEA.URVP.Backend.dll`, `web.config`, `wwwroot`) — same shape as RICH Connect.
+
+**Classic Release:** clone RICH Connect’s release. Point the artifact at this Build. IIS Web App Deploy **Package** = `Build.zip` (the file inside `app-release`). Website name `FEA.URVP`. Do not add a second artifact, do not extract, do not pick a nested folder. In Additional Arguments paste:
+
+```
+-skip:objectName=file,absolutePath=.*appsettings\..*\.local\.json -skip:objectName=dir,absolutePath=.*\\logs
+```
+
+That leaves `appsettings.*.local.json` and `logs\` on the server.
 
 | Branch | Build | Release |
 | --- | --- | --- |

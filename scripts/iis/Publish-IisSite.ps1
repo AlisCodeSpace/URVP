@@ -1,8 +1,8 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Optional IIS helper. Not a build artifact — the classic Release deploys app-release like RICH Connect.
-    Use this if you want wipe-and-copy, preserved appsettings.*.local.json, and Load User Profile from PowerShell.
+    Optional IIS helper. Not a build artifact. The classic Release should IIS Web App Deploy Build.zip
+    (site at zip root). Use this only for a manual wipe-and-copy on the box.
 #>
 [CmdletBinding()]
 param(
