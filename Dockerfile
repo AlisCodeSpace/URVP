@@ -1,8 +1,12 @@
 # syntax=docker/dockerfile:1
 #
-# Single image for the same-origin BFF: the exported Next.js app is baked into the backend's
-# wwwroot so the browser only ever talks to one origin. The build context is the repository
-# root, not FEA.URVP.Backend, because the frontend sources live outside it.
+# Same-origin BFF: the exported Next.js app is baked into the backend wwwroot so the browser
+# only ever talks to one origin.
+#
+# This file lives at the repository root on purpose. Render's default Docker build context is
+# the directory that contains the Dockerfile. A Dockerfile under FEA.URVP.Backend/ therefore
+# cannot COPY FEA.URVP.Frontend/ unless the dashboard overrides dockerContext to the repo root,
+# and that override is easy to miss on a service created by hand.
 
 # ---------------------------------------------------------------------------
 # Frontend: static export

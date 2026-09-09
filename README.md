@@ -157,7 +157,7 @@ Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `
 
 Health: `GET /health/live` and `GET /health/ready`. Anonymous callers get `{"status":"healthy"}` with no dependency detail.
 
-A Docker image (`FEA.URVP.Backend/Dockerfile`, context = repo root) and `render.yaml` exist for a same-origin container deploy. AUB production is IIS, not Render.
+A Docker image (`Dockerfile` at the repo root) and `render.yaml` exist for a same-origin container deploy. AUB production is IIS, not Render.
 
 ## Configuration notes
 

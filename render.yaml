@@ -22,8 +22,11 @@ services:
   - type: web
     name: urvp
     runtime: docker
-    dockerfilePath: ./FEA.URVP.Backend/Dockerfile
-    # Repository root: the image builds the frontend export as well as the backend.
+    # Dockerfile is at the repo root so Render's default context includes FEA.URVP.Frontend.
+    # Dashboard must match: Language=Docker, Dockerfile Path=./Dockerfile, Root Directory empty,
+    # Docker Build Context Directory empty or ".", Docker Command empty (do not set npm start).
+    # Delete any second Node/static service for FEA.URVP.Frontend — that build has no start script.
+    dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /health/live
     envVars:

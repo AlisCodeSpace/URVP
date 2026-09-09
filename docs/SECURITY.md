@@ -292,7 +292,7 @@ deployment.
 
 ## 11. Deployment
 
-**One service, not two.** IIS (and `render.yaml` / `FEA.URVP.Backend/Dockerfile`) serve the
+**One service, not two.** IIS (and `render.yaml` / the repository-root `Dockerfile`) serve the
 statically exported Next.js app from the ASP.NET Core process `wwwroot`. The browser sees a single
 origin, so the session cookie stays `SameSite=Strict` and CORS stays closed. Splitting the frontend
 onto a second site would force `SameSite=None` and reopen CSRF as a concern. `next start` also
