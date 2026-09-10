@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FEA.URVP.Backend;
 
 /// <summary>
-/// Startup database initialization: migrations, catalog seed, and demo auth accounts.
+/// Startup database initialization: migrations, first-migration catalog seed, and demo auth accounts.
 /// </summary>
 public static class DatabaseInitialization
 {
@@ -25,6 +25,7 @@ public static class DatabaseInitialization
             .CreateLogger(nameof(DatabaseInitialization));
         var applyMigrations = app.Configuration.GetValue("Database:ApplyMigrationsOnStartup", app.Environment.IsDevelopment());
         var seedCatalogs = app.Configuration.GetValue("Database:SeedCatalogsOnStartup", app.Environment.IsDevelopment());
+        var isFirstMigration = await IsUnmigratedDatabaseAsync(dbContext);
 
         if (applyMigrations)
         {
@@ -56,6 +57,13 @@ public static class DatabaseInitialization
             return;
         }
 
+        if (!isFirstMigration)
+        {
+            logger.LogInformation(
+                "Skipping catalog seed; the database already has applied migrations. Seed runs only on the first migration.");
+            return;
+        }
+
         try
         {
             await SeedValueListsAsync(dbContext, logger);
@@ -67,6 +75,20 @@ public static class DatabaseInitialization
         {
             logger.LogWarning(ex, "Catalog seeding skipped.");
         }
+    }
+
+    /// <summary>
+    /// True when the database does not exist yet or has never had an EF migration applied.
+    /// </summary>
+    private static async Task<bool> IsUnmigratedDatabaseAsync(AppDbContext dbContext)
+    {
+        if (!await dbContext.Database.CanConnectAsync())
+        {
+            return true;
+        }
+
+        var applied = await dbContext.Database.GetAppliedMigrationsAsync();
+        return !applied.Any();
     }
 
     private static async Task ApplyMigrationsAsync(
