@@ -35,6 +35,7 @@ public sealed class UpdateWorkshopCommandHandler
         workshop.RegistrationUrl = request.RegistrationUrl.Trim();
         workshop.PosterFileId = request.PosterFileId;
         workshop.PosterAlt = string.IsNullOrWhiteSpace(request.PosterAlt) ? null : request.PosterAlt.Trim();
+        workshop.Published = request.Published;
         workshop.UpdatedAt = DateTime.UtcNow;
 
         await UnitOfWork.SaveChangesAsync(cancellationToken);

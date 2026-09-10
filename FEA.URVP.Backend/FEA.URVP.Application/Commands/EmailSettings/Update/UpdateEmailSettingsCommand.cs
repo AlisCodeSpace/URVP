@@ -9,8 +9,6 @@ public sealed class UpdateEmailSettingsCommand : IRequest<EmailSettingsDto>
     [JsonIgnore]
     public Guid UpdatedByUserId { get; set; }
 
-    public string? UserName { get; init; }
-
     /// <summary>
     /// New SMTP password. Null or whitespace leaves the stored password unchanged.
     /// </summary>

@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { Heading } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import type { NotificationSettings } from "@/lib/notifications-api";
 
@@ -46,7 +47,7 @@ export function NotificationSettingsDialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6" role="presentation">
+    <div className="dialog-layer fixed inset-0 z-50 flex items-center justify-center" role="presentation">
       <button
         type="button"
         className="absolute inset-0 bg-primary/45 backdrop-blur-[2px]"
@@ -60,7 +61,7 @@ export function NotificationSettingsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 w-full max-w-md overflow-hidden rounded-[var(--radius-lg)] border border-primary/12 bg-surface shadow-[0_24px_60px_-28px_rgba(61,18,72,0.45)]"
+        className="dialog-layer-panel relative z-10 w-full max-w-md rounded-[var(--radius-lg)] border border-primary/12 bg-surface shadow-[0_24px_60px_-28px_rgba(61,18,72,0.45)]"
       >
         <div className="px-6 py-5">
           <Heading
@@ -73,34 +74,26 @@ export function NotificationSettingsDialog({
             Notification settings
           </Heading>
           <div className="mt-4 flex flex-col gap-3">
-            <label className="flex items-start gap-3 text-sm text-foreground">
-              <input
-                type="checkbox"
-                checked={inAppNotifications}
-                disabled={saving || busy}
-                onChange={(event) => setInAppNotifications(event.target.checked)}
-              />
-              <span>
-                <strong>In-app notifications</strong>
-                <span className="mt-0.5 block text-muted">
-                  Hide the list in this browser. Existing notifications stay in the database.
-                </span>
+            <Checkbox
+              checked={inAppNotifications}
+              disabled={saving || busy}
+              onCheckedChange={setInAppNotifications}
+            >
+              <strong>In-app notifications</strong>
+              <span className="mt-0.5 block text-muted">
+                Hide the list in this browser. Existing notifications stay in the database.
               </span>
-            </label>
-            <label className="flex items-start gap-3 text-sm text-foreground">
-              <input
-                type="checkbox"
-                checked={emailNotifications}
-                disabled={saving || busy}
-                onChange={(event) => setEmailNotifications(event.target.checked)}
-              />
-              <span>
-                <strong>Email notifications</strong>
-                <span className="mt-0.5 block text-muted">
-                  Queue an email when a new notification is created.
-                </span>
+            </Checkbox>
+            <Checkbox
+              checked={emailNotifications}
+              disabled={saving || busy}
+              onCheckedChange={setEmailNotifications}
+            >
+              <strong>Email notifications</strong>
+              <span className="mt-0.5 block text-muted">
+                Queue an email when a new notification is created.
               </span>
-            </label>
+            </Checkbox>
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2 border-t border-primary/10 px-6 py-4">

@@ -8,7 +8,11 @@ import { PostProjectForm } from "@/components/projects/PostProjectForm";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApiError } from "@/lib/api";
 import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
-import { isFacultyProjectLocked, type ProjectFormValues } from "@/lib/project-form";
+import {
+  facultyProjectEditLockMessage,
+  isFacultyProjectEditable,
+  type ProjectFormValues,
+} from "@/lib/project-form";
 import { getProject, toFormValues } from "@/lib/projects-api";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 
@@ -35,8 +39,8 @@ export function EditProjectView({
           setError("You can only edit your own projects.");
           return;
         }
-        if (isFacultyProjectLocked(project)) {
-          setError("This project can no longer be edited after matching.");
+        if (!isFacultyProjectEditable(project)) {
+          setError(facultyProjectEditLockMessage(project));
           return;
         }
         setInitialValues(toFormValues(project));

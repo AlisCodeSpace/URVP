@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { DateField } from "@/components/ui/DateField";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
+import { fromAppDatetimeInput, toAppDatetimeInput } from "@/lib/datetime";
 import {
   createSemester,
   formatScheduleRange,
+  getActiveSemester,
   getSemester,
-  parseApiDate,
   updateSemester,
   type SemesterDto,
 } from "@/lib/semesters-api";
@@ -35,25 +36,14 @@ const emptyValues: FormValues = {
   applicationWindowEnd: "",
 };
 
-function toLocalDatetimeInput(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const d = parseApiDate(iso);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function toIsoOrNull(local: string): string | null {
-  return local ? new Date(local).toISOString() : null;
-}
-
 function toValues(dto: SemesterDto): FormValues {
   return {
     name: dto.name,
     description: dto.description ?? "",
-    cycleStart: toLocalDatetimeInput(dto.cycleStart),
-    cycleEnd: toLocalDatetimeInput(dto.cycleEnd),
-    applicationWindowStart: toLocalDatetimeInput(dto.applicationWindowStart),
-    applicationWindowEnd: toLocalDatetimeInput(dto.applicationWindowEnd),
+    cycleStart: toAppDatetimeInput(dto.cycleStart),
+    cycleEnd: toAppDatetimeInput(dto.cycleEnd),
+    applicationWindowStart: toAppDatetimeInput(dto.applicationWindowStart),
+    applicationWindowEnd: toAppDatetimeInput(dto.applicationWindowEnd),
   };
 }
 
@@ -103,10 +93,13 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
   const router = useRouter();
   const isEdit = Boolean(semesterId);
   const [values, setValues] = useState<FormValues>(emptyValues);
-  const [loading, setLoading] = useState(isEdit);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentDto, setCurrentDto] = useState<SemesterDto | null>(null);
+  const [createBlockedByActive, setCreateBlockedByActive] = useState<string | null>(
+    null,
+  );
 
   const nameId = useId();
   const descId = useId();
@@ -114,15 +107,24 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
   const cycleEndId = useId();
   const windowStartId = useId();
   const windowEndId = useId();
+  const readOnly = Boolean(isEdit && currentDto?.hasEnded);
 
   const load = useCallback(async () => {
-    if (!semesterId) return;
     setLoading(true);
     setError(null);
+    setCreateBlockedByActive(null);
     try {
-      const dto = await getSemester(semesterId);
-      setCurrentDto(dto);
-      setValues(toValues(dto));
+      if (semesterId) {
+        const dto = await getSemester(semesterId);
+        setCurrentDto(dto);
+        setValues(toValues(dto));
+        return;
+      }
+
+      const active = await getActiveSemester();
+      if (active) {
+        setCreateBlockedByActive(active.name);
+      }
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Failed to load URVP cycle.",
@@ -142,15 +144,16 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (readOnly || createBlockedByActive) return;
     if (!values.name.trim()) {
       setError("Cycle name is required.");
       return;
     }
 
-    const cycleStart = toIsoOrNull(values.cycleStart);
-    const cycleEnd = toIsoOrNull(values.cycleEnd);
-    const windowStart = toIsoOrNull(values.applicationWindowStart);
-    const windowEnd = toIsoOrNull(values.applicationWindowEnd);
+    const cycleStart = fromAppDatetimeInput(values.cycleStart);
+    const cycleEnd = fromAppDatetimeInput(values.cycleEnd);
+    const windowStart = fromAppDatetimeInput(values.applicationWindowStart);
+    const windowEnd = fromAppDatetimeInput(values.applicationWindowEnd);
 
     if (cycleStart && cycleEnd && new Date(cycleEnd) <= new Date(cycleStart)) {
       setError("Academic cycle end must be after the start date.");
@@ -206,6 +209,8 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
         <AdminPageHeader
           title={isEdit ? "Edit URVP cycle" : "New URVP cycle"}
           description="Schedule the URVP cycle and student application window."
+          backHref="/admin/semesters"
+          backLabel="Back to URVP cycles"
         />
         <AdminFormSkeleton fields={6} />
       </div>
@@ -215,11 +220,25 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
   return (
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
-        title={isEdit ? "Edit URVP cycle" : "New URVP cycle"}
-        description="Set start and end dates so each period closes automatically — or leave an end blank and close it instantly from the URVP Cycles list. You can edit dates at any time to extend or shorten a period."
+        title={
+          readOnly ? "View URVP cycle" : isEdit ? "Edit URVP cycle" : "New URVP cycle"
+        }
+        description={
+          readOnly
+            ? "This cycle has ended. It is kept as history and cannot be changed."
+            : "Set start and end dates so each period closes automatically — or leave an end blank and close it instantly from the URVP Cycles list. You can edit dates at any time to extend or shorten a period."
+        }
+        backHref="/admin/semesters"
+        backLabel="Back to URVP cycles"
       />
 
       <form className="mt-6 grid max-w-3xl gap-5" onSubmit={onSubmit} noValidate>
+        {createBlockedByActive ? (
+          <p className="admin-users-banner is-error" role="alert">
+            “{createBlockedByActive}” is still active. End that cycle before creating a
+            new one.
+          </p>
+        ) : null}
         {error ? (
           <p className="admin-users-banner is-error" role="alert">
             {error}
@@ -305,6 +324,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
             onChange={(e) => setField("name", e.target.value)}
             placeholder="Fall 2025–26"
             required
+            disabled={readOnly || Boolean(createBlockedByActive)}
           />
         </AdminFormField>
 
@@ -315,6 +335,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
             rows={2}
             value={values.description}
             onChange={(e) => setField("description", e.target.value)}
+            disabled={readOnly || Boolean(createBlockedByActive)}
           />
         </AdminFormField>
 
@@ -326,7 +347,11 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
             <AdminFormField
               id={cycleStartId}
               label="Starts"
-              hint="Leave blank until the cycle is scheduled."
+              hint={
+                isEdit
+                  ? "The start date cannot be changed after the cycle is created."
+                  : "Leave blank until the cycle is scheduled."
+              }
             >
               <DateField
                 id={cycleStartId}
@@ -334,6 +359,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
                 placeholder="Select start date"
                 value={values.cycleStart}
                 onChange={(next) => setField("cycleStart", next)}
+                disabled={readOnly || Boolean(createBlockedByActive) || isEdit}
               />
             </AdminFormField>
             <AdminFormField
@@ -347,6 +373,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
                 placeholder="Select end date"
                 value={values.cycleEnd}
                 onChange={(next) => setField("cycleEnd", next)}
+                disabled={readOnly || Boolean(createBlockedByActive)}
               />
             </AdminFormField>
           </div>
@@ -360,7 +387,11 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
             <AdminFormField
               id={windowStartId}
               label="Opens"
-              hint="Leave blank if not yet scheduled."
+              hint={
+                isEdit
+                  ? "The opening date cannot be changed after the cycle is created."
+                  : "Leave blank if not yet scheduled."
+              }
             >
               <DateField
                 id={windowStartId}
@@ -368,6 +399,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
                 placeholder="Select start date"
                 value={values.applicationWindowStart}
                 onChange={(next) => setField("applicationWindowStart", next)}
+                disabled={readOnly || Boolean(createBlockedByActive) || isEdit}
               />
             </AdminFormField>
             <AdminFormField
@@ -381,21 +413,29 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
                 placeholder="Select end date"
                 value={values.applicationWindowEnd}
                 onChange={(next) => setField("applicationWindowEnd", next)}
+                disabled={readOnly || Boolean(createBlockedByActive)}
               />
             </AdminFormField>
           </div>
         </ScheduleFieldset>
 
         <div className="flex flex-wrap gap-3">
-          <Button type="submit" variant="primary" size="md" disabled={saving}>
-            {saving
-              ? "Saving…"
-              : isEdit
-                ? "Save changes"
-                : "Create cycle"}
-          </Button>
+          {readOnly ? null : (
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              disabled={saving || Boolean(createBlockedByActive)}
+            >
+              {saving
+                ? "Saving…"
+                : isEdit
+                  ? "Save changes"
+                  : "Create cycle"}
+            </Button>
+          )}
           <Button href="/admin/semesters" variant="outline" size="md">
-            Cancel
+            {readOnly ? "Back" : "Cancel"}
           </Button>
         </div>
       </form>

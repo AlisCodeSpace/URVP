@@ -6,6 +6,9 @@ import { AdminFormField } from "@/components/admin/AdminFormField";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { AdminPosterField } from "@/components/admin/AdminPosterField";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { DateField } from "@/components/ui/DateField";
+import { TimeField } from "@/components/ui/TimeField";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
@@ -26,6 +29,7 @@ type WorkshopFormValues = {
   registrationUrl: string;
   posterAlt: string;
   posterFileId: string | null;
+  published: boolean;
 };
 
 const emptyValues: WorkshopFormValues = {
@@ -37,6 +41,7 @@ const emptyValues: WorkshopFormValues = {
   registrationUrl: "",
   posterAlt: "",
   posterFileId: null,
+  published: true,
 };
 
 function toValues(dto: WorkshopDto): WorkshopFormValues {
@@ -49,6 +54,7 @@ function toValues(dto: WorkshopDto): WorkshopFormValues {
     registrationUrl: dto.registrationUrl,
     posterAlt: dto.posterAlt ?? "",
     posterFileId: dto.posterFileId ?? null,
+    published: dto.published !== false,
   };
 }
 
@@ -129,6 +135,7 @@ export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
         registrationUrl: values.registrationUrl.trim(),
         posterAlt: values.posterAlt.trim() || null,
         posterFileId: values.posterFileId,
+        published: values.published,
       };
 
       const saved =
@@ -159,6 +166,8 @@ export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
         <AdminPageHeader
           title={isEdit ? "Edit workshop" : "New workshop"}
           description="Same fields as the Workshops page, plus a 3:2 card photo."
+          backHref="/admin/workshops"
+          backLabel="Back to workshops"
         />
         <AdminFormSkeleton fields={7} />
       </div>
@@ -170,6 +179,8 @@ export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
       <AdminPageHeader
         title={isEdit ? "Edit workshop" : "New workshop"}
         description="Same fields as the Workshops page, plus a 3:2 card photo."
+        backHref="/admin/workshops"
+        backLabel="Back to workshops"
       />
 
       <form className="mt-6 grid max-w-3xl gap-5" onSubmit={onSubmit} noValidate>
@@ -190,26 +201,21 @@ export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
         </AdminFormField>
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <AdminFormField
-            id={dateId}
-            label="Date"
-            required
-            hint='Display date, e.g. "Sep 5, 2025".'
-          >
-            <input
+          <AdminFormField id={dateId} label="Date" required>
+            <DateField
               id={dateId}
-              className="field-input"
+              placeholder="Select date"
               value={values.date}
-              onChange={(e) => setField("date", e.target.value)}
-              required
+              onChange={(next) => setField("date", next)}
             />
           </AdminFormField>
-          <AdminFormField id={timeId} label="Time" hint='e.g. "4:00 – 5:00 PM"'>
-            <input
+          <AdminFormField id={timeId} label="Time">
+            <TimeField
               id={timeId}
-              className="field-input"
+              placeholder="Select time"
+              includeEnd
               value={values.time}
-              onChange={(e) => setField("time", e.target.value)}
+              onChange={(next) => setField("time", next)}
             />
           </AdminFormField>
         </div>
@@ -254,6 +260,13 @@ export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
           onFileChange={onFileChange}
           fileName={posterFile?.name}
         />
+
+        <Checkbox
+          checked={values.published}
+          onCheckedChange={(checked) => setField("published", checked)}
+        >
+          Published
+        </Checkbox>
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" variant="primary" size="md" disabled={saving}>

@@ -13,7 +13,11 @@ import {
   type AdminProjectListItemDto,
   type PaginatedAdminProjects,
 } from "@/lib/admin-projects-api";
-import { formatProjectDate, type MyProjectStatus } from "@/lib/project-form";
+import {
+  formatProjectDate,
+  projectStatusClass,
+  type MyProjectStatus,
+} from "@/lib/project-form";
 
 const PAGE_SIZE = 20;
 
@@ -23,12 +27,6 @@ const STATUS_FILTER_OPTIONS = [
   { value: "Matching", label: "Matching" },
   { value: "Closed", label: "Closed" },
 ] as const;
-
-function statusClass(status: MyProjectStatus) {
-  if (status === "Open") return "is-active";
-  if (status === "Matching") return "is-matching";
-  return "";
-}
 
 export function AdminProjectsView() {
   const searchId = useId();
@@ -84,7 +82,7 @@ export function AdminProjectsView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Projects"
-        description="Open a project to assign students and review ranking interest."
+        description="Open a listing to review details, seats, and ranking interest."
         tag={
           data
             ? `${data.totalCount} project${data.totalCount === 1 ? "" : "s"}`
@@ -215,7 +213,9 @@ function ProjectRow({ project }: { project: AdminProjectListItemDto }) {
         <div className="admin-users-meta">{project.affiliation}</div>
       </td>
       <td>
-        <span className={`admin-value-status ${statusClass(project.status)}`}>
+        <span
+          className={`admin-value-status ${projectStatusClass(project.status)}`}
+        >
           {project.status}
         </span>
       </td>
@@ -230,7 +230,7 @@ function ProjectRow({ project }: { project: AdminProjectListItemDto }) {
       <td>
         <div className="admin-value-actions">
           <Button href={adminProjectHref(project.id)} variant="primary" size="sm">
-            Assign students
+            View project
           </Button>
         </div>
       </td>

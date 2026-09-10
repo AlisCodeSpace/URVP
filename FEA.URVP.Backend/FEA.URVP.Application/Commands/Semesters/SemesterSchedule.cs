@@ -35,6 +35,30 @@ internal static class SemesterSchedule
         }
     }
 
+    public static async Task EnsureNoOtherActiveCycleAsync(
+        ISemesterRepository semesters,
+        Guid? exceptId,
+        CancellationToken cancellationToken)
+    {
+        var active = await semesters.FindActiveAsync(cancellationToken);
+        if (active is null)
+            return;
+        if (exceptId.HasValue && active.Id == exceptId.Value)
+            return;
+
+        throw new InvalidOperationException(
+            $"\"{active.Name}\" is still active. End that cycle before creating or starting another.");
+    }
+
+    public static void EnsureNotEnded(Semester semester, DateTime utcNow)
+    {
+        if (semester.HasEnded(utcNow))
+        {
+            throw new InvalidOperationException(
+                "Ended cycles are read-only and cannot be changed.");
+        }
+    }
+
     public static async Task EnsureNoCycleOverlapAsync(
         ISemesterRepository semesters,
         Guid? excludeId,
@@ -51,7 +75,7 @@ internal static class SemesterSchedule
             return;
 
         throw new ArgumentException(
-            $"This cycle overlaps \"{other.Name}\". End or shorten that cycle first, or pick different dates.");
+            $"This cycle overlaps \"{other.Name}\". Choose dates after that cycle ended.");
     }
 
     public static async Task ApplyAsync(

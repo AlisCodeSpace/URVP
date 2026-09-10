@@ -1,11 +1,10 @@
 "use client";
 
+import { formatAppDateTime } from "@/lib/datetime";
 import { notificationTone, type Notification } from "@/lib/notifications-api";
 
 function formatWhen(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString();
+  return formatAppDateTime(value);
 }
 
 type NotificationItemProps = {

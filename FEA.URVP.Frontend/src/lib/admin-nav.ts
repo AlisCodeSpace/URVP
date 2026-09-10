@@ -8,8 +8,6 @@ export type AdminNavGroup = {
   id: string;
   label: string;
   items: AdminNavItem[];
-  /** Nested under another group (e.g. Value Lists under Administration). */
-  children?: AdminNavGroup[];
 };
 
 export const adminNav: AdminNavGroup[] = [
@@ -28,21 +26,6 @@ export const adminNav: AdminNavGroup[] = [
         description: "Listings, rankings, and student assignments.",
       },
       {
-        href: "/admin/matching",
-        label: "Matching test",
-        description: "Run the automatic matcher for testing.",
-      },
-      {
-        href: "/admin/news",
-        label: "News",
-        description: "Stories on the News page and home ticker.",
-      },
-      {
-        href: "/admin/workshops",
-        label: "Workshops",
-        description: "Sessions, registration links, and card photos.",
-      },
-      {
         href: "/admin/semesters",
         label: "URVP Cycles",
         description: "Program cycles and application windows.",
@@ -58,36 +41,48 @@ export const adminNav: AdminNavGroup[] = [
         description: "In-app updates for this admin account.",
       },
     ],
-    children: [
+  },
+  {
+    id: "value-lists",
+    label: "Value Lists",
+    items: [
       {
-        id: "value-lists",
-        label: "Value Lists",
-        items: [
-          {
-            href: "/admin/research-interests",
-            label: "Research Interests",
-            description: "Student and faculty research interests.",
-          },
-          {
-            href: "/admin/research-activity-types",
-            label: "Research Activity Types",
-            description: "Activity types faculty choose when posting projects.",
-          },
-        ],
+        href: "/admin/research-interests",
+        label: "Research Interests",
+        description: "Student and faculty research interests.",
+      },
+      {
+        href: "/admin/research-activity-types",
+        label: "Activity Types",
+        description: "Activity types faculty choose when posting projects.",
+      },
+    ],
+  },
+  {
+    id: "miscellaneous",
+    label: "Miscellaneous",
+    items: [
+      {
+        href: "/admin/home-intro",
+        label: "Home",
+        description: "Homepage headline, description, and key points.",
+      },
+      {
+        href: "/admin/news",
+        label: "News",
+        description: "Stories on the News page and home ticker.",
+      },
+      {
+        href: "/admin/workshops",
+        label: "Workshops",
+        description: "Sessions, registration links, and card photos.",
       },
     ],
   },
 ];
 
 export function flattenAdminNav(): AdminNavItem[] {
-  const items: AdminNavItem[] = [];
-  for (const group of adminNav) {
-    items.push(...group.items);
-    for (const child of group.children ?? []) {
-      items.push(...child.items);
-    }
-  }
-  return items;
+  return adminNav.flatMap((group) => group.items);
 }
 
 export function findAdminNavItem(pathname: string): AdminNavItem | undefined {

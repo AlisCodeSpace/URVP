@@ -42,8 +42,7 @@ public sealed class GetEmailSettingsQueryHandlerTests
         var dto = await handler.Handle(new GetEmailSettingsQuery(), CancellationToken.None);
 
         Assert.True(dto.PasswordIsSet);
-        Assert.Equal("urvp-system@aub.edu.lb", dto.UserName);
-        Assert.DoesNotContain("protected-payload", dto.UserName, StringComparison.Ordinal);
+        Assert.Null(dto.UserName);
     }
 
     private static EmailOptions SampleOptions() => new()

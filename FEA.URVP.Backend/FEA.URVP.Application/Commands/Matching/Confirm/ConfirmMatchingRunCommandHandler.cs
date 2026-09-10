@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.Matching;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Matching;
@@ -54,7 +55,11 @@ public sealed class ConfirmMatchingRunCommandHandler
         var run = await _runs.FindByIdAsync(request.RunId, cancellationToken)
             ?? throw new KeyNotFoundException($"Matching run {request.RunId} was not found.");
 
-        run.Confirm(request.CurrentUserId, DateTime.UtcNow);
+        var now = DateTime.UtcNow;
+        ApplicationWindowRules.EnsureClosedForMatching(
+            run.Semester ?? throw new InvalidOperationException("Matching run is missing its semester."),
+            now);
+        run.Confirm(request.CurrentUserId, now);
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 
         await ProjectSeatSync.ApplyAsync(

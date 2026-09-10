@@ -64,6 +64,23 @@ public class Semester
         || (!CycleStart.HasValue && IsActive);
 
     /// <summary>
+    /// True when the cycle has a scheduled window that has already closed
+    /// (automatically or by an admin ending it). Ended cycles are historical.
+    /// </summary>
+    public bool HasEnded(DateTime utcNow) =>
+        CycleStart.HasValue
+        && CycleEnd.HasValue
+        && utcNow >= CycleEnd.Value;
+
+    /// <summary>
+    /// True when the student application window has closed (scheduled end reached
+    /// or an admin closed it). Does not treat a future window as ended.
+    /// </summary>
+    public bool HasApplicationWindowEnded(DateTime utcNow) =>
+        ApplicationWindowEnd.HasValue
+        && utcNow >= ApplicationWindowEnd.Value;
+
+    /// <summary>
     /// True when students may submit applications: the cycle is running and
     /// the current UTC time falls within the application window.
     /// </summary>

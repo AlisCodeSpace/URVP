@@ -188,7 +188,7 @@ export function StudentProfileReadonly({
           Typical weekly availability for volunteering.
         </Text>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
+          <table className="availability-table w-full min-w-[36rem] border-collapse text-left text-sm">
             <thead>
               <tr>
                 <th className="pb-3 pr-3 font-semibold text-muted">Day</th>

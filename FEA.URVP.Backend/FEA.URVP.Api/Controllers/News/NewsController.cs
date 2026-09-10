@@ -27,15 +27,17 @@ public sealed class NewsController : ApiControllerBase
     [HttpGet]
     public async Task<IActionResult> List(
         [FromQuery] string? search = null,
+        [FromQuery] bool publishedOnly = false,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 100,
         CancellationToken cancellationToken = default)
     {
         pageNumber = Math.Max(1, pageNumber);
         pageSize = Math.Clamp(pageSize, 1, 200);
+        var onlyPublished = publishedOnly || !UserHasRole(nameof(UserRole.Admin));
 
         var (items, totalCount) = await _mediator.Send(
-            new ListNewsArticlesQuery(search, pageNumber, pageSize),
+            new ListNewsArticlesQuery(search, onlyPublished, pageNumber, pageSize),
             cancellationToken);
 
         return PaginatedResponse(items, pageNumber, pageSize, totalCount);

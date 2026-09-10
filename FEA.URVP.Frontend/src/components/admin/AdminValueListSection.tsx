@@ -4,7 +4,8 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { FieldSelect } from "@/components/ui/FieldSelect";
-import { IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons";
+import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
+import { IconPencil, IconPlus } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
@@ -227,7 +228,6 @@ export function AdminValueListSection({
           />
         </div>
         <div className="admin-value-toolbar-actions">
-          <RefreshIconButton loading={loading} onClick={() => void load()} />
           <Button
             type="button"
             variant="primary"
@@ -238,6 +238,7 @@ export function AdminValueListSection({
             <IconPlus />
             Add value
           </Button>
+          <RefreshIconButton loading={loading} onClick={() => void load()} />
         </div>
       </div>
 
@@ -259,7 +260,7 @@ export function AdminValueListSection({
       ) : (
         <>
           <div className="admin-users-table-wrap">
-            <table className="admin-users-table">
+            <table className="admin-users-table admin-value-list-table">
               <thead>
                 <tr>
                   <th scope="col">Name</th>
@@ -420,16 +421,10 @@ export function AdminValueListSection({
                                 <IconPencil />
                                 Edit
                               </Button>
-                              <Button
-                                type="button"
-                                variant="danger"
-                                size="sm"
+                              <DeleteIconButton
                                 disabled={busy || draftOpen}
                                 onClick={() => setPendingDelete(item)}
-                              >
-                                <IconTrash />
-                                Delete
-                              </Button>
+                              />
                             </>
                           )}
                         </div>

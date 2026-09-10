@@ -11,6 +11,7 @@ public sealed class WorkshopDto
     public string RegistrationUrl { get; init; } = null!;
     public Guid? PosterFileId { get; init; }
     public string? PosterAlt { get; init; }
+    public bool Published { get; init; }
     public int SortOrder { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }

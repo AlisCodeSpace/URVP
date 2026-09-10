@@ -4,10 +4,14 @@ public static class FileStorageCatalog
 {
     public const string EntityStudentProfile = "StudentProfile";
     public const string EntityWorkshop = "Workshop";
+    public const string EntityNewsArticle = "NewsArticle";
 
     public const string CategoryTranscript = "Transcript";
     public const string CategoryCv = "Cv";
     public const string CategoryPoster = "Poster";
+    public const string CategoryNewsImage = "NewsImage";
+
+    public const int MaxNewsImages = 12;
 
     public const long MaxDocumentBytes = 10 * 1024 * 1024; // 10 MB (SQL check constraint)
     public const long MaxImageBytes = 5 * 1024 * 1024; // 5 MB (SQL check constraint)
@@ -18,6 +22,7 @@ public static class FileStorageCatalog
     {
         EntityStudentProfile,
         EntityWorkshop,
+        EntityNewsArticle,
     };
 
     public static readonly IReadOnlySet<string> DocumentCategories = new HashSet<string>(StringComparer.Ordinal)
@@ -29,6 +34,7 @@ public static class FileStorageCatalog
     public static readonly IReadOnlySet<string> ImageCategories = new HashSet<string>(StringComparer.Ordinal)
     {
         CategoryPoster,
+        CategoryNewsImage,
     };
 
     public static readonly IReadOnlySet<string> AllowedPdfExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -60,5 +66,6 @@ public static class FileStorageCatalog
         ImageCategories.Contains(category);
 
     public static bool IsPublicFile(string entityType, string fileCategory) =>
-        entityType == EntityWorkshop && fileCategory == CategoryPoster;
+        (entityType == EntityWorkshop && fileCategory == CategoryPoster)
+        || (entityType == EntityNewsArticle && fileCategory == CategoryNewsImage);
 }

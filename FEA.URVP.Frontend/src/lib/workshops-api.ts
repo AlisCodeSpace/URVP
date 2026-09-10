@@ -1,5 +1,7 @@
 import { apiFetch } from "@/lib/api";
 import { getApiBaseUrl } from "@/lib/config";
+import { formatAppDate } from "@/lib/datetime";
+import { formatTimeDisplay } from "@/lib/time";
 import { workshops as fallbackWorkshops, type Workshop } from "@/lib/workshops";
 import type { FileMetadataDto } from "@/lib/student-profile-api";
 
@@ -13,6 +15,7 @@ export type WorkshopDto = {
   registrationUrl: string;
   posterFileId?: string | null;
   posterAlt?: string | null;
+  published: boolean;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
@@ -34,6 +37,7 @@ export type WorkshopWritePayload = {
   registrationUrl: string;
   posterFileId?: string | null;
   posterAlt?: string | null;
+  published?: boolean;
 };
 
 export function workshopPosterUrl(
@@ -47,8 +51,8 @@ export function toWorkshop(dto: WorkshopDto): Workshop {
   return {
     id: dto.id,
     title: dto.title,
-    date: dto.date,
-    time: dto.time ?? undefined,
+    date: formatAppDate(dto.date),
+    time: dto.time ? formatTimeDisplay(dto.time) : undefined,
     location: dto.location ?? undefined,
     description: dto.description,
     registrationUrl: dto.registrationUrl,
@@ -59,11 +63,13 @@ export function toWorkshop(dto: WorkshopDto): Workshop {
 
 export async function listWorkshops(params: {
   search?: string;
+  publishedOnly?: boolean;
   pageNumber?: number;
   pageSize?: number;
 } = {}): Promise<PaginatedWorkshops> {
   const query = new URLSearchParams();
   if (params.search?.trim()) query.set("search", params.search.trim());
+  if (params.publishedOnly) query.set("publishedOnly", "true");
   query.set("pageNumber", String(params.pageNumber ?? 1));
   query.set("pageSize", String(params.pageSize ?? 100));
   return apiFetch<PaginatedWorkshops>(`/api/workshops?${query.toString()}`);
@@ -113,7 +119,7 @@ export async function uploadWorkshopPoster(
 
 export async function loadPublicWorkshops(): Promise<Workshop[]> {
   try {
-    const page = await listWorkshops({ pageNumber: 1, pageSize: 200 });
+    const page = await listWorkshops({ pageNumber: 1, pageSize: 200, publishedOnly: true });
     return page.items.map(toWorkshop);
   } catch {
     return fallbackWorkshops;

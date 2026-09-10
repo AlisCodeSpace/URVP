@@ -4,7 +4,7 @@ export default function AdminResearchActivityTypesPage() {
   return (
     <AdminValueListPage
       kind="research-activity-types"
-      title="Research Activity Types"
+      title="Activity Types"
       description="Activity types faculty choose when posting a project."
     />
   );

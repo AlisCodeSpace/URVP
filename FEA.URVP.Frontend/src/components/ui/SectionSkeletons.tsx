@@ -52,7 +52,7 @@ export function NewsArticleSkeleton() {
     <div aria-busy="true" aria-label="Loading story">
       <header className="news-article-hero relative overflow-hidden text-white">
         <div className="news-article-hero-grid absolute inset-0" aria-hidden />
-        <div className="relative z-10 site-container site-container--narrow pb-16 pt-28 sm:pb-20 sm:pt-32">
+        <div className="relative z-10 site-container site-container--narrow pb-16 pt-[calc(7rem+env(safe-area-inset-top,0px))] sm:pb-20 sm:pt-[calc(8rem+env(safe-area-inset-top,0px))]">
           <Skeleton tone="dark" className="h-4 w-24" />
           <div className="mt-8 flex gap-3">
             <Skeleton tone="dark" className="h-3 w-28" />

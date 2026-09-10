@@ -266,7 +266,7 @@ export function PostProjectForm({
         </div>
       </section>
 
-      <section className="form-section">
+      <section className="form-section" data-tour="faculty-project-details">
         <Heading
           as="h2"
           size="5"
@@ -342,7 +342,7 @@ export function PostProjectForm({
         </div>
       </section>
 
-      <section className="form-section">
+      <section className="form-section" data-tour="faculty-volunteers">
         <Heading
           as="h2"
           size="5"

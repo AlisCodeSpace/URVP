@@ -26,15 +26,17 @@ public sealed class WorkshopsController : ApiControllerBase
     [HttpGet]
     public async Task<IActionResult> List(
         [FromQuery] string? search = null,
+        [FromQuery] bool publishedOnly = false,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 100,
         CancellationToken cancellationToken = default)
     {
         pageNumber = Math.Max(1, pageNumber);
         pageSize = Math.Clamp(pageSize, 1, 200);
+        var onlyPublished = publishedOnly || !UserHasRole(nameof(UserRole.Admin));
 
         var (items, totalCount) = await _mediator.Send(
-            new ListWorkshopsQuery(search, pageNumber, pageSize),
+            new ListWorkshopsQuery(search, onlyPublished, pageNumber, pageSize),
             cancellationToken);
 
         return PaginatedResponse(items, pageNumber, pageSize, totalCount);
@@ -44,7 +46,9 @@ public sealed class WorkshopsController : ApiControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var item = await _mediator.Send(new GetWorkshopByIdQuery(id), cancellationToken);
+        var item = await _mediator.Send(
+            new GetWorkshopByIdQuery(id, publishedOnly: !UserHasRole(nameof(UserRole.Admin))),
+            cancellationToken);
         return SuccessResponse(item);
     }
 

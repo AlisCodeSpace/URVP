@@ -27,6 +27,9 @@ public sealed class UpdateSemesterCommandHandler
         var semester = await _semesters.FindByIdAsync(request.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"Semester {request.Id} was not found.");
 
+        var now = DateTime.UtcNow;
+        SemesterSchedule.EnsureNotEnded(semester, now);
+
         semester.Name = request.Name.Trim();
         semester.Description = string.IsNullOrWhiteSpace(request.Description)
             ? null
@@ -39,7 +42,7 @@ public sealed class UpdateSemesterCommandHandler
             request.CycleEnd,
             request.ApplicationWindowStart,
             request.ApplicationWindowEnd,
-            DateTime.UtcNow,
+            now,
             cancellationToken);
 
         await UnitOfWork.SaveChangesAsync(cancellationToken);

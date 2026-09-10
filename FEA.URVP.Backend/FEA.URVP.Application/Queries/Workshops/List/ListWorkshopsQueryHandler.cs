@@ -21,6 +21,7 @@ public sealed class ListWorkshopsQueryHandler
     {
         var (items, totalCount) = await _workshops.ListAsync(
             request.Search,
+            request.PublishedOnly,
             request.PageNumber,
             request.PageSize,
             cancellationToken);

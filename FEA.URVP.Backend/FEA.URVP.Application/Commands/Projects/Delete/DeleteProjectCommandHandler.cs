@@ -12,16 +12,19 @@ public sealed class DeleteProjectCommandHandler : BaseCommandHandler<DeleteProje
 {
     private readonly IProjectRepository _projects;
     private readonly IEventBus _eventBus;
+    private readonly FacultyProjectMutationAccess _mutationAccess;
 
     public DeleteProjectCommandHandler(
         ILogger<DeleteProjectCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IProjectRepository projects,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        FacultyProjectMutationAccess mutationAccess)
         : base(logger, unitOfWork)
     {
         _projects = projects;
         _eventBus = eventBus;
+        _mutationAccess = mutationAccess;
     }
 
     protected override async Task HandleCommandAsync(
@@ -36,7 +39,10 @@ public sealed class DeleteProjectCommandHandler : BaseCommandHandler<DeleteProje
             throw new UnauthorizedAccessException("You can only delete your own projects.");
         }
 
-        ProjectMutationAccess.EnsureFacultyCanMutate(project, request.IsAdmin);
+        await _mutationAccess.EnsureCanEditProjectAsync(
+            project,
+            request.IsAdmin,
+            cancellationToken);
 
         var deletedEvent = request.IsAdmin && project.CreatedByUserId != request.CurrentUserId
             ? new ProjectDeletedEvent(project.Id, project.CreatedByUserId, project.Title)

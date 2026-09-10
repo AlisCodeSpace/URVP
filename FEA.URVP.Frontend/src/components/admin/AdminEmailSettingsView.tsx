@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useState, type FormEvent } from "react";
+import { AdminEmailLogs } from "@/components/admin/AdminEmailLogs";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
@@ -15,11 +16,9 @@ import {
 } from "@/lib/email-settings-api";
 
 export function AdminEmailSettingsView() {
-  const userNameId = useId();
   const passwordId = useId();
 
   const [settings, setSettings] = useState<EmailSettingsDto | null>(null);
-  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,7 +29,6 @@ export function AdminEmailSettingsView() {
 
   const applySettings = useCallback((dto: EmailSettingsDto) => {
     setSettings(dto);
-    setUserName(dto.userName ?? "");
     setPassword("");
   }, []);
 
@@ -54,15 +52,21 @@ export function AdminEmailSettingsView() {
     void load();
   }, [load]);
 
+  const passwordIsSet = settings?.passwordIsSet === true;
+  const canSave = password.trim().length > 0 && !passwordIsSet;
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    if (!canSave) {
+      return;
+    }
+
     setSaving(true);
     setError(null);
     setSaved(false);
     try {
       const next = await updateEmailSettings({
-        userName: userName.trim() || null,
-        password: password.trim() || null,
+        password: password.trim(),
       });
       applySettings(next);
       setSaved(true);
@@ -81,7 +85,6 @@ export function AdminEmailSettingsView() {
     setSaved(false);
     try {
       const next = await updateEmailSettings({
-        userName: userName.trim() || null,
         clearPassword: true,
       });
       applySettings(next);
@@ -100,18 +103,18 @@ export function AdminEmailSettingsView() {
 
   if (loading) {
     return (
-      <div className="admin-panel">
+      <div className="admin-panel admin-panel--wide">
         <AdminPageHeader
           title="Email"
           description="SMTP credentials used to send program notifications."
         />
-        <AdminFormSkeleton fields={5} />
+        <AdminFormSkeleton fields={4} />
       </div>
     );
   }
 
   return (
-    <div className="admin-panel">
+    <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Email"
         description="The SMTP host comes from server configuration. Store the mailbox password here — it is encrypted in the database and never shown again."
@@ -161,59 +164,51 @@ export function AdminEmailSettingsView() {
         </dl>
       ) : null}
 
-      <form className="mt-6 grid max-w-xl gap-5" onSubmit={onSubmit} autoComplete="off">
-        <AdminFormField
-          id={userNameId}
-          label="SMTP username"
-          hint="Usually the From address. Leave blank to use the From address when a password is set."
-        >
-          <input
-            id={userNameId}
-            className="field-input"
-            value={userName}
-            onChange={(e) => setUserName(e.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-          />
-        </AdminFormField>
-
+      <form className="mt-6" onSubmit={onSubmit} autoComplete="off">
         <AdminFormField
           id={passwordId}
           label="SMTP password"
           hint={
-            settings?.passwordIsSet
-              ? "Leave blank to keep the stored password. Enter a new value to replace it."
+            passwordIsSet
+              ? "A password is already stored. Remove it first if you need to replace it."
               : "Stored encrypted. It will not be displayed after you save."
           }
         >
-          <input
-            id={passwordId}
-            type="password"
-            className="field-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="new-password"
-            placeholder={settings?.passwordIsSet ? "••••••••" : undefined}
-          />
+          <div className="admin-email-password-row">
+            <input
+              id={passwordId}
+              type="password"
+              className="field-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              disabled={passwordIsSet}
+              placeholder={passwordIsSet ? "••••••••" : undefined}
+            />
+            <div className="admin-email-password-actions">
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
+                disabled={saving || clearing || !canSave}
+              >
+                {saving ? "Saving…" : "Save credentials"}
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                size="md"
+                disabled={saving || clearing || !passwordIsSet}
+                onClick={() => setConfirmClear(true)}
+              >
+                Remove password
+              </Button>
+            </div>
+          </div>
         </AdminFormField>
-
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit" variant="primary" size="md" disabled={saving || clearing}>
-            {saving ? "Saving…" : "Save credentials"}
-          </Button>
-          {settings?.passwordIsSet ? (
-            <Button
-              type="button"
-              variant="danger"
-              size="md"
-              disabled={saving || clearing}
-              onClick={() => setConfirmClear(true)}
-            >
-              Remove password
-            </Button>
-          ) : null}
-        </div>
       </form>
+
+      <AdminEmailLogs />
 
       <ConfirmModal
         open={confirmClear}

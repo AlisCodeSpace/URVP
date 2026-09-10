@@ -12,9 +12,26 @@ export type EmailSettingsDto = {
 };
 
 export type UpdateEmailSettingsPayload = {
-  userName?: string | null;
   password?: string | null;
   clearPassword?: boolean;
+};
+
+export type EmailLogDto = {
+  id: string;
+  from: string;
+  to: string;
+  cc: string | null;
+  bcc: string | null;
+  exception: string | null;
+  success: boolean;
+  createdOn: string;
+};
+
+export type PaginatedEmailLogs = {
+  items: EmailLogDto[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
 };
 
 export async function getEmailSettings(): Promise<EmailSettingsDto> {
@@ -28,4 +45,16 @@ export async function updateEmailSettings(
     method: "PUT",
     body: JSON.stringify(payload),
   });
+}
+
+export async function listEmailLogs(params: {
+  pageNumber?: number;
+  pageSize?: number;
+} = {}): Promise<PaginatedEmailLogs> {
+  const query = new URLSearchParams();
+  query.set("pageNumber", String(params.pageNumber ?? 1));
+  query.set("pageSize", String(params.pageSize ?? 50));
+  return apiFetch<PaginatedEmailLogs>(
+    `/api/admin/email-settings/logs?${query.toString()}`,
+  );
 }

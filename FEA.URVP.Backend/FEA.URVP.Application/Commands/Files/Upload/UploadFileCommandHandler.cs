@@ -4,6 +4,7 @@ using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.Files;
 using FEA.URVP.Application.Files;
+using FEA.URVP.Application.News;
 using FEA.URVP.Application.Options;
 using FEA.URVP.Application.StudentProfiles;
 using FEA.URVP.Domain.Catalog;
@@ -20,6 +21,7 @@ public sealed class UploadFileCommandHandler
     private readonly IFileStorageRepository _files;
     private readonly IUserRepository _users;
     private readonly IWorkshopRepository _workshops;
+    private readonly INewsArticleRepository _news;
     private readonly IMimeTypeValidator _mimeTypeValidator;
     private readonly FileStorageOptions _fileStorage;
 
@@ -29,6 +31,7 @@ public sealed class UploadFileCommandHandler
         IFileStorageRepository files,
         IUserRepository users,
         IWorkshopRepository workshops,
+        INewsArticleRepository news,
         IMimeTypeValidator mimeTypeValidator,
         IOptions<FileStorageOptions> fileStorage)
         : base(logger, unitOfWork)
@@ -36,6 +39,7 @@ public sealed class UploadFileCommandHandler
         _files = files;
         _users = users;
         _workshops = workshops;
+        _news = news;
         _mimeTypeValidator = mimeTypeValidator;
         _fileStorage = fileStorage.Value;
     }
@@ -75,6 +79,21 @@ public sealed class UploadFileCommandHandler
 
             _ = await _workshops.FindByIdAsync(request.EntityId, cancellationToken)
                 ?? throw new KeyNotFoundException($"Workshop {request.EntityId} was not found.");
+        }
+        else if (request.EntityType == FileStorageCatalog.EntityNewsArticle)
+        {
+            if (user.Role is not UserRole.Admin)
+            {
+                throw new UnauthorizedAccessException("Only administrators can upload news images.");
+            }
+
+            if (request.FileCategory != FileStorageCatalog.CategoryNewsImage)
+            {
+                throw new ArgumentException("News files must use the NewsImage category.");
+            }
+
+            _ = await _news.FindByIdAsync(request.EntityId, cancellationToken)
+                ?? throw new KeyNotFoundException($"News article {request.EntityId} was not found.");
         }
         else
         {
@@ -121,7 +140,7 @@ public sealed class UploadFileCommandHandler
             request.FileCategory,
             cancellationToken);
 
-        if (existing is not null)
+        if (existing is not null && request.EntityType != FileStorageCatalog.EntityNewsArticle)
         {
             existing.IsDeleted = true;
         }
@@ -150,6 +169,13 @@ public sealed class UploadFileCommandHandler
                 ?? throw new KeyNotFoundException($"Workshop {request.EntityId} was not found.");
             workshop.PosterFileId = stored.Id;
             workshop.UpdatedAt = DateTime.UtcNow;
+        }
+        else if (request.EntityType == FileStorageCatalog.EntityNewsArticle)
+        {
+            var article = await _news.FindByIdAsync(request.EntityId, cancellationToken)
+                ?? throw new KeyNotFoundException($"News article {request.EntityId} was not found.");
+            NewsArticleImages.Append(article, stored.Id);
+            article.UpdatedAt = DateTime.UtcNow;
         }
 
         await UnitOfWork.SaveChangesAsync(cancellationToken);

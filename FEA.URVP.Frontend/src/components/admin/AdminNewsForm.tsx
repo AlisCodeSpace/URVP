@@ -3,21 +3,27 @@
 import { useCallback, useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminFormField } from "@/components/admin/AdminFormField";
+import { AdminNewsImagesField, type NewsImageDraft } from "@/components/admin/AdminNewsImagesField";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { DateField } from "@/components/ui/DateField";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
+import { toAppDateInput, todayAppDateInput } from "@/lib/datetime";
 import {
+  MAX_NEWS_IMAGES,
   NEWS_CATEGORIES,
   createNews,
   getNewsById,
+  newsImageUrl,
   updateNews,
+  uploadNewsImage,
   type NewsArticleDto,
 } from "@/lib/news-api";
 
 type NewsFormValues = {
   title: string;
-  slug: string;
   excerpt: string;
   category: string;
   author: string;
@@ -25,32 +31,41 @@ type NewsFormValues = {
   body: string;
   publishedAt: string;
   featured: boolean;
+  published: boolean;
 };
 
 const emptyValues: NewsFormValues = {
   title: "",
-  slug: "",
   excerpt: "",
   category: "Announcement",
   author: "URVP Office",
   ticker: "",
   body: "",
-  publishedAt: new Date().toISOString().slice(0, 10),
+  publishedAt: todayAppDateInput(),
   featured: false,
+  published: true,
 };
 
 function toValues(dto: NewsArticleDto): NewsFormValues {
   return {
     title: dto.title,
-    slug: dto.slug,
     excerpt: dto.excerpt,
     category: dto.category,
     author: dto.author,
     ticker: dto.ticker,
     body: dto.body.join("\n\n"),
-    publishedAt: dto.publishedAt.slice(0, 10),
+    publishedAt: toAppDateInput(dto.publishedAt),
     featured: dto.featured,
+    published: dto.published,
   };
+}
+
+function draftsFromDto(dto: NewsArticleDto): NewsImageDraft[] {
+  return (dto.imageFileIds ?? []).flatMap((id) => {
+    const previewUrl = newsImageUrl(id);
+    if (!previewUrl) return [];
+    return [{ key: id, fileId: id, previewUrl }];
+  });
 }
 
 function toPayload(values: NewsFormValues) {
@@ -61,7 +76,6 @@ function toPayload(values: NewsFormValues) {
 
   return {
     title: values.title.trim(),
-    slug: values.slug.trim() || undefined,
     excerpt: values.excerpt.trim(),
     category: values.category.trim(),
     author: values.author.trim(),
@@ -69,6 +83,7 @@ function toPayload(values: NewsFormValues) {
     body,
     publishedAt: values.publishedAt,
     featured: values.featured,
+    published: values.published,
   };
 }
 
@@ -76,19 +91,18 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
   const router = useRouter();
   const isEdit = Boolean(newsId);
   const [values, setValues] = useState<NewsFormValues>(emptyValues);
+  const [images, setImages] = useState<NewsImageDraft[]>([]);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const titleId = useId();
-  const slugId = useId();
   const excerptId = useId();
   const categoryId = useId();
   const authorId = useId();
   const tickerId = useId();
   const bodyId = useId();
   const dateId = useId();
-  const featuredId = useId();
 
   const load = useCallback(async () => {
     if (!newsId) return;
@@ -97,6 +111,7 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
     try {
       const item = await getNewsById(newsId);
       setValues(toValues(item));
+      setImages(draftsFromDto(item));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load article.");
     } finally {
@@ -113,6 +128,30 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
     value: NewsFormValues[K],
   ) {
     setValues((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function addImageFiles(files: File[]) {
+    setImages((prev) => {
+      const room = MAX_NEWS_IMAGES - prev.length;
+      const accepted = files.slice(0, Math.max(0, room));
+      return [
+        ...prev,
+        ...accepted.map((file) => ({
+          key: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
+          file,
+          previewUrl: URL.createObjectURL(file),
+        })),
+      ];
+    });
+  }
+
+  function removeImage(key: string) {
+    setImages((prev) => {
+      const next = prev.filter((image) => image.key !== key);
+      const removed = prev.find((image) => image.key === key);
+      if (removed?.file) URL.revokeObjectURL(removed.previewUrl);
+      return next;
+    });
   }
 
   async function onSubmit(event: React.FormEvent) {
@@ -134,11 +173,27 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
     setSaving(true);
     setError(null);
     try {
-      if (isEdit && newsId) {
-        await updateNews(newsId, payload);
-      } else {
-        await createNews(payload);
+      const keptIds = images
+        .filter((image) => image.fileId && !image.file)
+        .map((image) => image.fileId as string);
+
+      const saved =
+        isEdit && newsId
+          ? await updateNews(newsId, { ...payload, imageFileIds: keptIds })
+          : await createNews(payload);
+
+      const imageFileIds: string[] = [];
+      for (const image of images) {
+        if (image.file) {
+          const uploaded = await uploadNewsImage(saved.id, image.file);
+          imageFileIds.push(uploaded.id);
+        } else if (image.fileId) {
+          imageFileIds.push(image.fileId);
+        }
       }
+
+      await updateNews(saved.id, { ...payload, imageFileIds });
+
       router.push("/admin/news");
       router.refresh();
     } catch (err) {
@@ -158,6 +213,8 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
         <AdminPageHeader
           title={isEdit ? "Edit news" : "New news"}
           description="Same fields as the public News page: title, excerpt, category, date, author, ticker, and body."
+          backHref="/admin/news"
+          backLabel="Back to news"
         />
         <AdminFormSkeleton fields={8} />
       </div>
@@ -169,6 +226,8 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
       <AdminPageHeader
         title={isEdit ? "Edit news" : "New news"}
         description="Same fields as the public News page: title, excerpt, category, date, author, ticker, and body."
+        backHref="/admin/news"
+        backLabel="Back to news"
       />
 
       <form className="mt-6 grid max-w-3xl gap-5" onSubmit={onSubmit} noValidate>
@@ -188,46 +247,29 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
           />
         </AdminFormField>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <AdminFormField
-            id={slugId}
-            label="Slug"
-            hint="Leave blank to generate from the title."
-          >
-            <input
-              id={slugId}
-              className="field-input"
-              value={values.slug}
-              onChange={(e) => setField("slug", e.target.value)}
-              placeholder="student-profile-window"
-            />
-          </AdminFormField>
-          <AdminFormField id={categoryId} label="Category" required>
-            <input
-              id={categoryId}
-              className="field-input"
-              list={`${categoryId}-options`}
-              value={values.category}
-              onChange={(e) => setField("category", e.target.value)}
-              required
-            />
-            <datalist id={`${categoryId}-options`}>
-              {NEWS_CATEGORIES.map((category) => (
-                <option key={category} value={category} />
-              ))}
-            </datalist>
-          </AdminFormField>
-        </div>
+        <AdminFormField id={categoryId} label="Category" required>
+          <input
+            id={categoryId}
+            className="field-input"
+            list={`${categoryId}-options`}
+            value={values.category}
+            onChange={(e) => setField("category", e.target.value)}
+            required
+          />
+          <datalist id={`${categoryId}-options`}>
+            {NEWS_CATEGORIES.map((category) => (
+              <option key={category} value={category} />
+            ))}
+          </datalist>
+        </AdminFormField>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <AdminFormField id={dateId} label="Date" required>
-            <input
+            <DateField
               id={dateId}
-              type="date"
-              className="field-input"
+              placeholder="Select date"
               value={values.publishedAt}
-              onChange={(e) => setField("publishedAt", e.target.value)}
-              required
+              onChange={(next) => setField("publishedAt", next)}
             />
           </AdminFormField>
           <AdminFormField id={authorId} label="Author" required>
@@ -288,15 +330,25 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
           />
         </AdminFormField>
 
-        <label className="flex items-center gap-2 text-sm" htmlFor={featuredId}>
-          <input
-            id={featuredId}
-            type="checkbox"
-            checked={values.featured}
-            onChange={(e) => setField("featured", e.target.checked)}
-          />
+        <AdminNewsImagesField
+          images={images}
+          onAddFiles={addImageFiles}
+          onRemove={removeImage}
+        />
+
+        <Checkbox
+          checked={values.published}
+          onCheckedChange={(checked) => setField("published", checked)}
+        >
+          Published
+        </Checkbox>
+
+        <Checkbox
+          checked={values.featured}
+          onCheckedChange={(checked) => setField("featured", checked)}
+        >
           Featured story
-        </label>
+        </Checkbox>
 
         <div className="flex flex-wrap gap-3">
           <Button type="submit" variant="primary" size="md" disabled={saving}>

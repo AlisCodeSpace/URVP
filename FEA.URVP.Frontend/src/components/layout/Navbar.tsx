@@ -19,7 +19,7 @@ export function Navbar() {
   // Absolute over the dark page hero (home, mini pages, and 404) so the bar blends with the header.
   return (
     <header className="site-nav absolute inset-x-0 top-0 z-50">
-      <div className="site-container flex items-center justify-between gap-4 py-4">
+      <div className="site-container flex items-center justify-between gap-3 py-4 sm:gap-4">
         <Logo
           href="/"
           size={48}
@@ -56,27 +56,28 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="hidden items-stretch gap-3 lg:flex">
-          {loading ? null : isSignedIn && status ? (
-            <>
-              <NotificationBell />
-              <UserMenu status={status} />
-            </>
-          ) : (
-            <Button href="/sign-in" variant="secondary" size="sm">
-              Log In
-            </Button>
-          )}
-        </div>
+        <div className="flex items-center gap-3" data-tour="account-tools">
+          <div className="hidden items-stretch gap-3 md:flex">
+            {loading ? null : isSignedIn && status ? (
+              <>
+                <NotificationBell />
+                <UserMenu status={status} />
+              </>
+            ) : (
+              <Button href="/sign-in" variant="secondary" size="sm">
+                Log In
+              </Button>
+            )}
+          </div>
 
-        <button
-          type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/25 text-white lg:hidden"
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen((v) => !v)}
-        >
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/25 text-white lg:hidden"
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            aria-label={open ? "Close menu" : "Open menu"}
+            onClick={() => setOpen((v) => !v)}
+          >
           <span className="sr-only">Menu</span>
           <span aria-hidden className="flex flex-col gap-1.5">
             <span
@@ -89,56 +90,59 @@ export function Navbar() {
               className={`block h-0.5 w-5 bg-current transition ${open ? "-translate-y-2 -rotate-45" : ""}`}
             />
           </span>
-        </button>
+          </button>
+        </div>
       </div>
 
       {open ? (
         <div
           id="mobile-nav"
-          className="border-t border-white/10 bg-primary-deep px-6 py-5 lg:hidden"
+          className="border-t border-white/10 bg-primary-deep lg:hidden"
         >
-          <nav aria-label="Mobile" className="flex flex-col gap-1">
-            <Link
-              href="/"
-              className="py-2.5 text-[0.95rem] font-semibold text-white/90"
-              onClick={() => setOpen(false)}
-            >
-              Home
-            </Link>
-            {navLinks.map((link) => (
+          <div className="site-container py-5">
+            <nav aria-label="Mobile" className="flex flex-col gap-1">
               <Link
-                key={link.href}
-                href={link.href}
-                className="py-2.5 text-[0.95rem] font-semibold text-white/90"
+                href="/"
+                className="min-h-11 py-2.5 text-[0.95rem] font-semibold text-white/90"
                 onClick={() => setOpen(false)}
               >
-                {link.label}
+                Home
               </Link>
-            ))}
-          </nav>
-          <div className="mt-4">
-            {loading ? null : isSignedIn && status ? (
-              <>
-                <div className="mb-3">
-                  <NotificationBell />
-                </div>
-                <UserMenu
-                  status={status}
-                  variant="mobile"
-                  onNavigate={() => setOpen(false)}
-                />
-              </>
-            ) : (
-              <Button
-                href="/sign-in"
-                variant="secondary"
-                size="md"
-                className="w-full"
-                onClick={() => setOpen(false)}
-              >
-                Log In
-              </Button>
-            )}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="min-h-11 py-2.5 text-[0.95rem] font-semibold text-white/90"
+                  onClick={() => setOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+            <div className="mt-4 md:hidden">
+              {loading ? null : isSignedIn && status ? (
+                <>
+                  <div className="mb-3">
+                    <NotificationBell />
+                  </div>
+                  <UserMenu
+                    status={status}
+                    variant="mobile"
+                    onNavigate={() => setOpen(false)}
+                  />
+                </>
+              ) : (
+                <Button
+                  href="/sign-in"
+                  variant="secondary"
+                  size="md"
+                  className="w-full"
+                  onClick={() => setOpen(false)}
+                >
+                  Log In
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       ) : null}

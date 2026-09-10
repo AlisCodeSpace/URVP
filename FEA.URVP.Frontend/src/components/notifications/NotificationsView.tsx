@@ -4,6 +4,7 @@ import { useState } from "react";
 import { NotificationItem } from "@/components/notifications/NotificationItem";
 import { NotificationSettingsDialog } from "@/components/notifications/NotificationSettingsDialog";
 import { Button } from "@/components/ui/Button";
+import { IconSettings } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { useNotificationActions } from "@/hooks/useNotificationActions";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -30,16 +31,31 @@ export function NotificationsView() {
             : "In-app notifications are hidden"}
         </p>
         <div className="admin-list-toolbar-actions">
+          <Button
+            type="button"
+            variant="filled"
+            size="md"
+            onClick={() => void actions.markAllRead()}
+          >
+            Mark all read
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            className="btn-icon"
+            aria-label="Notification settings"
+            title="Notification settings"
+            onClick={() => setSettingsOpen(true)}
+          >
+            <IconSettings />
+          </Button>
+        </div>
+        <div className="admin-users-refresh">
           <RefreshIconButton
             loading={list.loading}
             onClick={() => void list.refresh()}
           />
-          <Button type="button" variant="outline" size="md" onClick={() => void actions.markAllRead()}>
-            Mark all read
-          </Button>
-          <Button type="button" variant="outline" size="md" onClick={() => setSettingsOpen(true)}>
-            Settings
-          </Button>
         </div>
       </div>
 

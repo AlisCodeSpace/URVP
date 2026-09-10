@@ -1,5 +1,6 @@
 using FEA.URVP.Api.Configuration.Auth;
 using FEA.URVP.Domain.Catalog;
+using FEA.URVP.Domain.Entities.HomeIntro;
 using FEA.URVP.Domain.Entities.News;
 using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Entities.Users;
@@ -59,6 +60,7 @@ public static class DatabaseInitialization
         {
             await SeedValueListsAsync(dbContext, logger);
             await SeedNewsAndWorkshopsAsync(dbContext, logger);
+            await SeedHomeIntroAsync(dbContext, logger);
             await SeedDefaultSemesterAsync(dbContext, logger);
         }
         catch (Exception ex) when (app.Environment.IsDevelopment())
@@ -271,6 +273,7 @@ public static class DatabaseInitialization
                     Body = [.. article.Body],
                     PublishedAt = article.PublishedAt,
                     Featured = article.Featured,
+                    Published = true,
                     CreatedAt = now,
                     UpdatedAt = now,
                 });
@@ -291,6 +294,7 @@ public static class DatabaseInitialization
                     Location = workshop.Location,
                     Description = workshop.Description,
                     RegistrationUrl = workshop.RegistrationUrl,
+                    Published = true,
                     SortOrder = sort++,
                     CreatedAt = now,
                     UpdatedAt = now,
@@ -309,6 +313,30 @@ public static class DatabaseInitialization
             "Seeded content: {NewsCount} news article(s), {WorkshopCount} workshop(s).",
             addedNews,
             addedWorkshops);
+    }
+
+    private static async Task SeedHomeIntroAsync(AppDbContext dbContext, ILogger logger)
+    {
+        var exists = await dbContext.HomeIntro
+            .AnyAsync(x => x.Id == HomeIntro.SingletonId);
+        if (exists)
+        {
+            logger.LogInformation("Home intro already seeded.");
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        dbContext.HomeIntro.Add(new HomeIntro
+        {
+            Id = HomeIntro.SingletonId,
+            Headline = HomeIntroCatalog.Headline,
+            Description = HomeIntroCatalog.Description,
+            KeyPoints = [.. HomeIntroCatalog.KeyPoints],
+            CreatedAt = now,
+            UpdatedAt = now,
+        });
+        await dbContext.SaveChangesAsync();
+        logger.LogInformation("Seeded home intro copy.");
     }
 
     /// <summary>

@@ -10,6 +10,7 @@ public interface INewsArticleRepository
 
     Task<(IReadOnlyList<NewsArticle> Items, int TotalCount)> ListAsync(
         string? search,
+        bool publishedOnly,
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default);

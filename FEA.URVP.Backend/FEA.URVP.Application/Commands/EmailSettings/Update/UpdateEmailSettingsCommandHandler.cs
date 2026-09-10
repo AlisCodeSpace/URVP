@@ -46,9 +46,7 @@ public sealed class UpdateEmailSettingsCommandHandler
             _settings.Add(row);
         }
 
-        row.UserName = string.IsNullOrWhiteSpace(request.UserName)
-            ? null
-            : request.UserName.Trim();
+        row.UserName = null;
         row.UpdatedAt = now;
         row.UpdatedByUserId = request.UpdatedByUserId == Guid.Empty
             ? null

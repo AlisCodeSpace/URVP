@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { Heading, Text } from "@radix-ui/themes";
+import { BackLink } from "@/components/ui/BackLink";
 import { LOGO_SRC } from "@/components/ui/Logo";
 import {
   authErrorMessage,
@@ -13,9 +13,11 @@ import {
   getDevSignInUrl,
   isDevAuthEnabled,
 } from "@/lib/auth";
+import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 
 export function SignInView() {
   const signInUrl = getAzureAdSignInUrl();
+  const { semesterName } = useApplicationWindow();
 
   // Read on the client: a static export has no server render in which to inspect the query string.
   const errorText = authErrorMessage(useSearchParams().get("error"));
@@ -42,7 +44,7 @@ export function SignInView() {
   }
 
   return (
-    <main className="sign-in-shell flex h-dvh min-h-0 flex-1 flex-col lg:flex-row">
+    <main className="sign-in-shell flex min-h-dvh flex-1 flex-col lg:h-dvh lg:min-h-0 lg:flex-row">
       <section className="sign-in-brand relative flex min-h-0 flex-[0.48] flex-col overflow-hidden px-7 py-7 sm:px-8 lg:flex-[0.52] lg:px-12 lg:py-9 xl:flex-[0.54] xl:px-14">
         <div className="sign-in-brand-grid absolute inset-0" aria-hidden />
         <div
@@ -51,7 +53,7 @@ export function SignInView() {
         />
 
         <p className="sign-in-enter relative z-10 shrink-0 text-xs font-medium uppercase tracking-[0.28em] text-secondary">
-          AY 2025–26
+          {semesterName ?? "URVP"}
         </p>
 
         <div className="relative z-10 flex flex-1 flex-col justify-center py-5 lg:py-6">
@@ -178,7 +180,7 @@ export function SignInView() {
                       placeholder="faculty@urvp.com"
                       autoComplete="username"
                       list="dev-auth-emails"
-                      className="w-full rounded-md border border-black/12 bg-white px-3 py-2.5 text-sm text-primary outline-none transition focus:border-secondary focus:ring-2 focus:ring-secondary/25"
+                      className="field-input w-full"
                     />
                     <datalist id="dev-auth-emails">
                       {DEV_AUTH_ACCOUNTS.map((account) => (
@@ -222,12 +224,7 @@ export function SignInView() {
           </div>
 
           <div className="mt-5 flex justify-center">
-            <Link href="/" className="sign-in-back">
-              <span aria-hidden className="text-base leading-none">
-                ←
-              </span>
-              Back to home
-            </Link>
+            <BackLink href="/">Back to home</BackLink>
           </div>
         </div>
       </section>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
@@ -105,17 +106,17 @@ export function AdminNewsView() {
           />
         </div>
         <div className="admin-users-field flex items-end">
-          <div className="admin-list-toolbar-actions">
-            <RefreshIconButton loading={loading} onClick={() => void load()} />
-            <Button href="/admin/news/new" variant="primary" size="md">
-              Add news
-            </Button>
-          </div>
+          <Button href="/admin/news/new" variant="primary" size="md">
+            Add news
+          </Button>
+        </div>
+        <div className="admin-users-refresh">
+          <RefreshIconButton loading={loading} onClick={() => void load()} />
         </div>
       </div>
 
       {loading && !data ? (
-        <AdminTableSkeleton columns={5} />
+        <AdminTableSkeleton columns={7} />
       ) : error ? (
         <p className="admin-users-banner is-error" role="alert">
           {error}
@@ -132,6 +133,8 @@ export function AdminNewsView() {
                   <th>Category</th>
                   <th>Date</th>
                   <th>Author</th>
+                  <th>Featured</th>
+                  <th>Published</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -139,16 +142,13 @@ export function AdminNewsView() {
                 {data.items.map((item) => (
                   <tr key={item.id}>
                     <td>
-                      <div>
-                        <span className="admin-users-name">{item.title}</span>
-                        {item.featured ? (
-                          <div className="admin-users-meta">Featured</div>
-                        ) : null}
-                      </div>
+                      <span className="admin-users-name">{item.title}</span>
                     </td>
                     <td>{item.category}</td>
                     <td>{formatNewsDate(item.publishedAt)}</td>
                     <td>{item.author}</td>
+                    <td>{item.featured ? "Yes" : "—"}</td>
+                    <td>{item.published ? "Yes" : "No"}</td>
                     <td>
                       <div className="admin-value-actions">
                         <Button
@@ -158,14 +158,9 @@ export function AdminNewsView() {
                         >
                           Edit
                         </Button>
-                        <Button
-                          type="button"
-                          variant="danger"
-                          size="sm"
+                        <DeleteIconButton
                           onClick={() => setPendingDelete(item)}
-                        >
-                          Delete
-                        </Button>
+                        />
                       </div>
                     </td>
                   </tr>

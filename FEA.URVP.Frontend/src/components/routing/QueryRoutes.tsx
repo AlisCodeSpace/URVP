@@ -7,6 +7,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { AdminMatchingRunDetailView } from "@/components/admin/AdminMatchingRunDetailView";
 import { AdminNewsForm } from "@/components/admin/AdminNewsForm";
 import { AdminProjectDetailView } from "@/components/admin/AdminProjectDetailView";
+import { AdminStudentProfileView } from "@/components/admin/AdminStudentProfileView";
 import { AdminSemesterForm } from "@/components/admin/AdminSemesterForm";
 import { AdminWorkshopForm } from "@/components/admin/AdminWorkshopForm";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -88,14 +89,22 @@ export function MyProjectsRoute() {
           title="My projects"
           description="Review projects you have posted and open new opportunities for undergraduate volunteers."
           actions={
-            <Button href={newProjectHref(userId)} variant="secondary" size="lg">
+            <Button
+              href={newProjectHref(userId)}
+              variant="secondary"
+              size="lg"
+              data-tour="faculty-new-project"
+            >
               <IconPlus />
               New project
             </Button>
           }
         />
 
-        <section className="site-container py-14 sm:py-16">
+        <section
+          className="site-container py-14 sm:py-16"
+          data-tour="faculty-projects"
+        >
           <MyProjectsList userId={userId} />
         </section>
       </main>
@@ -210,6 +219,21 @@ export function AdminProjectRoute() {
   if (!projectId) return <MissingParam />;
 
   return <AdminProjectDetailView projectId={projectId} />;
+}
+
+/** `/admin/projects/student?id=&student=` */
+export function AdminStudentProfileRoute() {
+  const projectId = useRouteParam(RouteParam.Id);
+  const studentUserId = useRouteParam(RouteParam.Student);
+
+  if (!projectId || !studentUserId) return <MissingParam />;
+
+  return (
+    <AdminStudentProfileView
+      projectId={projectId}
+      studentUserId={studentUserId}
+    />
+  );
 }
 
 /** `/admin/matching/run?id=` */

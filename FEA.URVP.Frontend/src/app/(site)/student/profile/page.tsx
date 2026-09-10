@@ -18,7 +18,7 @@ export default function StudentProfilePage() {
         <PageHeader
           eyebrow="Student portal"
           title="My profile"
-          description="Complete your profile, research interests, and weekly availability so faculty can match you with open projects."
+          description="Complete and save your profile, research interests, and weekly availability before you can express interest in projects. Faculty use this information to match you with open listings."
         />
 
         <section className="site-container py-10 sm:py-14">

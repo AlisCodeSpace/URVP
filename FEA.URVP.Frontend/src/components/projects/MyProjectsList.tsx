@@ -4,11 +4,16 @@ import { useCallback, useEffect, useState } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { IconPencil, IconPlus, IconTrash } from "@/components/ui/Icons";
+import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
+import { IconPencil, IconPlus } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { ApiError } from "@/lib/api";
 import { editProjectHref, newProjectHref, viewProjectHref } from "@/lib/auth";
-import { isFacultyProjectLocked, type MyProject, type MyProjectStatus } from "@/lib/project-form";
+import {
+  isFacultyProjectEditable,
+  type MyProject,
+  type MyProjectStatus,
+} from "@/lib/project-form";
 import {
   deleteProject,
   listMyProjects,
@@ -34,7 +39,7 @@ function ProjectRow({
   onDelete: (id: string) => void;
 }) {
   const deleting = busyId === project.id;
-  const locked = isFacultyProjectLocked(project);
+  const locked = !isFacultyProjectEditable(project);
   const areas = project.researchAreas.slice(0, 2).join(" · ");
   const extraAreas = project.researchAreas.length - 2;
 
@@ -77,17 +82,13 @@ function ProjectRow({
                 <IconPencil />
                 Edit
               </Button>
-              <Button
-                type="button"
+              <DeleteIconButton
                 variant="ghost"
-                size="sm"
                 disabled={deleting || busyId !== null}
+                loading={deleting}
                 onClick={() => onDelete(project.id)}
                 className="!text-red-800 hover:!text-red-900"
-              >
-                <IconTrash />
-                {deleting ? "Deleting…" : "Delete"}
-              </Button>
+              />
             </>
           )}
         </div>
@@ -179,7 +180,12 @@ export function MyProjectsList({ userId }: { userId: string }) {
           match with your work.
         </Text>
         <div className="mt-6 flex justify-center">
-          <Button href={newProjectHref(userId)} variant="secondary" size="md">
+          <Button
+            href={newProjectHref(userId)}
+            variant="secondary"
+            size="md"
+            data-tour="faculty-new-project"
+          >
             <IconPlus />
             New project
           </Button>

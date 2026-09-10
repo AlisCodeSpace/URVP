@@ -141,7 +141,7 @@ export function ExpressInterestModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
+      className="dialog-layer fixed inset-0 z-50 flex items-center justify-center"
       role="presentation"
     >
       <button
@@ -155,7 +155,7 @@ export function ExpressInterestModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative z-10 w-full max-w-md overflow-hidden rounded-[var(--radius-lg)] border border-primary/12 bg-surface shadow-[0_24px_60px_-28px_rgba(61,18,72,0.45)]"
+        className="dialog-layer-panel relative z-10 w-full max-w-md rounded-[var(--radius-lg)] border border-primary/12 bg-surface shadow-[0_24px_60px_-28px_rgba(61,18,72,0.45)]"
       >
         <div className="border-b border-primary/10 px-6 py-5">
           <Text

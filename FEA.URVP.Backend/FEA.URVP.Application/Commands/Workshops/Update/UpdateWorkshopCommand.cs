@@ -17,4 +17,5 @@ public sealed class UpdateWorkshopCommand : IRequest<WorkshopDto>
     public string RegistrationUrl { get; init; } = null!;
     public Guid? PosterFileId { get; init; }
     public string? PosterAlt { get; init; }
+    public bool Published { get; init; } = true;
 }

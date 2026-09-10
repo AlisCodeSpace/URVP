@@ -136,7 +136,7 @@ public static class AdminOverviewAssembler
             items.Add(new AdminOverviewAttentionItemDto
             {
                 Id = "window-open",
-                Text = "The student application window is still open. Rankings may still change.",
+                Text = "The student application window is still open. Close it before assigning students or running matching.",
                 Href = "/admin/semesters",
                 Severity = "warning",
             });

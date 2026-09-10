@@ -92,8 +92,9 @@ public sealed class SemestersController : ApiControllerBase
 
     /// <summary>
     /// Starts or ends the academic cycle for this semester immediately.
-    /// Starting a cycle ends any other running cycle. Ending a cycle also
-    /// closes an open application window.
+    /// Starting is refused while another cycle is still active. Ending a
+    /// cycle also closes an open application window. Ended cycles stay in
+    /// the list as read-only history.
     /// </summary>
     [Authorize]
     [HttpPost("{id:guid}/set-active")]

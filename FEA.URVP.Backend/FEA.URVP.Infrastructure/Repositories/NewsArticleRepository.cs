@@ -22,11 +22,17 @@ public sealed class NewsArticleRepository : INewsArticleRepository
 
     public async Task<(IReadOnlyList<NewsArticle> Items, int TotalCount)> ListAsync(
         string? search,
+        bool publishedOnly,
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default)
     {
         var query = _db.NewsArticles.AsNoTracking();
+
+        if (publishedOnly)
+        {
+            query = query.Where(x => x.Published);
+        }
 
         if (!string.IsNullOrWhiteSpace(search))
         {

@@ -109,13 +109,11 @@ public sealed class SmtpEmailService : IEmailService
 
     private async Task<SmtpAuthCredentials.Auth?> ResolveAuthAsync(CancellationToken cancellationToken)
     {
-        string? storedUserName = null;
         string? storedPassword = null;
 
         try
         {
             var stored = await _emailSettings.GetAsync(cancellationToken);
-            storedUserName = stored?.UserName;
             if (stored?.ProtectedPassword is { Length: > 0 } payload
                 && _protector.TryUnprotect(payload, out var plaintext))
             {
@@ -135,7 +133,6 @@ public sealed class SmtpEmailService : IEmailService
         return SmtpAuthCredentials.Resolve(
             _options.Smtp.UserName,
             _options.Smtp.Password,
-            storedUserName,
             storedPassword,
             _options.From);
     }

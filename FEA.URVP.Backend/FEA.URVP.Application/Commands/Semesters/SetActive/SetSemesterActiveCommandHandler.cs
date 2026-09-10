@@ -37,7 +37,14 @@ public sealed class SetSemesterActiveCommandHandler
 
         if (request.IsActive)
         {
-            await _semesters.RelinquishAllExceptAsync(request.Id, now, cancellationToken);
+            if (semester.HasEnded(now))
+            {
+                throw new InvalidOperationException(
+                    "Ended cycles are read-only and cannot be started again.");
+            }
+
+            await SemesterSchedule.EnsureNoOtherActiveCycleAsync(
+                _semesters, request.Id, cancellationToken);
             semester.StartCycleNow(now);
         }
         else

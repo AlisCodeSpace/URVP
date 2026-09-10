@@ -56,6 +56,7 @@ public sealed class CreateNewsArticleCommandHandler
             Body = request.Body.Select(p => p.Trim()).Where(p => p.Length > 0).ToList(),
             PublishedAt = DateTime.SpecifyKind(request.PublishedAt.Date, DateTimeKind.Utc),
             Featured = request.Featured,
+            Published = request.Published,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -65,11 +66,14 @@ public sealed class CreateNewsArticleCommandHandler
 
         Logger.LogInformation("Created news article {NewsId} ({Slug})", article.Id, article.Slug);
 
-        await NotificationEventPublish.TryPublishAsync(
-            _eventBus,
-            new NewsPublishedEvent(article.Id),
-            Logger,
-            cancellationToken);
+        if (article.Published)
+        {
+            await NotificationEventPublish.TryPublishAsync(
+                _eventBus,
+                new NewsPublishedEvent(article.Id),
+                Logger,
+                cancellationToken);
+        }
 
         return article.ToDto();
     }

@@ -27,6 +27,8 @@ export type ProjectDto = {
   userName?: string | null;
   createdAt: string;
   updatedAt: string;
+  isEditableByFaculty: boolean;
+  facultyEditLockReason?: string | null;
 };
 
 type PaginatedProjects = {
@@ -79,6 +81,8 @@ export function toMyProject(dto: ProjectDto): MyProject {
     volunteersFilled: dto.volunteersFilled,
     status: dto.status,
     updatedAt: formatProjectDate(dto.updatedAt),
+    isEditableByFaculty: dto.isEditableByFaculty,
+    facultyEditLockReason: dto.facultyEditLockReason,
   };
 }
 

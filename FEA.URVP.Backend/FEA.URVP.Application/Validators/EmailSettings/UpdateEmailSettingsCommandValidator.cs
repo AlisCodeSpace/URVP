@@ -9,10 +9,6 @@ public sealed class UpdateEmailSettingsCommandValidator
 {
     public UpdateEmailSettingsCommandValidator()
     {
-        RuleFor(x => x.UserName)
-            .MaximumLength(EmailSettingsRow.UserNameMaxLength)
-            .When(x => x.UserName is not null);
-
         RuleFor(x => x.Password)
             .MaximumLength(EmailSettingsRow.PasswordPlaintextMaxLength)
             .When(x => !string.IsNullOrWhiteSpace(x.Password));

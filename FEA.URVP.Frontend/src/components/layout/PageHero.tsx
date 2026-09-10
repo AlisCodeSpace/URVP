@@ -22,9 +22,9 @@ type PageHeroProps = {
 
 const titleScaleClass = {
   brand:
-    "max-w-5xl xl:max-w-6xl 2xl:max-w-7xl text-[clamp(2.5rem,6.5vw+1rem,5.5rem)] !leading-[0.95]",
+    "max-w-5xl xl:max-w-6xl 2xl:max-w-7xl text-[clamp(2.15rem,7vw+0.6rem,5.5rem)] !leading-[0.95]",
   page:
-    "text-[clamp(3.25rem,10vw+1rem,8rem)]",
+    "text-[clamp(2.35rem,8vw+0.75rem,8rem)]",
 } as const;
 
 export function PageHero({
@@ -38,7 +38,7 @@ export function PageHero({
   return (
     <section className="hero-plane relative min-h-[100svh] overflow-hidden text-white">
       <div className="hero-grid absolute inset-0" aria-hidden />
-      <Container className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-16 pt-24 sm:justify-center sm:pb-24 sm:pt-28">
+      <Container className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-16 pt-[calc(6rem+env(safe-area-inset-top,0px))] sm:justify-center sm:pb-24 sm:pt-[calc(7rem+env(safe-area-inset-top,0px))]">
         <p
           className={`animate-fade-up font-[family-name:var(--font-display)] font-semibold leading-[0.85] tracking-tight text-white ${titleScaleClass[titleScale]}`}
         >

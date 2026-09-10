@@ -28,7 +28,7 @@ public sealed class UpdateEmailSettingsCommandHandlerTests
         var mediator = Substitute.For<IMediator>();
         mediator
             .Send(Arg.Any<GetEmailSettingsQuery>(), Arg.Any<CancellationToken>())
-            .Returns(new EmailSettingsDto { PasswordIsSet = true, UserName = "urvp-system@aub.edu.lb" });
+            .Returns(new EmailSettingsDto { PasswordIsSet = true });
 
         var handler = new UpdateEmailSettingsCommandHandler(
             NullLogger<UpdateEmailSettingsCommandHandler>.Instance,
@@ -41,7 +41,6 @@ public sealed class UpdateEmailSettingsCommandHandlerTests
             new UpdateEmailSettingsCommand
             {
                 UpdatedByUserId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                UserName = "urvp-system@aub.edu.lb",
                 Password = "mailbox-secret",
             },
             CancellationToken.None);
@@ -49,7 +48,7 @@ public sealed class UpdateEmailSettingsCommandHandlerTests
         Assert.NotNull(added);
         Assert.Equal("protected-payload", added!.ProtectedPassword);
         Assert.NotEqual("mailbox-secret", added.ProtectedPassword);
-        Assert.Equal("urvp-system@aub.edu.lb", added.UserName);
+        Assert.Null(added.UserName);
         Assert.True(dto.PasswordIsSet);
         protector.Received(1).Protect("mailbox-secret");
         await unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
@@ -83,13 +82,12 @@ public sealed class UpdateEmailSettingsCommandHandlerTests
         await handler.Handle(
             new UpdateEmailSettingsCommand
             {
-                UserName = "new-user",
                 Password = "   ",
             },
             CancellationToken.None);
 
         Assert.Equal("existing-payload", existing.ProtectedPassword);
-        Assert.Equal("new-user", existing.UserName);
+        Assert.Null(existing.UserName);
         protector.DidNotReceive().Protect(Arg.Any<string>());
     }
 

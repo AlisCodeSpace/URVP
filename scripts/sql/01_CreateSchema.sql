@@ -1123,3 +1123,135 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910104347_AddHomeIntro'
+)
+BEGIN
+    CREATE TABLE [HomeIntro] (
+        [Id] uniqueidentifier NOT NULL,
+        [Description] nvarchar(max) NOT NULL,
+        [KeyPoints] nvarchar(max) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [UpdatedAt] datetime2 NOT NULL,
+        [UpdatedByUserId] uniqueidentifier NULL,
+        CONSTRAINT [PK_HomeIntro] PRIMARY KEY ([Id])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910104347_AddHomeIntro'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260910104347_AddHomeIntro', N'10.0.10');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910104437_AddNewsArticleImages'
+)
+BEGIN
+    ALTER TABLE [NewsArticles] ADD [ImageFileIds] nvarchar(max) NOT NULL DEFAULT N'[]';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910104437_AddNewsArticleImages'
+)
+BEGIN
+    ALTER TABLE [FileStorage] DROP CONSTRAINT [CK_FileStorage_EntityType];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910104437_AddNewsArticleImages'
+)
+BEGIN
+    ALTER TABLE [FileStorage] DROP CONSTRAINT [CK_FileStorage_FileSize];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910104437_AddNewsArticleImages'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [FileStorage] ADD CONSTRAINT [CK_FileStorage_EntityType] CHECK ([EntityType] IN (''StudentProfile'', ''Workshop'', ''NewsArticle''))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910104437_AddNewsArticleImages'
+)
+BEGIN
+    EXEC(N'ALTER TABLE [FileStorage] ADD CONSTRAINT [CK_FileStorage_FileSize] CHECK ((([FileCategory] IN (''Transcript'', ''Cv'') AND [FileSize] <= 10485760) OR ([FileCategory] IN (''Poster'', ''NewsImage'') AND [FileSize] <= 5242880)))');
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910104437_AddNewsArticleImages'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260910104437_AddNewsArticleImages', N'10.0.10');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910110033_AddHomeIntroHeadline'
+)
+BEGIN
+    ALTER TABLE [HomeIntro] ADD [Headline] nvarchar(200) NOT NULL DEFAULT N'Research starts earlier than you think.';
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910110033_AddHomeIntroHeadline'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260910110033_AddHomeIntroHeadline', N'10.0.10');
+END;
+
+COMMIT;
+GO
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910111800_AddPublishedToNewsAndWorkshops'
+)
+BEGIN
+    ALTER TABLE [NewsArticles] ADD [Published] bit NOT NULL DEFAULT CAST(1 AS bit);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910111800_AddPublishedToNewsAndWorkshops'
+)
+BEGIN
+    ALTER TABLE [Workshops] ADD [Published] bit NOT NULL DEFAULT CAST(1 AS bit);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20260910111800_AddPublishedToNewsAndWorkshops'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20260910111800_AddPublishedToNewsAndWorkshops', N'10.0.10');
+END;
+
+COMMIT;
+GO
+

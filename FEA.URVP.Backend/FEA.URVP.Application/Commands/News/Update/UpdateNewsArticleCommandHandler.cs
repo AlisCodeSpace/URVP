@@ -2,6 +2,7 @@ using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.News;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.News;
 using FEA.URVP.Domain.Catalog;
 using Microsoft.Extensions.Logging;
 
@@ -11,14 +12,17 @@ public sealed class UpdateNewsArticleCommandHandler
     : BaseCommandHandler<UpdateNewsArticleCommand, NewsArticleDto>
 {
     private readonly INewsArticleRepository _news;
+    private readonly IFileStorageRepository _files;
 
     public UpdateNewsArticleCommandHandler(
         ILogger<UpdateNewsArticleCommandHandler> logger,
         IUnitOfWork unitOfWork,
-        INewsArticleRepository news)
+        INewsArticleRepository news,
+        IFileStorageRepository files)
         : base(logger, unitOfWork)
     {
         _news = news;
+        _files = files;
     }
 
     protected override async Task<NewsArticleDto> HandleInternal(
@@ -52,7 +56,17 @@ public sealed class UpdateNewsArticleCommandHandler
         article.Body = request.Body.Select(p => p.Trim()).Where(p => p.Length > 0).ToList();
         article.PublishedAt = DateTime.SpecifyKind(request.PublishedAt.Date, DateTimeKind.Utc);
         article.Featured = request.Featured;
+        article.Published = request.Published;
         article.UpdatedAt = DateTime.UtcNow;
+
+        if (request.ImageFileIds is not null)
+        {
+            var owned = await _files.ListActiveByEntityAsync(
+                FileStorageCatalog.EntityNewsArticle,
+                article.Id,
+                cancellationToken);
+            NewsArticleImages.Replace(article, request.ImageFileIds, owned);
+        }
 
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 

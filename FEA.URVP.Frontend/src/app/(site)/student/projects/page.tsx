@@ -24,6 +24,7 @@ export default function StudentRankedProjectsPage() {
         <section
           id="ranked-projects"
           className="site-container scroll-mt-24 py-10 sm:py-14"
+          data-tour="student-rankings"
         >
           <StudentPortalNav />
           <div className="mt-8">

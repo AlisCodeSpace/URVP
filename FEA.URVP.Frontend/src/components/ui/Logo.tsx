@@ -27,7 +27,7 @@ export function Logo({
         width={size}
         height={size}
         className="object-contain"
-        style={{ width: size, height: size }}
+        style={{ width: `${size / 16}rem`, height: `${size / 16}rem` }}
         priority
         unoptimized
       />

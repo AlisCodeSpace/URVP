@@ -37,6 +37,7 @@ export type PlacementDto = {
   resolvedByTieBreak: boolean;
   source: PlacementSource;
   status: PlacementStatus;
+  createdAt: string;
   updatedAt: string;
 };
 

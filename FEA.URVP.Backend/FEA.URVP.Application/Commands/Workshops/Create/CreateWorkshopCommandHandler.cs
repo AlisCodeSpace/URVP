@@ -41,6 +41,7 @@ public sealed class CreateWorkshopCommandHandler
             Description = request.Description.Trim(),
             RegistrationUrl = request.RegistrationUrl.Trim(),
             PosterAlt = string.IsNullOrWhiteSpace(request.PosterAlt) ? null : request.PosterAlt.Trim(),
+            Published = request.Published,
             SortOrder = await _workshops.GetNextSortOrderAsync(cancellationToken),
             CreatedAt = now,
             UpdatedAt = now,
@@ -51,11 +52,14 @@ public sealed class CreateWorkshopCommandHandler
 
         Logger.LogInformation("Created workshop {WorkshopId} ({Title})", workshop.Id, workshop.Title);
 
-        await NotificationEventPublish.TryPublishAsync(
-            _eventBus,
-            new WorkshopAnnouncedEvent(workshop.Id),
-            Logger,
-            cancellationToken);
+        if (workshop.Published)
+        {
+            await NotificationEventPublish.TryPublishAsync(
+                _eventBus,
+                new WorkshopAnnouncedEvent(workshop.Id),
+                Logger,
+                cancellationToken);
+        }
 
         return workshop.ToDto();
     }

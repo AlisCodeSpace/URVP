@@ -25,4 +25,20 @@ internal static class ProjectRankingAccess
 
         throw new UnauthorizedAccessException("Only students can rank projects.");
     }
+
+    public const string ProfileRequiredMessage =
+        "Complete your student profile before ranking projects.";
+
+    public static void EnsureHasSavedProfile(UserRole role, bool profileExists)
+    {
+        if (role is UserRole.Admin)
+        {
+            return;
+        }
+
+        if (!profileExists)
+        {
+            throw new InvalidOperationException(ProfileRequiredMessage);
+        }
+    }
 }

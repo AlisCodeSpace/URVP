@@ -1,5 +1,5 @@
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
-import { Button } from "@/components/ui/Button";
+import { BackLink } from "@/components/ui/BackLink";
 
 export default function AdminNotFound() {
   return (
@@ -11,9 +11,7 @@ export default function AdminNotFound() {
       <p className="not-found-code mb-6" aria-hidden>
         404
       </p>
-      <Button href="/admin" variant="primary" size="md">
-        Back to overview
-      </Button>
+      <BackLink href="/admin">Back to overview</BackLink>
     </div>
   );
 }

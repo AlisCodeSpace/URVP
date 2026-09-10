@@ -22,6 +22,11 @@ public sealed class GetNewsArticleBySlugQueryHandler
         var article = await _news.FindBySlugAsync(request.Slug, cancellationToken)
             ?? throw new KeyNotFoundException($"News article '{request.Slug}' was not found.");
 
+        if (!article.Published)
+        {
+            throw new KeyNotFoundException($"News article '{request.Slug}' was not found.");
+        }
+
         return article.ToDto();
     }
 }

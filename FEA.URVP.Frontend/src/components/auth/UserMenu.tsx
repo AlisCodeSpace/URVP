@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useTour } from "@/components/tour/TourProvider";
 import { portalHref, roleLabel, type AuthStatus } from "@/lib/auth";
+import { canTakeTour } from "@/lib/tour";
 
 type UserMenuProps = {
   status: AuthStatus;
@@ -14,6 +16,7 @@ type UserMenuProps = {
 
 export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuProps) {
   const { signOut } = useAuth();
+  const tour = useTour();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -23,6 +26,13 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
   const role = roleLabel(status.role);
   const portal = portalHref(status.role, status.userId);
   const initial = (name.charAt(0) || "U").toUpperCase();
+  const showTour = Boolean(tour && canTakeTour(status.role));
+
+  function startTour() {
+    setOpen(false);
+    onNavigate?.();
+    tour?.start();
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -62,6 +72,15 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
         >
           Portal
         </Link>
+        {showTour ? (
+          <button
+            type="button"
+            className="btn btn-md w-full border border-white/25 bg-white/10 text-white hover:bg-white/20"
+            onClick={startTour}
+          >
+            Take a tour
+          </button>
+        ) : null}
         <div className="border-t border-white/20 pt-3">
           <button
             type="button"
@@ -125,6 +144,16 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
             >
               Portal
             </Link>
+            {showTour ? (
+              <button
+                type="button"
+                role="menuitem"
+                className="btn btn-sm w-full border border-white/25 bg-white/10 text-white hover:bg-white/20"
+                onClick={startTour}
+              >
+                Take a tour
+              </button>
+            ) : null}
             <div className="mt-1 border-t border-white/20 pt-2">
               <button
                 type="button"

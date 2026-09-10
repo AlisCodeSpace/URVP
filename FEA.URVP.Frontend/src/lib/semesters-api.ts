@@ -1,10 +1,14 @@
 import { apiFetch } from "@/lib/api";
+import { formatAppDateTime } from "@/lib/datetime";
+
+export { parseApiDate } from "@/lib/datetime";
 
 export type SemesterDto = {
   id: string;
   name: string;
   description?: string | null;
   isActive: boolean;
+  hasEnded: boolean;
   cycleStart?: string | null;
   cycleEnd?: string | null;
   applicationWindowStart?: string | null;
@@ -83,25 +87,8 @@ export async function setApplicationWindow(
   });
 }
 
-/** Treat API datetimes as UTC when the payload omits a timezone. */
-export function parseApiDate(iso: string): Date {
-  const trimmed = iso.trim();
-  if (/[zZ]$/.test(trimmed) || /[+-]\d{2}:\d{2}$/.test(trimmed)) {
-    return new Date(trimmed);
-  }
-  return new Date(`${trimmed}Z`);
-}
-
 export function formatWindowDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  return parseApiDate(iso).toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZoneName: "short",
-  });
+  return formatAppDateTime(iso);
 }
 
 export function formatScheduleRange(

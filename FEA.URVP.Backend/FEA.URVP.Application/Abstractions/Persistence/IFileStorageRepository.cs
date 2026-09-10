@@ -12,5 +12,14 @@ public interface IFileStorageRepository
         string fileCategory,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<FileStorage>> ListActiveByEntityAsync(
+        string entityType,
+        Guid entityId,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<FileStorage>> ListByIdsAsync(
+        IReadOnlyCollection<Guid> ids,
+        CancellationToken cancellationToken = default);
+
     void Add(FileStorage file);
 }

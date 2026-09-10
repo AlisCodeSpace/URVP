@@ -56,7 +56,7 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
             throw new UnauthorizedAccessException("You can only rank candidates for your own projects.");
         }
 
-        ProjectMutationAccess.EnsureFacultyCanMutate(project, request.IsAdmin);
+        FacultyProjectMutationAccess.EnsureCanRankCandidates(project, request.IsAdmin);
 
         var application = await _projectRankings.FindByStudentAndProjectAsync(
             request.StudentUserId,

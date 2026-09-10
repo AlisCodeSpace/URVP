@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
@@ -153,8 +154,9 @@ function ActiveSemesterPanel({
               color: "var(--muted)",
             }}
           >
-            {formatScheduleRange(semester.cycleStart, semester.cycleEnd)}. Ends
-            automatically at the end date, or instantly with the button.
+            {formatScheduleRange(semester.cycleStart, semester.cycleEnd)}
+            <br />
+            Ends automatically at the end date, or instantly with the button.
           </p>
         </div>
 
@@ -210,7 +212,8 @@ function ActiveSemesterPanel({
               semester.applicationWindowStart,
               semester.applicationWindowEnd,
             )}
-            . Closes automatically at the end date, or instantly with the button.
+            <br />
+            Closes automatically at the end date, or instantly with the button.
           </p>
         </div>
       </div>
@@ -280,7 +283,7 @@ export function AdminSemestersView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="URVP Cycles"
-        description="Schedule URVP cycles and application windows with start and end dates. Each period closes automatically when its end date is reached. Edit a cycle to extend or shorten it, or use the instant controls below."
+        description="Schedule URVP cycles and application windows with start and end dates. Only one cycle can be active at a time. Ended cycles remain in this list as history and cannot be edited."
         tag={
           semesters.length > 0
             ? `${semesters.length} cycle${semesters.length === 1 ? "" : "s"}`
@@ -289,11 +292,29 @@ export function AdminSemestersView() {
       />
 
       <div className="admin-list-toolbar-actions" style={{ marginBottom: "1.25rem" }}>
+        {activeSemester ? (
+          <Button
+            type="button"
+            variant="primary"
+            size="md"
+            disabled
+            title="End the active cycle before creating a new one"
+          >
+            Add cycle
+          </Button>
+        ) : (
+          <Button href="/admin/semesters/new" variant="primary" size="md">
+            Add cycle
+          </Button>
+        )}
         <RefreshIconButton loading={loading} onClick={() => void load()} />
-        <Button href="/admin/semesters/new" variant="primary" size="md">
-          Add cycle
-        </Button>
       </div>
+      {activeSemester ? (
+        <p className="admin-users-meta" style={{ margin: "-0.75rem 0 1.25rem", fontSize: "0.82rem" }}>
+          End the active cycle before creating a new one. Ended cycles stay in the list as
+          history.
+        </p>
+      ) : null}
 
       {error ? (
         <p className="admin-users-banner is-error" role="alert">
@@ -355,7 +376,7 @@ export function AdminSemestersView() {
                   <td>
                     <StatusBadge
                       active={s.isActive}
-                      label={s.isActive ? "Active" : "Inactive"}
+                      label={s.isActive ? "Active" : s.hasEnded ? "Ended" : "Inactive"}
                     />
                     <p
                       className="admin-users-meta"
@@ -380,40 +401,47 @@ export function AdminSemestersView() {
                     </p>
                   </td>
                   <td>
-                    <div className="admin-value-actions">
-                      <Button
-                        href={adminSemesterEditHref(s.id)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        Edit
-                      </Button>
-                      {!s.isActive ? (
+                    {s.hasEnded ? (
+                      <div className="admin-value-actions">
                         <Button
-                          type="button"
-                          variant="primary"
+                          href={adminSemesterEditHref(s.id)}
+                          variant="outline"
                           size="sm"
-                          disabled={startingId === s.id}
-                          onClick={() => void handleStartCycle(s)}
                         >
-                          {startingId === s.id ? "Starting…" : "Start Cycle"}
+                          View
                         </Button>
-                      ) : null}
-                      <Button
-                        type="button"
-                        variant="danger"
-                        size="sm"
-                        disabled={s.isActive}
-                        title={
-                          s.isActive
-                            ? "End the cycle before deleting"
-                            : undefined
-                        }
-                        onClick={() => setPendingDelete(s)}
-                      >
-                        Delete
-                      </Button>
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="admin-value-actions">
+                        <Button
+                          href={adminSemesterEditHref(s.id)}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Edit
+                        </Button>
+                        {!s.isActive && !activeSemester ? (
+                          <Button
+                            type="button"
+                            variant="primary"
+                            size="sm"
+                            disabled={startingId === s.id}
+                            onClick={() => void handleStartCycle(s)}
+                          >
+                            {startingId === s.id ? "Starting…" : "Start Cycle"}
+                          </Button>
+                        ) : null}
+                        <DeleteIconButton
+                          disabled={s.isActive}
+                          title={
+                            s.isActive
+                              ? "End the cycle before deleting"
+                              : undefined
+                          }
+                          onClick={() => setPendingDelete(s)}
+                        />
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

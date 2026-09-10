@@ -11,15 +11,21 @@ import {
   projectsHref,
   studentProfileHref,
 } from "@/lib/auth";
+import {
+  formatApplicationAnnouncement,
+  useApplicationWindow,
+} from "@/hooks/useApplicationWindow";
 
 export function Hero() {
   const { status, loading } = useAuth();
+  const appWindow = useApplicationWindow();
   const isSignedIn = Boolean(status?.isAuthenticated);
   const role = status?.role;
   const userId = status?.userId;
 
   const showStudentCtas = !loading && (!isSignedIn || isStudent(role));
   const applyHref = isSignedIn ? studentProfileHref() : "/sign-in";
+  const showApplyLink = showStudentCtas && !appWindow.loading && appWindow.isOpen;
 
   return (
     <PageHero
@@ -27,20 +33,22 @@ export function Hero() {
       titleScale="brand"
       headline="Match with faculty research. Shape your academic path."
       announcement={
-        <>
-          Applications for the URVP 2026–27 cycle are open.
-          {showStudentCtas ? (
-            <>
-              {" "}
-              <Link
-                href={applyHref}
-                className="underline decoration-secondary/70 underline-offset-4 transition hover:text-white hover:decoration-white"
-              >
-                Apply now!
-              </Link>
-            </>
-          ) : null}
-        </>
+        appWindow.loading ? undefined : (
+          <>
+            {formatApplicationAnnouncement(appWindow.semesterName, appWindow.isOpen)}
+            {showApplyLink ? (
+              <>
+                {" "}
+                <Link
+                  href={applyHref}
+                  className="underline decoration-secondary/70 underline-offset-4 transition hover:text-white hover:decoration-white"
+                >
+                  Apply now!
+                </Link>
+              </>
+            ) : null}
+          </>
+        )
       }
       actions={
         <>

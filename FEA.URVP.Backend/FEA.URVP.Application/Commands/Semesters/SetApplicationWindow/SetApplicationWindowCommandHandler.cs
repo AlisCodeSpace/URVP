@@ -36,6 +36,8 @@ public sealed class SetApplicationWindowCommandHandler
             ?? throw new KeyNotFoundException($"Semester {request.Id} was not found.");
 
         var now = DateTime.UtcNow;
+        SemesterSchedule.EnsureNotEnded(semester, now);
+
         var wasOpen = semester.IsApplicationWindowOpen(now);
         var start = request.ApplicationWindowStart;
         var end = request.ApplicationWindowEnd;

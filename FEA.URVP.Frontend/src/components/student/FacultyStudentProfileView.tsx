@@ -21,7 +21,7 @@ import {
   rankLabel,
   type ProjectRankingStudentDto,
 } from "@/lib/project-rankings-api";
-import { isFacultyProjectLocked } from "@/lib/project-form";
+import { isFacultyCandidateRankingLocked } from "@/lib/project-form";
 import { getProject, type ProjectDto } from "@/lib/projects-api";
 
 export function FacultyStudentProfileView({
@@ -128,7 +128,7 @@ export function FacultyStudentProfileView({
   const current = rankings?.find((r) => r.studentUserId === studentUserId);
   const facultyRank = current?.facultyRank ?? null;
   const canRank = Boolean(
-    project && current && !isFacultyProjectLocked(project),
+    project && current && !isFacultyCandidateRankingLocked(project),
   );
   const seats = project?.volunteersRequired ?? 0;
   const firstChoiceUsed =

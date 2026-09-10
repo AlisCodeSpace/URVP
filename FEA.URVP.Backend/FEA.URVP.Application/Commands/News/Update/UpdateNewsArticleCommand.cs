@@ -16,6 +16,8 @@ public sealed class UpdateNewsArticleCommand : IRequest<NewsArticleDto>
     public string Author { get; init; } = null!;
     public string Ticker { get; init; } = null!;
     public List<string> Body { get; init; } = [];
+    public List<Guid>? ImageFileIds { get; init; }
     public DateTime PublishedAt { get; init; }
     public bool Featured { get; init; }
+    public bool Published { get; init; } = true;
 }

@@ -1,3 +1,4 @@
+import { formatAppDate } from "@/lib/datetime";
 import { RESEARCH_ACTIVITY_TYPES } from "@/lib/research-activity-types";
 import { RESEARCH_AREAS } from "@/lib/research-areas";
 
@@ -29,11 +30,41 @@ export const researchActivityTypes = [...RESEARCH_ACTIVITY_TYPES];
 
 export type MyProjectStatus = "Open" | "Matching" | "Closed";
 
-export function isFacultyProjectLocked(project: {
+export function projectStatusClass(status: MyProjectStatus): string {
+  if (status === "Open") return "is-active";
+  if (status === "Matching") return "is-matching";
+  return "";
+}
+
+export function isFacultyCandidateRankingLocked(project: {
   status: MyProjectStatus;
   volunteersFilled: number;
 }): boolean {
   return project.status !== "Open" || project.volunteersFilled > 0;
+}
+
+export function isFacultyProjectEditable(project: {
+  isEditableByFaculty?: boolean;
+  status?: MyProjectStatus;
+  volunteersFilled?: number;
+}): boolean {
+  if (typeof project.isEditableByFaculty === "boolean") {
+    return project.isEditableByFaculty;
+  }
+
+  return !isFacultyCandidateRankingLocked({
+    status: project.status ?? "Open",
+    volunteersFilled: project.volunteersFilled ?? 0,
+  });
+}
+
+export function facultyProjectEditLockMessage(project: {
+  facultyEditLockReason?: string | null;
+}): string {
+  return (
+    project.facultyEditLockReason?.trim() ||
+    "This project can no longer be edited."
+  );
 }
 
 export type MyProject = {
@@ -46,6 +77,8 @@ export type MyProject = {
   volunteersFilled: number;
   status: MyProjectStatus;
   updatedAt: string;
+  isEditableByFaculty: boolean;
+  facultyEditLockReason?: string | null;
 };
 
 export type ProjectFormValues = {
@@ -77,11 +110,5 @@ export const emptyProjectFormValues: ProjectFormValues = {
 };
 
 export function formatProjectDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatAppDate(iso);
 }

@@ -12,10 +12,7 @@ export const metadata: Metadata = {
 export default function WorkshopsPage() {
   return (
     <main className="flex-1 bg-background">
-      <PageHeader
-        title="Workshops"
-        description={workshopsIntro}
-      />
+      <PageHeader title="Workshops" description={workshopsIntro} />
 
       <section
         id="workshops-list"

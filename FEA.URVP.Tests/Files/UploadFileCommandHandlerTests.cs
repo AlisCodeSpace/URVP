@@ -39,7 +39,7 @@ public sealed class UploadFileCommandHandlerTests
                 RegistrationUrl = "https://example.com",
             });
 
-        var handler = CreateHandler(userId, UserRole.Admin, mime, files, workshops);
+        var handler = CreateHandler(userId, UserRole.Admin, mime, files, workshops: workshops);
 
         var result = await handler.Handle(
             new UploadFileCommand
@@ -113,15 +113,76 @@ public sealed class UploadFileCommandHandlerTests
         await mime.Received(1).DetectMimeTypeAsync(file);
     }
 
+    [Fact]
+    public async Task News_image_upload_appends_without_replacing_existing()
+    {
+        var userId = Guid.NewGuid();
+        var articleId = Guid.NewGuid();
+        var existingFile = new FileStorage
+        {
+            Id = Guid.NewGuid(),
+            EntityType = FileStorageCatalog.EntityNewsArticle,
+            EntityId = articleId,
+            FileCategory = FileStorageCatalog.CategoryNewsImage,
+            FileName = "one.jpg",
+            MimeType = "image/jpeg",
+            Content = [1],
+        };
+
+        var files = Substitute.For<IFileStorageRepository>();
+        files.FindActiveByEntityAsync(
+                FileStorageCatalog.EntityNewsArticle,
+                articleId,
+                FileStorageCatalog.CategoryNewsImage,
+                Arg.Any<CancellationToken>())
+            .Returns(existingFile);
+
+        var article = new Domain.Entities.News.NewsArticle
+        {
+            Id = articleId,
+            Slug = "story",
+            Title = "Story",
+            Excerpt = "Excerpt",
+            Category = "News",
+            Author = "Office",
+            Ticker = "Ticker",
+            ImageFileIds = [existingFile.Id],
+        };
+        var news = Substitute.For<INewsArticleRepository>();
+        news.FindByIdAsync(articleId, Arg.Any<CancellationToken>()).Returns(article);
+
+        var mime = Substitute.For<IMimeTypeValidator>();
+        mime.DetectMimeTypeAsync(Arg.Any<IFormFile>()).Returns(Task.FromResult<string?>("image/jpeg"));
+
+        var handler = CreateHandler(userId, UserRole.Admin, mime, files, news: news);
+        var result = await handler.Handle(
+            new UploadFileCommand
+            {
+                CurrentUserId = userId,
+                EntityType = FileStorageCatalog.EntityNewsArticle,
+                EntityId = articleId,
+                FileCategory = FileStorageCatalog.CategoryNewsImage,
+                File = FormFileFactory.Create(SampleFiles.Jpeg, "two.jpg", "image/jpeg"),
+            },
+            CancellationToken.None);
+
+        Assert.False(existingFile.IsDeleted);
+        Assert.Equal(2, article.ImageFileIds.Count);
+        Assert.Contains(existingFile.Id, article.ImageFileIds);
+        Assert.Contains(result.Id, article.ImageFileIds);
+    }
+
     private static UploadFileCommandHandler CreateHandler(
         Guid userId,
         UserRole role,
         IMimeTypeValidator mime,
         IFileStorageRepository? files = null,
-        IWorkshopRepository? workshops = null)
+        IWorkshopRepository? workshops = null,
+        INewsArticleRepository? news = null)
     {
         files ??= Substitute.For<IFileStorageRepository>();
         workshops ??= Substitute.For<IWorkshopRepository>();
+        news ??= Substitute.For<INewsArticleRepository>();
         var users = Substitute.For<IUserRepository>();
         users.FindByIdAsync(userId, Arg.Any<CancellationToken>()).Returns(new User
         {
@@ -142,6 +203,7 @@ public sealed class UploadFileCommandHandlerTests
             files,
             users,
             workshops,
+            news,
             mime,
             Microsoft.Extensions.Options.Options.Create(new FileStorageOptions()));
     }

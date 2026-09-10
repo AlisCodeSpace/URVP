@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<ISemesterRepository, SemesterRepository>();
         services.AddScoped<IAdminOverviewReadRepository, AdminOverviewReadRepository>();
         services.AddScoped<IEmailSettingsRepository, EmailSettingsRepository>();
+        services.AddScoped<IHomeIntroRepository, HomeIntroRepository>();
         services.AddSingleton<ISmtpCredentialProtector, DataProtectionSmtpCredentialProtector>();
         services.AddNotificationServices(configuration);
         services.AddScoped<IEventBus, InMemoryEventBus>();

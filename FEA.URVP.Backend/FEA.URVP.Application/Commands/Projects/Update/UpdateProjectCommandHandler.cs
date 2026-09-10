@@ -17,18 +17,21 @@ public sealed class UpdateProjectCommandHandler
     private readonly IProjectRepository _projects;
     private readonly IUserRepository _users;
     private readonly IEventBus _eventBus;
+    private readonly FacultyProjectMutationAccess _mutationAccess;
 
     public UpdateProjectCommandHandler(
         ILogger<UpdateProjectCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IProjectRepository projects,
         IUserRepository users,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        FacultyProjectMutationAccess mutationAccess)
         : base(logger, unitOfWork)
     {
         _projects = projects;
         _users = users;
         _eventBus = eventBus;
+        _mutationAccess = mutationAccess;
     }
 
     protected override async Task<ProjectDto> HandleInternal(
@@ -43,7 +46,10 @@ public sealed class UpdateProjectCommandHandler
             throw new UnauthorizedAccessException("You can only update your own projects.");
         }
 
-        ProjectMutationAccess.EnsureFacultyCanMutate(project, request.IsAdmin);
+        await _mutationAccess.EnsureCanEditProjectAsync(
+            project,
+            request.IsAdmin,
+            cancellationToken);
 
         if (request.VolunteersRequired < project.VolunteersFilled)
         {
@@ -87,7 +93,8 @@ public sealed class UpdateProjectCommandHandler
                 cancellationToken);
         }
 
-        return project.ToDto();
+        var lockReason = await _mutationAccess.GetEditLockReasonAsync(project, cancellationToken);
+        return project.ToDto(lockReason);
     }
 
     private static string? NormalizeOptional(string? value) =>

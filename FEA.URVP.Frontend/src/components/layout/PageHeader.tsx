@@ -21,7 +21,7 @@ export function PageHeader({
   return (
     <section className="page-header relative overflow-hidden text-white">
       <div className="page-header-grid absolute inset-0" aria-hidden />
-      <Container className="relative z-10 pb-14 pt-28 sm:pb-16 sm:pt-32">
+      <Container className="relative z-10 pb-14 pt-[calc(7rem+env(safe-area-inset-top,0px))] sm:pb-16 sm:pt-[calc(8rem+env(safe-area-inset-top,0px))]">
         {children}
         <div className={children ? "mt-5" : undefined}>
           {eyebrow ? (

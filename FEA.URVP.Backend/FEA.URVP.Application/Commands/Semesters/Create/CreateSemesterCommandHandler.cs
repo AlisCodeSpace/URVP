@@ -26,6 +26,9 @@ public sealed class CreateSemesterCommandHandler
         CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
+        await SemesterSchedule.EnsureNoOtherActiveCycleAsync(
+            _semesters, exceptId: null, cancellationToken);
+
         var semester = new Semester
         {
             Name = request.Name.Trim(),

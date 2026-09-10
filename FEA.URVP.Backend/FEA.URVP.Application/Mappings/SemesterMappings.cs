@@ -11,6 +11,7 @@ public static class SemesterMappings
         Name = semester.Name,
         Description = semester.Description,
         IsActive = semester.IsCycleActive(DateTime.UtcNow),
+        HasEnded = semester.HasEnded(DateTime.UtcNow),
         CycleStart = AsUtc(semester.CycleStart),
         CycleEnd = AsUtc(semester.CycleEnd),
         ApplicationWindowStart = AsUtc(semester.ApplicationWindowStart),

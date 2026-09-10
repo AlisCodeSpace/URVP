@@ -1,4 +1,5 @@
 import { apiFetch } from "@/lib/api";
+import { formatAppDate } from "@/lib/datetime";
 
 export type ProjectRankingStudentDto = {
   rankingId: string;
@@ -61,13 +62,7 @@ export async function removeProjectRanking(projectId: string): Promise<void> {
 }
 
 export function formatRankedAt(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return formatAppDate(iso);
 }
 
 export function rankLabel(rank: number): string {

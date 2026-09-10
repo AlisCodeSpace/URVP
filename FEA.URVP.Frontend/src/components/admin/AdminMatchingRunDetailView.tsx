@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
+import { BackLink } from "@/components/ui/BackLink";
 import {
   PlacementStatusBadge,
   RunStatusBadge,
@@ -20,7 +21,7 @@ import {
   type PlacementDto,
 } from "@/lib/matching-api";
 import { rankLabel } from "@/lib/project-rankings-api";
-import { formatWindowDate } from "@/lib/semesters-api";
+import { formatWindowDate, getActiveSemester, type SemesterDto } from "@/lib/semesters-api";
 
 type PendingAction =
   | { kind: "confirm" }
@@ -33,12 +34,18 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<PendingAction | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [semester, setSemester] = useState<SemesterDto | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      setData(await getMatchingRun(runId));
+      const [detail, active] = await Promise.all([
+        getMatchingRun(runId),
+        getActiveSemester(),
+      ]);
+      setData(detail);
+      setSemester(active);
     } catch (err) {
       setData(null);
       setError(
@@ -89,7 +96,12 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
   if (loading && !data) {
     return (
       <div className="admin-panel admin-panel--wide">
-        <AdminPageHeader title="Matching run" description="Loading run details." />
+        <AdminPageHeader
+          title="Matching run"
+          description="Loading run details."
+          backHref="/admin/matching"
+          backLabel="Back to matching"
+        />
         <AdminFormSkeleton fields={4} />
         <AdminTableSkeleton columns={6} />
       </div>
@@ -100,9 +112,7 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
     return (
       <div className="admin-panel admin-panel--wide">
         <div className="admin-detail-back">
-          <Button href="/admin/matching" variant="outline" size="sm">
-            Back to matching
-          </Button>
+          <BackLink href="/admin/matching">Back to matching</BackLink>
         </div>
         <p className="admin-users-banner is-error" role="alert">
           {error}
@@ -118,6 +128,8 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
 
   const { run, warnings, placements } = data;
   const isDraft = run.status === "Draft";
+  const applicationsOpen = Boolean(semester?.isApplicationWindowOpen);
+  const canConfirm = isDraft && !busy && placements.length > 0 && !applicationsOpen;
 
   const kpis = [
     { label: "Students matched", value: `${run.studentsMatched} / ${run.studentsConsidered}`, hint: `${matchRate(run)}% of eligible students` },
@@ -132,18 +144,14 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
 
   return (
     <div className="admin-panel admin-panel--wide">
-      <div className="admin-detail-back">
-        <Button href="/admin/matching" variant="outline" size="sm">
-          Back to matching
-        </Button>
-      </div>
-
       <AdminPageHeader
         title={`${run.semesterName} — ${formatWindowDate(run.createdAt)}`}
         description={`${run.algorithmVersion}${
           run.confirmedAt ? ` · confirmed ${formatWindowDate(run.confirmedAt)}` : ""
         }`}
         tag={run.status}
+        backHref="/admin/matching"
+        backLabel="Back to matching"
       />
 
       <div
@@ -162,7 +170,12 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
               type="button"
               variant="primary"
               size="sm"
-              disabled={busy || placements.length === 0}
+              disabled={!canConfirm}
+              title={
+                applicationsOpen
+                  ? "Close the student application window before confirming matching."
+                  : undefined
+              }
               onClick={() => setPending({ kind: "confirm" })}
             >
               Confirm placements
@@ -183,6 +196,12 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
       {error ? (
         <p className="admin-users-banner is-error" role="alert">
           {error}
+        </p>
+      ) : null}
+
+      {applicationsOpen && isDraft ? (
+        <p className="admin-users-banner" role="status">
+          Close the student application window before confirming this matching run.
         </p>
       ) : null}
 

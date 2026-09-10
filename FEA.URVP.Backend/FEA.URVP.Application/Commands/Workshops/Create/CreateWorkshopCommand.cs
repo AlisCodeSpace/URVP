@@ -12,4 +12,5 @@ public sealed class CreateWorkshopCommand : IRequest<WorkshopDto>
     public string Description { get; init; } = null!;
     public string RegistrationUrl { get; init; } = null!;
     public string? PosterAlt { get; init; }
+    public bool Published { get; init; } = true;
 }

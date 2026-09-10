@@ -16,6 +16,7 @@ public static class WorkshopMappings
         RegistrationUrl = workshop.RegistrationUrl,
         PosterFileId = workshop.PosterFileId,
         PosterAlt = workshop.PosterAlt,
+        Published = workshop.Published,
         SortOrder = workshop.SortOrder,
         CreatedAt = workshop.CreatedAt,
         UpdatedAt = workshop.UpdatedAt,

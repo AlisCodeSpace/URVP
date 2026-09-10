@@ -23,4 +23,6 @@ public sealed class ProjectDto
     public string? UserName { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
+    public bool IsEditableByFaculty { get; init; } = true;
+    public string? FacultyEditLockReason { get; init; }
 }

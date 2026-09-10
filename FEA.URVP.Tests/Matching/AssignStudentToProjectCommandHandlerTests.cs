@@ -155,6 +155,33 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         Assert.Single(bus.Events.OfType<PlacementAssignedEvent>());
     }
 
+    [Fact]
+    public async Task Rejects_when_application_window_is_open()
+    {
+        var now = DateTime.UtcNow;
+        var (handler, _, _, project, student) = CreateHandler(semester: new Semester
+        {
+            Name = "Fall 2026",
+            IsActive = true,
+            CycleStart = now.AddDays(-20),
+            CycleEnd = now.AddDays(80),
+            ApplicationWindowStart = now.AddDays(-5),
+            ApplicationWindowEnd = now.AddDays(5),
+        });
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            handler.Handle(
+                new AssignStudentToProjectCommand
+                {
+                    CurrentUserId = Guid.NewGuid(),
+                    ProjectId = project.Id,
+                    StudentUserId = student.Id,
+                },
+                CancellationToken.None));
+
+        Assert.Contains("application window", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static (
         AssignStudentToProjectCommandHandler Handler,
         CapturingEventBus Bus,
@@ -164,12 +191,13 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         CreateHandler(
             User? student = null,
             Project? project = null,
+            Semester? semester = null,
             Action<IProjectRepository>? configureProjects = null,
             Action<IMatchingRunRepository>? configureRuns = null)
     {
         student ??= Student();
         project ??= OpenProject();
-        var semester = new Semester { Name = "Fall 2026" };
+        semester ??= new Semester { Name = "Fall 2026" };
         var bus = new CapturingEventBus();
 
         var projects = Substitute.For<IProjectRepository>();

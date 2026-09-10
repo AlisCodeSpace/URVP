@@ -298,6 +298,16 @@ export function adminProjectHref(projectId: string): string {
   return withParams("/admin/projects/detail", { [RouteParam.Id]: projectId });
 }
 
+export function adminStudentProfileHref(
+  projectId: string,
+  studentUserId: string,
+): string {
+  return withParams("/admin/projects/student", {
+    [RouteParam.Id]: projectId,
+    [RouteParam.Student]: studentUserId,
+  });
+}
+
 export function adminMatchingRunHref(runId: string): string {
   return withParams("/admin/matching/run", { [RouteParam.Id]: runId });
 }

@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Commands.News.Create;
 using FEA.URVP.Application.Commands.News.Update;
+using FEA.URVP.Domain.Catalog;
 using FluentValidation;
 
 namespace FEA.URVP.Application.Validators.News;
@@ -75,5 +76,9 @@ public sealed class UpdateNewsArticleCommandValidator
         RuleFor(x => x.Slug)
             .MaximumLength(160)
             .When(x => x.Slug is not null);
+
+        RuleFor(x => x.ImageFileIds)
+            .Must(ids => ids is null || ids.Count <= FileStorageCatalog.MaxNewsImages)
+            .WithMessage($"A news article can include at most {FileStorageCatalog.MaxNewsImages} images.");
     }
 }

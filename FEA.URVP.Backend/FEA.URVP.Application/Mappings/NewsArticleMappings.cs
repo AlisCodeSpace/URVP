@@ -15,8 +15,10 @@ public static class NewsArticleMappings
         Author = article.Author,
         Ticker = article.Ticker,
         Body = article.Body.ToList(),
+        ImageFileIds = article.ImageFileIds.ToList(),
         PublishedAt = article.PublishedAt,
         Featured = article.Featured,
+        Published = article.Published,
         CreatedAt = article.CreatedAt,
         UpdatedAt = article.UpdatedAt,
     };

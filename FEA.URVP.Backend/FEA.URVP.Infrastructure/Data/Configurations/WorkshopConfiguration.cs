@@ -37,6 +37,7 @@ public sealed class WorkshopConfiguration : IEntityTypeConfiguration<Workshop>
         builder.Property(x => x.PosterAlt)
             .HasMaxLength(256);
 
+        builder.Property(x => x.Published).IsRequired();
         builder.Property(x => x.SortOrder).IsRequired();
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.UpdatedAt).IsRequired();

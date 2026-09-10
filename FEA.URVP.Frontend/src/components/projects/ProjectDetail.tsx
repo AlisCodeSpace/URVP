@@ -1,18 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, useMemo } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ExpressInterestModal } from "@/components/projects/ExpressInterestModal";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
-import {
-  isResearchTopicMatch,
-  useStudentResearchTopics,
-} from "@/hooks/useStudentResearchTopics";
-import { isStudent, projectsHref } from "@/lib/auth";
+import { useMyStudentProfile } from "@/hooks/useMyStudentProfile";
+import { isResearchTopicMatch } from "@/hooks/useStudentResearchTopics";
+import { isStudent, projectsHref, studentProfileHref } from "@/lib/auth";
 import { openingsLeft, type CatalogProject } from "@/lib/projects";
 
 function DetailFact({
@@ -122,8 +120,12 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
   const canRank = isSignedIn && isStudent(status?.role);
   const appWindow = useApplicationWindow();
   const studentTopics = useStudentResearchTopics();
+  const myProfile = useMyStudentProfile();
   const open = openingsLeft(project);
   const isClosed = project.status === "Closed" || open === 0;
+  const applicationsClosed = !appWindow.loading && !appWindow.isOpen;
+  const needsProfile =
+    canRank && !myProfile.loading && !myProfile.exists;
   const [rankOpen, setRankOpen] = useState(false);
   const researchAreas = splitJoined(project.researchArea);
   const activityTypes = splitJoined(project.activityType);
@@ -251,39 +253,67 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
                 mt="3"
                 className="!leading-relaxed !text-muted"
               >
-                {isClosed
-                  ? "This listing is not accepting new volunteers right now."
-                  : !appWindow.loading && !appWindow.isOpen
-                    ? "The student application window is currently closed. Check back during the application period (typically mid-September to end of September)."
-                    : canRank
-                      ? "Matching is managed by the program team. Rank this project as one of your top 3 choices."
-                      : isSignedIn
-                        ? "Only student accounts can express interest in projects."
-                        : "Sign in with your AUB account to express interest. Matching is managed by the program team."}
+                {isClosed ? (
+                  "This listing is not accepting new volunteers right now."
+                ) : applicationsClosed ? (
+                  "The student application window is currently closed. Check back during the application period (typically mid-September to end of September)."
+                ) : needsProfile ? (
+                  <>
+                    Complete and save your student profile before ranking
+                    projects.{" "}
+                    <Link
+                      href={studentProfileHref()}
+                      className="underline underline-offset-2"
+                    >
+                      Open my profile
+                    </Link>
+                    .
+                  </>
+                ) : canRank ? (
+                  "Matching is managed by the program team. Rank this project as one of your top 3 choices."
+                ) : isSignedIn ? (
+                  "Only student accounts can express interest in projects."
+                ) : (
+                  "Sign in with your AUB account to express interest. Matching is managed by the program team."
+                )}
               </Text>
 
               <div className="mt-6 flex flex-col gap-2">
-                {isClosed ? (
-                  <Button type="button" variant="outline" size="md" disabled>
-                    Applications closed
-                  </Button>
-                ) : !appWindow.loading && !appWindow.isOpen ? (
+                {isClosed || applicationsClosed ? (
                   <Button
                     type="button"
                     variant="outline"
                     size="md"
                     disabled
-                    title="The application window is not currently open."
+                    title={
+                      applicationsClosed
+                        ? "The student application window is closed."
+                        : undefined
+                    }
                   >
-                    Applications not open
+                    Applications Closed
                   </Button>
-                ) : canRank ? (
+                ) : needsProfile ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="md"
+                    disabled
+                    title="Complete your student profile before ranking projects."
+                  >
+                    Complete Profile
+                  </Button>
+                ) : canRank && !appWindow.loading && !myProfile.loading ? (
                   <Button
                     type="button"
                     variant="primary"
                     size="md"
                     onClick={() => setRankOpen(true)}
                   >
+                    Express interest
+                  </Button>
+                ) : canRank ? (
+                  <Button type="button" variant="outline" size="md" disabled>
                     Express interest
                   </Button>
                 ) : isSignedIn ? (

@@ -50,6 +50,7 @@ public static class MatchingMappings
         ResolvedByTieBreak = placement.ResolvedByTieBreak,
         Source = placement.Source,
         Status = placement.Status,
+        CreatedAt = placement.CreatedAt,
         UpdatedAt = placement.UpdatedAt,
     };
 }

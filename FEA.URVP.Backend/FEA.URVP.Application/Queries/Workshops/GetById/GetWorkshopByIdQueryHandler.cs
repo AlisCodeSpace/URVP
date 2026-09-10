@@ -22,6 +22,11 @@ public sealed class GetWorkshopByIdQueryHandler
         var workshop = await _workshops.FindByIdAsync(request.Id, cancellationToken)
             ?? throw new KeyNotFoundException($"Workshop {request.Id} was not found.");
 
+        if (request.PublishedOnly && !workshop.Published)
+        {
+            throw new KeyNotFoundException($"Workshop {request.Id} was not found.");
+        }
+
         return workshop.ToDto();
     }
 }

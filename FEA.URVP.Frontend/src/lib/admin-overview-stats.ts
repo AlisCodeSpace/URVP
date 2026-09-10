@@ -10,10 +10,19 @@ export type AdminKpi = {
   href?: string;
 };
 
+export type AdminChartTone = "primary" | "secondary" | "muted" | "soft";
+
+export type AdminChartSlice = {
+  label: string;
+  value: number;
+  tone: AdminChartTone;
+  note?: string;
+};
+
 export type AdminBreakdownItem = {
   label: string;
   value: number;
-  tone: "primary" | "secondary" | "muted";
+  tone: AdminChartTone;
 };
 
 export function seatFillPercent(filled: number, required: number): number {
@@ -104,6 +113,85 @@ export function buildRoleBreakdown(
     { label: "Faculty", value: overview.accounts.faculty, tone: "secondary" },
     { label: "Admins", value: overview.accounts.admins, tone: "muted" },
   ];
+}
+
+const PIPELINE_TONES: AdminChartTone[] = [
+  "primary",
+  "secondary",
+  "soft",
+  "muted",
+];
+
+export function buildPipelineChart(overview: AdminOverviewDto): AdminChartSlice[] {
+  return overview.pipeline.map((step, index) => ({
+    label: step.label,
+    value: step.count,
+    tone: PIPELINE_TONES[index % PIPELINE_TONES.length],
+    note: step.note,
+  }));
+}
+
+export function buildProjectStatusChart(
+  overview: AdminOverviewDto,
+): AdminChartSlice[] {
+  return [
+    { label: "Open", value: overview.projects.open, tone: "primary" },
+    { label: "Matching", value: overview.projects.matching, tone: "secondary" },
+    { label: "Closed", value: overview.projects.closed, tone: "muted" },
+  ];
+}
+
+export function buildSeatChart(overview: AdminOverviewDto): AdminChartSlice[] {
+  return [
+    { label: "Filled", value: overview.projects.seatsFilled, tone: "primary" },
+    { label: "Remaining", value: overview.projects.seatsRemaining, tone: "muted" },
+  ];
+}
+
+export function buildPlacementChart(
+  overview: AdminOverviewDto,
+): AdminChartSlice[] {
+  return [
+    {
+      label: "Confirmed",
+      value: overview.matching.confirmedPlacements,
+      tone: "primary",
+    },
+    {
+      label: "Declined",
+      value: overview.matching.declinedPlacements,
+      tone: "secondary",
+    },
+    {
+      label: "Cancelled",
+      value: overview.matching.cancelledPlacements,
+      tone: "muted",
+    },
+  ];
+}
+
+export function buildRankingChart(overview: AdminOverviewDto): AdminChartSlice[] {
+  return [
+    {
+      label: "With ≥1 rank",
+      value: overview.rankings.studentsWithRank,
+      tone: "primary",
+    },
+    {
+      label: "Full slate of 3",
+      value: overview.rankings.studentsWithFullSlate,
+      tone: "secondary",
+    },
+    {
+      label: "Unreachable",
+      value: overview.rankings.unreachableStudents,
+      tone: "muted",
+    },
+  ];
+}
+
+export function chartTotal(slices: AdminChartSlice[]): number {
+  return slices.reduce((sum, item) => sum + item.value, 0);
 }
 
 export function catalogTiles(overview: AdminOverviewDto) {

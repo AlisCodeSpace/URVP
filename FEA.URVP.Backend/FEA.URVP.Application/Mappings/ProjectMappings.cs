@@ -6,7 +6,7 @@ namespace FEA.URVP.Application.Mappings;
 
 public static class ProjectMappings
 {
-    public static ProjectDto ToDto(this Project project) => new()
+    public static ProjectDto ToDto(this Project project, string? facultyEditLockReason = null) => new()
     {
         Id = project.Id,
         CreatedByUserId = project.CreatedByUserId,
@@ -26,7 +26,9 @@ public static class ProjectMappings
         Email = project.EmailSnapshot,
         UserName = project.UserNameSnapshot,
         CreatedAt = project.CreatedAt,
-        UpdatedAt = project.UpdatedAt
+        UpdatedAt = project.UpdatedAt,
+        IsEditableByFaculty = facultyEditLockReason is null,
+        FacultyEditLockReason = facultyEditLockReason
     };
 
     public static AdminProjectListItemDto ToAdminListItem(this Project project, int rankingCount) => new()

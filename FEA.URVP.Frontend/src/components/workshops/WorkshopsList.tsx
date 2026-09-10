@@ -37,21 +37,9 @@ function WorkshopPoster({ workshop }: { workshop: Workshop }) {
 
   return (
     <div
-      className="workshop-poster workshop-poster-fallback relative flex aspect-[3/2] flex-col justify-between p-5 text-white"
+      className="workshop-poster workshop-poster-fallback relative aspect-[3/2]"
       aria-hidden
-    >
-      <p className="text-xs font-medium uppercase tracking-[0.22em] text-secondary">
-        URVP Workshop
-      </p>
-      <div>
-        <p className="font-[family-name:var(--font-display)] text-2xl font-medium leading-tight">
-          {workshop.title}
-        </p>
-        <p className="mt-3 text-sm uppercase tracking-[0.16em] text-white/70">
-          {workshop.date}
-        </p>
-      </div>
-    </div>
+    />
   );
 }
 

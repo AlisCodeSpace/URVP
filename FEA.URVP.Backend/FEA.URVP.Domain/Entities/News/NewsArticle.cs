@@ -27,11 +27,16 @@ public class NewsArticle
 
     public List<string> Body { get; set; } = [];
 
+    public List<Guid> ImageFileIds { get; set; } = [];
+
     [Required]
     public DateTime PublishedAt { get; set; }
 
     [Required]
     public bool Featured { get; set; }
+
+    [Required]
+    public bool Published { get; set; } = true;
 
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Heading, Text } from "@radix-ui/themes";
+import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import { Logo } from "@/components/ui/Logo";
 import {
   FacebookIcon,
@@ -21,6 +24,13 @@ const socialIcons = {
 } as const;
 
 export function Footer() {
+  const { loading, semesterName } = useApplicationWindow();
+  const cycleLine = loading
+    ? "Student Success Unit"
+    : semesterName
+      ? `${semesterName} · Student Success Unit`
+      : "Student Success Unit";
+
   return (
     <footer className="site-footer mt-auto border-t border-secondary/30 bg-primary-deep text-white">
       <div className="site-container grid gap-12 py-14 sm:py-16 lg:grid-cols-[1.2fr_1fr_1fr] xl:gap-16">
@@ -120,7 +130,7 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} American University of Beirut · URVP
           </p>
-          <p>AY 2026–27 Cycle · Student Success Unit</p>
+          <p>{cycleLine}</p>
         </div>
       </div>
     </footer>

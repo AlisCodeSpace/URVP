@@ -49,7 +49,7 @@ export function ResearchDayContent() {
             {researchDayDeadlines.map((item, index) => (
               <li
                 key={item.id}
-                className="grid gap-4 py-8 sm:grid-cols-[auto_1fr_auto] sm:items-baseline sm:gap-8"
+                className="grid gap-4 py-8 md:grid-cols-[auto_1fr_auto] md:items-baseline md:gap-8"
               >
                 <span
                   aria-hidden

@@ -84,7 +84,9 @@ export function AdminMatchingView() {
     }
   }
 
-  const testDisabled = loading || testBusy !== null || !semester;
+  const applicationsOpen = Boolean(semester?.isApplicationWindowOpen);
+  const testDisabled =
+    loading || testBusy !== null || !semester || applicationsOpen;
 
   return (
     <div className="admin-panel admin-panel--wide">
@@ -104,21 +106,21 @@ export function AdminMatchingView() {
           gap: "0.75rem",
         }}
       >
-        <RefreshIconButton loading={loading} onClick={() => void load()} />
         <Button href="/admin/projects" variant="primary" size="md">
           Assign students on projects
         </Button>
         <span className="admin-users-meta" style={{ fontSize: "0.85rem" }}>
           {semester
             ? `Active cycle: ${semester.name}${
-                semester.isApplicationWindowOpen
-                  ? " · applications open"
+                applicationsOpen
+                  ? " · applications still open — close the window before matching"
                   : " · applications closed"
               }`
             : loading
               ? "Loading cycle…"
               : "No active URVP cycle — start a cycle before running the matcher."}
         </span>
+        <RefreshIconButton loading={loading} onClick={() => void load()} />
       </div>
 
       <div
@@ -141,9 +143,10 @@ export function AdminMatchingView() {
           className="admin-users-meta"
           style={{ fontSize: "0.85rem", margin: "0 0 0.85rem", maxWidth: "42rem" }}
         >
-          Uses student and faculty rankings. A fixed seed makes results
-          reproducible. Confirming a test run still fills seats, so prefer a
-          draft review unless you intend to keep the placements.
+          Uses student and faculty rankings after the application window
+          closes. A fixed seed makes results reproducible. Confirming a test
+          run still fills seats, so prefer a draft review unless you intend to
+          keep the placements.
         </p>
         <div
           style={{

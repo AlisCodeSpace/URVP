@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { AdminBarChart, AdminDonutChart } from "@/components/admin/AdminCharts";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
@@ -10,21 +11,19 @@ import {
 } from "@/lib/admin-overview-api";
 import {
   buildAdminKpis,
+  buildPipelineChart,
+  buildPlacementChart,
+  buildProjectStatusChart,
+  buildRankingChart,
   buildRoleBreakdown,
+  buildSeatChart,
   catalogTiles,
+  chartTotal,
   formatCount,
   profileWindowLabel,
   seatFillPercent,
   semesterChipTitle,
 } from "@/lib/admin-overview-stats";
-
-function roleTotal(overview: AdminOverviewDto) {
-  return (
-    overview.accounts.students +
-    overview.accounts.faculty +
-    overview.accounts.admins
-  );
-}
 
 export function AdminOverview() {
   const [data, setData] = useState<AdminOverviewDto | null>(null);
@@ -51,6 +50,12 @@ export function AdminOverview() {
   }, [load]);
 
   const semester = data?.semester ?? null;
+  const pipeline = data ? buildPipelineChart(data) : [];
+  const accounts = data ? buildRoleBreakdown(data) : [];
+  const projects = data ? buildProjectStatusChart(data) : [];
+  const seats = data ? buildSeatChart(data) : [];
+  const placements = data ? buildPlacementChart(data) : [];
+  const rankings = data ? buildRankingChart(data) : [];
   const fill = data
     ? seatFillPercent(data.projects.seatsFilled, data.projects.seatsRequired)
     : 0;
@@ -116,91 +121,20 @@ export function AdminOverview() {
           </section>
 
           <div className="admin-widget-grid">
-            <section className="admin-widget" aria-labelledby="pipeline-heading">
+            <section
+              className="admin-widget admin-widget--wide"
+              aria-labelledby="pipeline-heading"
+            >
               <header className="admin-widget-head">
                 <h3 id="pipeline-heading" className="admin-widget-title">
                   Assignment pipeline
                 </h3>
                 <p className="admin-widget-sub">{profileWindowLabel(data)}</p>
               </header>
-              <ol className="admin-pipeline">
-                {data.pipeline.map((step, index) => (
-                  <li key={step.id} className="admin-pipeline-step">
-                    <span className="admin-pipeline-index" aria-hidden>
-                      {index + 1}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="admin-pipeline-label">{step.label}</p>
-                      <p className="admin-pipeline-note">{step.note}</p>
-                    </div>
-                    <p className="admin-pipeline-count">
-                      {formatCount(step.count)}
-                    </p>
-                  </li>
-                ))}
-              </ol>
-            </section>
-
-            <section className="admin-widget" aria-labelledby="attention-heading">
-              <header className="admin-widget-head">
-                <h3 id="attention-heading" className="admin-widget-title">
-                  Needs action
-                </h3>
-                <p className="admin-widget-sub">
-                  {data.projects.seatsRequired > 0
-                    ? `Open seats ${data.projects.seatsFilled}/${data.projects.seatsRequired} · ${fill}%`
-                    : "Blockers that affect assignments"}
-                </p>
-              </header>
-              {data.projects.seatsRequired > 0 ? (
-                <div
-                  className="admin-meter"
-                  style={{ marginBottom: "0.9rem" }}
-                >
-                  <div
-                    className="admin-meter-track"
-                    role="progressbar"
-                    aria-valuenow={fill}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label="Open project seat fill"
-                  >
-                    <span
-                      className="admin-meter-fill"
-                      style={{ width: `${fill}%` }}
-                    />
-                  </div>
-                </div>
-              ) : null}
-              {data.attention.length === 0 ? (
-                <p className="admin-users-status">
-                  No blockers — matching inputs look ready.
-                </p>
-              ) : (
-                <ul className="admin-activity-list">
-                  {data.attention.map((item) => (
-                    <li key={item.id}>
-                      <Link
-                        href={item.href}
-                        className={`admin-activity-item admin-attention-link is-${item.severity}`}
-                      >
-                        <span
-                          className={`admin-activity-mark is-${item.severity}`}
-                          aria-hidden
-                        />
-                        <div className="min-w-0">
-                          <p className="admin-activity-text">{item.text}</p>
-                          <p className="admin-activity-meta">
-                            {item.severity === "warning"
-                              ? "Needs attention"
-                              : "For follow-up"}
-                          </p>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <AdminBarChart
+                slices={pipeline}
+                ariaLabel="Assignment pipeline counts"
+              />
             </section>
 
             <section className="admin-widget" aria-labelledby="accounts-heading">
@@ -209,33 +143,86 @@ export function AdminOverview() {
                   Account mix
                 </h3>
                 <p className="admin-widget-sub">
-                  {formatCount(roleTotal(data))} signed-in roles
+                  {formatCount(chartTotal(accounts))} signed-in roles
                 </p>
               </header>
-              <div className="admin-breakdown-bar" aria-hidden>
-                {buildRoleBreakdown(data).map((item) => (
-                  <span
-                    key={item.label}
-                    className={`admin-breakdown-seg is-${item.tone}`}
-                    style={{ flexGrow: Math.max(item.value, 0), flexBasis: 0 }}
-                    title={`${item.label}: ${item.value}`}
-                  />
-                ))}
-              </div>
-              <ul className="admin-breakdown-legend">
-                {buildRoleBreakdown(data).map((item) => (
-                  <li key={item.label}>
-                    <span className={`admin-breakdown-swatch is-${item.tone}`} />
-                    <span className="admin-breakdown-name">{item.label}</span>
-                    <span className="admin-breakdown-value">
-                      {formatCount(item.value)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <AdminDonutChart
+                slices={accounts}
+                centerValue={formatCount(chartTotal(accounts))}
+                centerLabel="accounts"
+                ariaLabel="Account mix by role"
+              />
               <Link href="/admin/users" className="admin-widget-link">
                 Manage users →
               </Link>
+            </section>
+
+            <section className="admin-widget" aria-labelledby="projects-heading">
+              <header className="admin-widget-head">
+                <h3 id="projects-heading" className="admin-widget-title">
+                  Project status
+                </h3>
+                <p className="admin-widget-sub">
+                  {formatCount(chartTotal(projects))} projects this cycle
+                </p>
+              </header>
+              <AdminDonutChart
+                slices={projects}
+                centerValue={formatCount(data.projects.open)}
+                centerLabel="open"
+                ariaLabel="Projects by status"
+              />
+            </section>
+
+            <section className="admin-widget" aria-labelledby="seats-heading">
+              <header className="admin-widget-head">
+                <h3 id="seats-heading" className="admin-widget-title">
+                  Volunteer seats
+                </h3>
+                <p className="admin-widget-sub">
+                  {data.projects.seatsRequired > 0
+                    ? `${fill}% of open-project capacity`
+                    : "No open seats posted"}
+                </p>
+              </header>
+              <AdminDonutChart
+                slices={seats}
+                centerValue={`${fill}%`}
+                centerLabel="filled"
+                ariaLabel="Volunteer seat fill"
+              />
+            </section>
+
+            <section className="admin-widget" aria-labelledby="placements-heading">
+              <header className="admin-widget-head">
+                <h3 id="placements-heading" className="admin-widget-title">
+                  Placement outcomes
+                </h3>
+                <p className="admin-widget-sub">
+                  Confirmed, declined, and cancelled this cycle
+                </p>
+              </header>
+              <AdminDonutChart
+                slices={placements}
+                centerValue={formatCount(data.matching.confirmedPlacements)}
+                centerLabel="assigned"
+                ariaLabel="Placement outcomes"
+              />
+            </section>
+
+            <section className="admin-widget" aria-labelledby="rankings-heading">
+              <header className="admin-widget-head">
+                <h3 id="rankings-heading" className="admin-widget-title">
+                  Interest rankings
+                </h3>
+                <p className="admin-widget-sub">
+                  {formatCount(data.rankings.studentRankingRows)} ranking rows
+                </p>
+              </header>
+              <AdminBarChart
+                slices={rankings}
+                ariaLabel="Interest ranking coverage"
+              />
             </section>
 
             <section className="admin-widget" aria-labelledby="catalog-heading">

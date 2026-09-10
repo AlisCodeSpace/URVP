@@ -13,7 +13,11 @@ export function StudentPortalNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Student portal" className="student-portal-tabs">
+    <nav
+      aria-label="Student portal"
+      className="student-portal-tabs"
+      data-tour="student-portal"
+    >
       <div className="student-portal-tabs-track" role="tablist">
         {links.map((link) => {
           const active =

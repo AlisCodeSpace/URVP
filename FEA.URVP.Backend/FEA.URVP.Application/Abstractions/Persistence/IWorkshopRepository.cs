@@ -8,6 +8,7 @@ public interface IWorkshopRepository
 
     Task<(IReadOnlyList<Workshop> Items, int TotalCount)> ListAsync(
         string? search,
+        bool publishedOnly,
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default);

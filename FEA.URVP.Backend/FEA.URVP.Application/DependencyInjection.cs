@@ -4,6 +4,7 @@ using FEA.URVP.Application.Abstractions.Files;
 using FEA.URVP.Application.Behaviors;
 using FEA.URVP.Application.Files;
 using FEA.URVP.Application.Options;
+using FEA.URVP.Application.Projects;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +31,7 @@ public static class DependencyInjection
         services.AddEventHandlers(assembly);
         services.Configure<FileStorageOptions>(configuration.GetSection(FileStorageOptions.SectionName));
         services.AddScoped<IMimeTypeValidator, MimeTypeValidator>();
+        services.AddScoped<FacultyProjectMutationAccess>();
 
         return services;
     }

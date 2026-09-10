@@ -184,10 +184,44 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
                     b.ToTable("FileStorage", null, t =>
                         {
-                            t.HasCheckConstraint("CK_FileStorage_EntityType", "[EntityType] IN ('StudentProfile', 'Workshop')");
+                            t.HasCheckConstraint("CK_FileStorage_EntityType", "[EntityType] IN ('StudentProfile', 'Workshop', 'NewsArticle')");
 
-                            t.HasCheckConstraint("CK_FileStorage_FileSize", "(([FileCategory] IN ('Transcript', 'Cv') AND [FileSize] <= 10485760) OR ([FileCategory] = 'Poster' AND [FileSize] <= 5242880))");
+                            t.HasCheckConstraint("CK_FileStorage_FileSize", "(([FileCategory] IN ('Transcript', 'Cv') AND [FileSize] <= 10485760) OR ([FileCategory] IN ('Poster', 'NewsImage') AND [FileSize] <= 5242880))");
                         });
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.HomeIntro.HomeIntro", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(8000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Headline")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("KeyPoints")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("HomeIntro", (string)null);
                 });
 
             modelBuilder.Entity("FEA.URVP.Domain.Entities.Matching.MatchingRun", b =>
@@ -332,6 +366,13 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<bool>("Featured")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ImageFileIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Published")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("PublishedAt")
@@ -924,6 +965,9 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
                     b.Property<Guid?>("PosterFileId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Published")
+                        .HasColumnType("bit");
 
                     b.Property<string>("RegistrationUrl")
                         .IsRequired()

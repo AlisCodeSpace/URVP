@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.ProjectRankings;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Notifications;
@@ -18,6 +19,8 @@ public sealed class UpsertProjectRankingCommandHandler
     private readonly IProjectRankingRepository _rankings;
     private readonly IProjectRepository _projects;
     private readonly IUserRepository _users;
+    private readonly ISemesterRepository _semesters;
+    private readonly IStudentProfileRepository _profiles;
     private readonly IEventBus _eventBus;
 
     public UpsertProjectRankingCommandHandler(
@@ -26,12 +29,16 @@ public sealed class UpsertProjectRankingCommandHandler
         IProjectRankingRepository rankings,
         IProjectRepository projects,
         IUserRepository users,
+        ISemesterRepository semesters,
+        IStudentProfileRepository profiles,
         IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _rankings = rankings;
         _projects = projects;
         _users = users;
+        _semesters = semesters;
+        _profiles = profiles;
         _eventBus = eventBus;
     }
 
@@ -66,6 +73,13 @@ public sealed class UpsertProjectRankingCommandHandler
 
         ProjectRankingAccess.EnsureCanRank(user.Role, user.Email);
 
+        var now = DateTime.UtcNow;
+        var semester = await _semesters.FindActiveAsync(cancellationToken);
+        ApplicationWindowRules.EnsureOpenForRanking(semester, now);
+
+        var savedProfile = await _profiles.FindByUserIdAsync(user.Id, cancellationToken);
+        ProjectRankingAccess.EnsureHasSavedProfile(user.Role, savedProfile is not null);
+
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new ArgumentException("Project was not found.");
 
@@ -79,7 +93,6 @@ public sealed class UpsertProjectRankingCommandHandler
             throw new InvalidOperationException("This project has no open volunteer seats.");
         }
 
-        var now = DateTime.UtcNow;
         var existingForProject = await _rankings.FindByStudentAndProjectAsync(
             user.Id,
             project.Id,

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Exo } from "next/font/google";
 import { Theme } from "@radix-ui/themes";
 import { AuthProvider } from "@/components/auth/AuthProvider";
@@ -20,6 +20,12 @@ export const metadata: Metadata = {
     apple: [{ url: "/aub-logo.png", type: "image/png" }],
     shortcut: "/aub-logo.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

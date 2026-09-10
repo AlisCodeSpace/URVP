@@ -1,9 +1,11 @@
 namespace FEA.URVP.Application.Email;
 
 /// <summary>
-/// Resolves SMTP AUTH credentials. Stored (admin) values take precedence over
-/// configuration. Credentials are omitted when neither a username nor a
-/// password is present, so an unauthenticated local relay still works.
+/// Resolves SMTP AUTH credentials. A stored (admin) password takes precedence
+/// over configuration. Username comes from configuration, or the From address
+/// when only a password is present. Credentials are omitted when neither a
+/// username nor a password is present, so an unauthenticated local relay still
+/// works.
 /// </summary>
 public static class SmtpAuthCredentials
 {
@@ -12,11 +14,10 @@ public static class SmtpAuthCredentials
     public static Auth? Resolve(
         string? configUserName,
         string? configPassword,
-        string? storedUserName,
         string? storedPassword,
         string fromAddress)
     {
-        var userName = FirstNonEmpty(storedUserName, configUserName);
+        var userName = FirstNonEmpty(configUserName);
         var password = FirstNonEmpty(storedPassword, configPassword);
 
         if (string.IsNullOrWhiteSpace(userName) && string.IsNullOrWhiteSpace(password))

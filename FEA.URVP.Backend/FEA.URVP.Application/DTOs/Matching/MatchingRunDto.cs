@@ -42,5 +42,6 @@ public sealed class PlacementDto
     public bool ResolvedByTieBreak { get; init; }
     public PlacementSource Source { get; init; }
     public PlacementStatus Status { get; init; }
+    public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 }

@@ -11,6 +11,7 @@ import {
 import { Heading, Text } from "@radix-ui/themes";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { IconPencil } from "@/components/ui/Icons";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { MultiSelectSearch } from "@/components/ui/MultiSelectSearch";
@@ -70,12 +71,17 @@ function Field({
 function Section({
   title,
   children,
+  tour,
 }: {
   title: string;
   children: ReactNode;
+  tour?: string;
 }) {
   return (
-    <section className="rounded-[var(--radius-lg)] border border-primary/12 bg-surface p-5 sm:p-7">
+    <section
+      className="rounded-[var(--radius-lg)] border border-primary/12 bg-surface p-5 sm:p-7"
+      data-tour={tour}
+    >
       <Heading
         as="h2"
         size="5"
@@ -175,6 +181,7 @@ export function StudentProfileForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [profileExists, setProfileExists] = useState(false);
   const researchTopicOptions = useValueListOptions(
     "research-interests",
     RESEARCH_AREAS,
@@ -194,6 +201,10 @@ export function StudentProfileForm() {
         const next = toStudentProfileValues(dto);
         setValues(next);
         setBaseline(cloneStudentProfile(next));
+        setProfileExists(dto.exists);
+        if (!dto.exists) {
+          setEditing(true);
+        }
       } catch (err) {
         if (cancelled) return;
         setError(
@@ -350,6 +361,7 @@ export function StudentProfileForm() {
       const saved = toStudentProfileValues(savedDto);
       setValues(saved);
       setBaseline(cloneStudentProfile(saved));
+      setProfileExists(Boolean(savedDto.exists));
       setPendingTranscript(null);
       setPendingCv(null);
       setEditing(false);
@@ -379,13 +391,28 @@ export function StudentProfileForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6" noValidate>
+    <form
+      onSubmit={onSubmit}
+      className="space-y-6"
+      noValidate
+      data-tour="student-profile"
+    >
+      {!profileExists ? (
+        <p className="rounded-md border border-secondary-deep/20 bg-secondary-deep/5 px-4 py-3 text-sm leading-relaxed text-primary">
+          You must complete and save this profile before you can express
+          interest in projects. Ranking stays locked until a profile is on
+          file.
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         {showRequired ? (
           <p className="text-sm text-secondary-deep">(*) Fields are required</p>
         ) : (
           <p className="text-sm text-muted">
-            Viewing your profile. Click Edit to make changes.
+            {profileExists
+              ? "Viewing your profile. Click Edit to make changes."
+              : "Fill in the required fields and save to unlock ranking projects."}
           </p>
         )}
         <Button
@@ -606,7 +633,7 @@ export function StudentProfileForm() {
         />
       </Section>
 
-      <Section title="Research Interests">
+      <Section title="Research Interests" tour="student-interests">
         <Field
           id="researchTopics"
           label="Research topic(s)"
@@ -647,7 +674,7 @@ export function StudentProfileForm() {
             : "Your typical weekly availability for volunteering."}
         </Text>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
+          <table className="availability-table w-full min-w-[36rem] border-collapse text-left text-sm">
             <thead>
               <tr>
                 <th className="pb-3 pr-3 font-semibold text-muted">Day</th>
@@ -674,13 +701,11 @@ export function StudentProfileForm() {
                       const slotId = `avail-${day}-${slot}`;
                       return (
                         <td key={slot} className="px-2 py-3 text-center">
-                          <input
+                          <Checkbox
                             id={slotId}
-                            type="checkbox"
                             checked={checked}
-                            onChange={() => onToggleSlot(day, slot)}
+                            onCheckedChange={() => onToggleSlot(day, slot)}
                             disabled={readOnly}
-                            className="h-4 w-4 accent-[var(--primary)]"
                             aria-label={`${day} ${slot}`}
                           />
                         </td>

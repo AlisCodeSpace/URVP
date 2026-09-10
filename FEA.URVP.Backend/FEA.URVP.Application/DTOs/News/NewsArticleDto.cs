@@ -10,8 +10,10 @@ public sealed class NewsArticleDto
     public string Author { get; init; } = null!;
     public string Ticker { get; init; } = null!;
     public IReadOnlyList<string> Body { get; init; } = [];
+    public IReadOnlyList<Guid> ImageFileIds { get; init; } = [];
     public DateTime PublishedAt { get; init; }
     public bool Featured { get; init; }
+    public bool Published { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 }

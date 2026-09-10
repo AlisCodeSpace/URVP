@@ -14,4 +14,5 @@ public sealed class CreateNewsArticleCommand : IRequest<NewsArticleDto>
     public List<string> Body { get; init; } = [];
     public DateTime PublishedAt { get; init; }
     public bool Featured { get; init; }
+    public bool Published { get; init; } = true;
 }

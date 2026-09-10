@@ -21,6 +21,7 @@ public sealed class ListNewsArticlesQueryHandler
     {
         var (items, totalCount) = await _news.ListAsync(
             request.Search,
+            request.PublishedOnly,
             request.PageNumber,
             request.PageSize,
             cancellationToken);

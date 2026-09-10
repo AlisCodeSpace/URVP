@@ -28,10 +28,10 @@ export function AdminPosterField({
   }
 
   return (
-    <div className="grid gap-5 sm:grid-cols-[minmax(0,16rem)_1fr] sm:items-start">
-      <div>
-        <p className="field-label">Card photo</p>
-        <div className="workshop-poster relative mt-2 aspect-[3/2] overflow-hidden rounded-md border border-primary/15 bg-primary-deep">
+    <div>
+      <p className="field-label">Card photo</p>
+      <div className="mt-2 grid gap-5 sm:grid-cols-[minmax(0,16rem)_1fr] sm:items-stretch">
+        <div className="workshop-poster relative aspect-[3/2] overflow-hidden rounded-md border border-primary/15 bg-primary-deep">
           {previewUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -48,62 +48,62 @@ export function AdminPosterField({
             </div>
           )}
         </div>
-        <p className="field-hint mt-2">
-          JPG, PNG, or GIF. Cropped to 3:2 to match the workshop card.
-        </p>
-      </div>
 
-      <div className="grid gap-4">
-        <div>
-          <input
-            ref={inputRef}
-            id={fileId}
-            type="file"
-            accept="image/jpeg,image/png,image/gif,.jpg,.jpeg,.png,.gif"
-            className="sr-only"
-            onChange={onPick}
-          />
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => inputRef.current?.click()}
-            >
-              {previewUrl ? "Replace photo" : "Upload photo"}
-            </Button>
-            {previewUrl ? (
-              <button
+        <div className="flex flex-col justify-end gap-4">
+          <div>
+            <input
+              ref={inputRef}
+              id={fileId}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,.jpg,.jpeg,.png,.gif"
+              className="sr-only"
+              onChange={onPick}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
                 type="button"
-                className="text-sm text-muted underline-offset-2 hover:underline"
-                onClick={() => {
-                  if (inputRef.current) inputRef.current.value = "";
-                  onFileChange(null);
-                }}
+                variant="outline"
+                size="sm"
+                onClick={() => inputRef.current?.click()}
               >
-                Remove
-              </button>
+                {previewUrl ? "Replace photo" : "Upload photo"}
+              </Button>
+              {previewUrl ? (
+                <button
+                  type="button"
+                  className="text-sm text-muted underline-offset-2 hover:underline"
+                  onClick={() => {
+                    if (inputRef.current) inputRef.current.value = "";
+                    onFileChange(null);
+                  }}
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+            {fileName ? (
+              <p className="mt-2 text-sm text-muted">{fileName}</p>
             ) : null}
           </div>
-          {fileName ? (
-            <p className="mt-2 text-sm text-muted">{fileName}</p>
-          ) : null}
-        </div>
 
-        <div>
-          <label htmlFor={altId} className="field-label">
-            Photo description
-          </label>
-          <input
-            id={altId}
-            type="text"
-            className="field-input"
-            placeholder="Short alt text for the poster"
-            value={alt}
-            onChange={(e) => onAltChange(e.target.value)}
-          />
+          <div>
+            <label htmlFor={altId} className="field-label">
+              Photo description
+            </label>
+            <input
+              id={altId}
+              type="text"
+              className="field-input"
+              placeholder="Short alt text for the poster"
+              value={alt}
+              onChange={(e) => onAltChange(e.target.value)}
+            />
+          </div>
         </div>
       </div>
+      <p className="field-hint mt-2 sm:max-w-[16rem]">
+        JPG, PNG, or GIF. Cropped to 3:2 to match the workshop card.
+      </p>
     </div>
   );
 }

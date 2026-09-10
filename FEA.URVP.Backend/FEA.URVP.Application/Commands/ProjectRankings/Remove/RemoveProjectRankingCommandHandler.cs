@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.Notifications;
 using FEA.URVP.Application.ProjectRankings;
 using FEA.URVP.Domain.Events.Rankings;
@@ -16,6 +17,8 @@ public sealed class RemoveProjectRankingCommandHandler
     private readonly IFacultyCandidateRankingRepository _candidateRankings;
     private readonly IUserRepository _users;
     private readonly IProjectRepository _projects;
+    private readonly ISemesterRepository _semesters;
+    private readonly IStudentProfileRepository _profiles;
     private readonly IEventBus _eventBus;
 
     public RemoveProjectRankingCommandHandler(
@@ -25,6 +28,8 @@ public sealed class RemoveProjectRankingCommandHandler
         IFacultyCandidateRankingRepository candidateRankings,
         IUserRepository users,
         IProjectRepository projects,
+        ISemesterRepository semesters,
+        IStudentProfileRepository profiles,
         IEventBus eventBus)
         : base(logger, unitOfWork)
     {
@@ -32,6 +37,8 @@ public sealed class RemoveProjectRankingCommandHandler
         _candidateRankings = candidateRankings;
         _users = users;
         _projects = projects;
+        _semesters = semesters;
+        _profiles = profiles;
         _eventBus = eventBus;
     }
 
@@ -48,6 +55,12 @@ public sealed class RemoveProjectRankingCommandHandler
             ?? throw new UnauthorizedAccessException("User not found.");
 
         ProjectRankingAccess.EnsureCanRank(user.Role, user.Email);
+
+        var semester = await _semesters.FindActiveAsync(cancellationToken);
+        ApplicationWindowRules.EnsureOpenForRanking(semester, DateTime.UtcNow);
+
+        var savedProfile = await _profiles.FindByUserIdAsync(user.Id, cancellationToken);
+        ProjectRankingAccess.EnsureHasSavedProfile(user.Role, savedProfile is not null);
 
         var ranking = await _rankings.FindByStudentAndProjectAsync(
             user.Id,

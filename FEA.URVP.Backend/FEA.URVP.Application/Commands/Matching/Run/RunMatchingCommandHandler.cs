@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.Matching;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
@@ -54,6 +55,8 @@ public sealed class RunMatchingCommandHandler
             : await _semesters.FindActiveAsync(cancellationToken)
               ?? throw new InvalidOperationException("No active semester. Start a cycle before running matching.");
 
+        ApplicationWindowRules.EnsureClosedForMatching(semester, now);
+
         var projects = await _projects.ListByStatusAsync(ProjectStatus.Open, cancellationToken);
         var projectIds = projects.Select(p => p.Id).ToList();
 
@@ -72,7 +75,7 @@ public sealed class RunMatchingCommandHandler
             .ToList();
         var facultyRankings = await _facultyRankings.ListByProjectIdsAsync(projectIds, cancellationToken);
 
-        var warnings = BuildWarnings(semester.IsApplicationWindowOpen(now), projects, capacity, studentRankings, facultyRankings);
+        var warnings = BuildWarnings(projects, capacity, studentRankings, facultyRankings);
 
         var seed = request.Seed ?? Random.Shared.Next();
         var outcome = DeferredAcceptanceMatcher.Run(
@@ -128,18 +131,12 @@ public sealed class RunMatchingCommandHandler
     };
 
     private static List<string> BuildWarnings(
-        bool applicationWindowOpen,
         IReadOnlyList<Project> projects,
         IReadOnlyDictionary<Guid, int> capacity,
         IReadOnlyList<ProjectRanking> studentRankings,
         IReadOnlyList<FacultyCandidateRanking> facultyRankings)
     {
         var warnings = new List<string>();
-
-        if (applicationWindowOpen)
-        {
-            warnings.Add("The student application window is still open; rankings may change after this run.");
-        }
 
         var rankedByFaculty = facultyRankings.Select(r => (r.ProjectId, r.StudentUserId)).ToHashSet();
         var projectsWithFacultyRanks = facultyRankings.Select(r => r.ProjectId).ToHashSet();

@@ -10,6 +10,7 @@ export type NewsArticle = {
   /** Short line for home marquee */
   ticker: string;
   body: string[];
+  images: string[];
 };
 
 export const newsIntro =
@@ -27,6 +28,7 @@ export const newsArticles: NewsArticle[] = [
     author: "URVP Office",
     featured: true,
     ticker: "Create or update your student profile Aug 25 – Sep 30, 2025.",
+    images: [],
     body: [
       "The Undergraduate Research Volunteer Program is opening the student profile window for Academic Year 2025–26. Between Monday, August 25 and Tuesday, September 30, 2025, undergraduates can create a new profile or refresh an existing one so faculty can discover the right match.",
       "A complete profile is essential. Incomplete submissions are not considered during matching. Include your major, completed credits, areas of interest, relevant coursework, and any prior research or lab experience.",
@@ -44,6 +46,7 @@ export const newsArticles: NewsArticle[] = [
     dateISO: "2025-09-28",
     author: "Office of the Provost",
     ticker: "Oct 13, 2025 – Aug 21, 2026 across all AUB faculties.",
+    images: [],
     body: [
       "The URVP main research cycle for AY 2025–26 runs from Monday, October 13, 2025 to Friday, August 21, 2026. During this window, faculty mentors post projects and undergraduates are matched based on interest, preparation, and availability.",
       "Expect to commit at least eight hours per week for a minimum of six months once matched. The program is designed for experiential learning — strengthening critical thinking, teamwork, and an understanding of research beyond the curriculum.",
@@ -60,6 +63,7 @@ export const newsArticles: NewsArticle[] = [
     dateISO: "2025-07-15",
     author: "URVP Office",
     ticker: "Seventh year of connecting undergraduates with research.",
+    images: [],
     body: [
       "Since its launch in 2019, the Undergraduate Research Volunteer Program has matched more than 800 students with faculty-led projects spanning engineering, the sciences, humanities, health, and interdisciplinary centers.",
       "That growth reflects AUB’s commitment to bringing research into the undergraduate experience early — not only as preparation for graduate study, but as a way to deepen curiosity and belonging on campus.",
@@ -76,6 +80,7 @@ export const newsArticles: NewsArticle[] = [
     dateISO: "2025-08-28",
     author: "URVP Workshops",
     ticker: "Sep 5, 2025 — prepare before matching opens.",
+    images: [],
     body: [
       "Before the matching window opens, URVP is hosting a short workshop on writing a strong research profile. The session covers how to describe your interests clearly, highlight relevant skills, and avoid common pitfalls that make profiles hard to evaluate.",
       "The clinic takes place on September 5, 2025. Registration details are available on the Workshops page. Seats are limited; early signup is recommended.",
@@ -92,6 +97,7 @@ export const newsArticles: NewsArticle[] = [
     dateISO: "2025-06-10",
     author: "URVP Office",
     ticker: "Program, abstracts, and registration details coming soon.",
+    images: [],
     body: [
       "URVP Research Day brings together undergraduate volunteers and faculty mentors to share project outcomes, celebrate research across AUB, and look ahead to the next matching cycle.",
       "Abstract submission, participant registration, and presenter confirmation dates will be posted on the Research Day page. Forms for applying to present, registering to attend, and requesting updates will open via Google Forms when ready.",
@@ -108,6 +114,7 @@ export const newsArticles: NewsArticle[] = [
     dateISO: "2025-05-22",
     author: "URVP Office",
     ticker: "Faculty mentors: post projects for the AY 2025–26 cycle.",
+    images: [],
     body: [
       "Faculty and principal investigators who wish to host undergraduate volunteers can prepare project listings ahead of the October cycle. Clear titles, research areas, and volunteer expectations help students apply with confidence.",
       "Use the My Projects area of the portal to draft and submit listings. International and multi-disciplinary projects hosted within AUB faculties, centers, and institutes are welcome.",
@@ -124,6 +131,7 @@ export const newsArticles: NewsArticle[] = [
     dateISO: "2025-05-05",
     author: "URVP Workshops",
     ticker: "Register for Research Ethics & Mentorship — Oct 3, 2025.",
+    images: [],
     body: [
       "URVP’s Research Ethics & Mentorship workshop covers authorship conversations, lab norms, and how to build a productive placement. The session is designed for newly matched volunteers and returning participants alike.",
       "Registration is available through the Workshops page via Google Form. Capacity is limited.",
@@ -139,6 +147,7 @@ export const newsArticles: NewsArticle[] = [
     dateISO: "2025-04-15",
     author: "Office of the Provost",
     ticker: "A new URVP year begins — workshops, matching, and Research Day ahead.",
+    images: [],
     body: [
       "As AY 2025–26 approaches, URVP invites undergraduates and faculty to prepare for another year of research collaboration. Profile windows, workshop schedules, and Research Day details will be published on this portal as they are confirmed.",
       "Whether you are posting a project or applying as a volunteer, start early: complete profiles and clear project descriptions make matching smoother for everyone.",

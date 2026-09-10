@@ -67,8 +67,6 @@ export const newsItems = toNewsTickerItems(newsArticles);
 /** Home teaser — derived from the Workshops page catalog. */
 export const workshops = toWorkshopTeasers(workshopCatalog);
 
-export const introEyebrow = "Welcome · AY 2026–27";
-
 export const introHeadline = "Research starts earlier than you think.";
 
 export const introParagraphs = [

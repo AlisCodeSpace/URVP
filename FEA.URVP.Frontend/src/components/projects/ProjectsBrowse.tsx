@@ -277,6 +277,7 @@ export function ProjectsBrowse({
   const [activity, setActivity] = useState("All activities");
   const [sort, setSort] = useState<SortKey>("newest");
   const [pageNumber, setPageNumber] = useState(1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -414,17 +415,31 @@ export function ProjectsBrowse({
       }
     >
       {!ranked ? (
-      <aside className="project-filters lg:sticky lg:top-24 lg:self-start">
+      <aside
+        className="project-filters lg:sticky lg:top-24 lg:self-start"
+        data-tour="project-filters"
+      >
+        <button
+          type="button"
+          className="project-filters-toggle"
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen((open) => !open)}
+        >
+          <span className="project-filters-toggle-label">Filter & sort</span>
+          <span className="project-filters-toggle-hint">
+            {filtersOpen ? "Hide" : "Show"}
+          </span>
+        </button>
         <Text
           as="p"
           size="1"
           weight="bold"
-          className="!uppercase !tracking-[0.2em] !text-secondary-deep"
+          className="!hidden !uppercase !tracking-[0.2em] !text-secondary-deep lg:!block"
         >
           Filter & sort
         </Text>
 
-        <div className="mt-5 space-y-4">
+        <div className={`project-filters-body mt-5 space-y-4${filtersOpen ? "" : " is-collapsed"}`}>
           <div>
             <label htmlFor="project-search" className="field-label">
               Search
@@ -486,7 +501,7 @@ export function ProjectsBrowse({
           <button
             type="button"
             onClick={clearFilters}
-            className="mt-5 text-sm font-medium text-primary transition hover:text-primary-soft"
+            className={`mt-5 text-sm font-medium text-primary transition hover:text-primary-soft${filtersOpen ? "" : " max-lg:hidden"}`}
           >
             Reset filters
           </button>
@@ -494,7 +509,7 @@ export function ProjectsBrowse({
       </aside>
       ) : null}
 
-      <div>
+      <div data-tour={ranked ? undefined : "project-catalog"}>
         {!ranked ? (
           <div className="flex flex-col gap-2 border-b border-primary/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div>

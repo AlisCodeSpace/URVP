@@ -15,20 +15,18 @@ function NavLink({
   href,
   label,
   active,
-  nested,
   onNavigate,
 }: {
   href: string;
   label: string;
   active: boolean;
-  nested?: boolean;
   onNavigate?: () => void;
 }) {
   return (
     <Link
       href={href}
       onClick={onNavigate}
-      className={`admin-nav-link${active ? " is-active" : ""}${nested ? " is-nested" : ""}`}
+      className={`admin-nav-link${active ? " is-active" : ""}`}
       aria-current={active ? "page" : undefined}
     >
       <span className="admin-nav-dot" aria-hidden />
@@ -41,15 +39,13 @@ function NavGroup({
   group,
   pathname,
   onNavigate,
-  nested,
 }: {
   group: AdminNavGroup;
   pathname: string;
   onNavigate?: () => void;
-  nested?: boolean;
 }) {
   return (
-    <div className={`admin-nav-group${nested ? " is-nested-group" : ""}`}>
+    <div className="admin-nav-group">
       <p className="admin-nav-group-label">{group.label}</p>
       <ul className="admin-nav-list">
         {group.items.map((item) => {
@@ -61,22 +57,12 @@ function NavGroup({
                 href={item.href}
                 label={item.label}
                 active={active}
-                nested={nested}
                 onNavigate={onNavigate}
               />
             </li>
           );
         })}
       </ul>
-      {group.children?.map((child) => (
-        <NavGroup
-          key={child.id}
-          group={child}
-          pathname={pathname}
-          onNavigate={onNavigate}
-          nested
-        />
-      ))}
     </div>
   );
 }

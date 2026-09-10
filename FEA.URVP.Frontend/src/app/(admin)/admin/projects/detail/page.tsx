@@ -5,7 +5,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 
 export const metadata: Metadata = {
   title: "Project | Admin",
-  description: "Project details and students who ranked this listing.",
+  description: "Review listing details, seats, and ranking interest.",
 };
 
 export default function AdminProjectPage() {

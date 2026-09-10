@@ -20,6 +20,16 @@ function pad(n: number) {
 
 function parseValue(value: string): Date | undefined {
   if (!value) return undefined;
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/.exec(value);
+  if (match) {
+    return new Date(
+      Number(match[1]),
+      Number(match[2]) - 1,
+      Number(match[3]),
+      Number(match[4] ?? "0"),
+      Number(match[5] ?? "0"),
+    );
+  }
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
@@ -126,6 +136,7 @@ export function DateField({
         minWidth="0"
         align="start"
         sideOffset={8}
+        collisionPadding={16}
         className="field-date-popover"
       >
         <DayPicker
@@ -145,7 +156,7 @@ export function DateField({
         <div className="field-date-footer">
           {includeTime ? (
             <label className="field-date-time">
-              Time
+              Time (Beirut)
               <input
                 type="time"
                 className="field-input"

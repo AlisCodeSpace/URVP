@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.Matching;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Matching;
@@ -109,6 +110,8 @@ public sealed class AssignStudentToProjectCommandHandler
         var semester = await _semesters.FindActiveAsync(cancellationToken)
             ?? throw new InvalidOperationException(
                 "No active URVP cycle. Start a cycle before assigning students.");
+
+        ApplicationWindowRules.EnsureClosedForMatching(semester, now);
 
         var run = await _runs.FindManualBySemesterAsync(semester.Id, cancellationToken);
         if (run is null)

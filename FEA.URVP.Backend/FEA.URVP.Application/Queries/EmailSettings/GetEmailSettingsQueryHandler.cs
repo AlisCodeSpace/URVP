@@ -25,7 +25,6 @@ public sealed class GetEmailSettingsQueryHandler
         CancellationToken cancellationToken)
     {
         var stored = await _settings.GetAsync(cancellationToken);
-        var userName = FirstNonEmpty(stored?.UserName, _email.Smtp.UserName);
 
         return new EmailSettingsDto
         {
@@ -35,13 +34,10 @@ public sealed class GetEmailSettingsQueryHandler
             SmtpHost = _email.Smtp.Host,
             SmtpPort = _email.Smtp.Port,
             EnableSsl = _email.Smtp.EnableSsl,
-            UserName = userName,
+            UserName = string.IsNullOrWhiteSpace(_email.Smtp.UserName)
+                ? null
+                : _email.Smtp.UserName.Trim(),
             PasswordIsSet = stored?.HasPassword == true,
         };
     }
-
-    private static string? FirstNonEmpty(string? stored, string? configured) =>
-        !string.IsNullOrWhiteSpace(stored) ? stored.Trim()
-        : !string.IsNullOrWhiteSpace(configured) ? configured.Trim()
-        : null;
 }

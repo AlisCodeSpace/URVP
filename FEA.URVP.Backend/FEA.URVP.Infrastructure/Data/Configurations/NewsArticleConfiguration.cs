@@ -52,8 +52,21 @@ public sealed class NewsArticleConfiguration : IEntityTypeConfiguration<NewsArti
                     v => v.Aggregate(0, (hash, item) => HashCode.Combine(hash, item.GetHashCode())),
                     v => v.ToList()));
 
+        builder.Property(x => x.ImageFileIds)
+            .IsRequired()
+            .HasColumnType("nvarchar(max)")
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, JsonOptions),
+                v => JsonSerializer.Deserialize<List<Guid>>(v, JsonOptions) ?? new List<Guid>())
+            .Metadata.SetValueComparer(
+                new ValueComparer<List<Guid>>(
+                    (a, b) => a!.SequenceEqual(b!),
+                    v => v.Aggregate(0, (hash, item) => HashCode.Combine(hash, item.GetHashCode())),
+                    v => v.ToList()));
+
         builder.Property(x => x.PublishedAt).IsRequired();
         builder.Property(x => x.Featured).IsRequired();
+        builder.Property(x => x.Published).IsRequired();
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.UpdatedAt).IsRequired();
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
+import { NewsImageSlider } from "@/components/news/NewsImageSlider";
 import { newsArticleHref } from "@/lib/auth";
 import type { NewsArticle } from "@/lib/news";
 
@@ -18,7 +19,7 @@ export function NewsArticleView({
     <article className="flex-1 bg-background">
       <header className="news-article-hero relative overflow-hidden text-white">
         <div className="news-article-hero-grid absolute inset-0" aria-hidden />
-        <div className="relative z-10 site-container site-container--narrow pb-16 pt-28 sm:pb-20 sm:pt-32">
+        <div className="relative z-10 site-container site-container--narrow pb-16 pt-[calc(7rem+env(safe-area-inset-top,0px))] sm:pb-20 sm:pt-[calc(8rem+env(safe-area-inset-top,0px))]">
           <Link
             href="/news"
             className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
@@ -74,6 +75,10 @@ export function NewsArticleView({
       </header>
 
       <div className="site-container site-container--narrow py-14 sm:py-16">
+        {article.images.length > 0 ? (
+          <NewsImageSlider images={article.images} alt={article.title} />
+        ) : null}
+
         <div className="news-article-body">
           {article.body.map((paragraph, i) => (
             <Text
@@ -101,13 +106,13 @@ export function NewsArticleView({
         </aside>
 
         <div className="mt-12 flex flex-wrap gap-3 border-t border-primary/10 pt-8">
-          <Button href="/news" variant="outline" size="md">
+          <Button href="/news" variant="primary" size="md">
             Back to news
           </Button>
-          <Button href="/research-day" variant="ghost" size="md">
+          <Button href="/research-day" variant="outline-secondary" size="md">
             Research Day
           </Button>
-          <Button href="/workshops" variant="ghost" size="md">
+          <Button href="/workshops" variant="outline" size="md">
             Workshops
           </Button>
         </div>

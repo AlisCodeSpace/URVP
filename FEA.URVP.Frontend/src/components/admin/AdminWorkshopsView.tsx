@@ -4,10 +4,13 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import { adminWorkshopEditHref } from "@/lib/auth";
+import { formatAppDate } from "@/lib/datetime";
+import { formatTimeDisplay } from "@/lib/time";
 import {
   deleteWorkshop,
   listWorkshops,
@@ -108,12 +111,12 @@ export function AdminWorkshopsView() {
           />
         </div>
         <div className="admin-users-field flex items-end">
-          <div className="admin-list-toolbar-actions">
-            <RefreshIconButton loading={loading} onClick={() => void load()} />
-            <Button href="/admin/workshops/new" variant="primary" size="md">
-              Add workshop
-            </Button>
-          </div>
+          <Button href="/admin/workshops/new" variant="primary" size="md">
+            Add workshop
+          </Button>
+        </div>
+        <div className="admin-users-refresh">
+          <RefreshIconButton loading={loading} onClick={() => void load()} />
         </div>
       </div>
 
@@ -135,6 +138,7 @@ export function AdminWorkshopsView() {
                   <th>Date</th>
                   <th>Location</th>
                   <th>Photo</th>
+                  <th>Published</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -145,11 +149,12 @@ export function AdminWorkshopsView() {
                       <span className="admin-users-name">{item.title}</span>
                     </td>
                     <td>
-                      {item.date}
-                      {item.time ? ` · ${item.time}` : ""}
+                      {formatAppDate(item.date)}
+                      {item.time ? ` · ${formatTimeDisplay(item.time)}` : ""}
                     </td>
                     <td>{item.location || "—"}</td>
                     <td>{item.posterFileId ? "Yes" : "—"}</td>
+                    <td>{item.published ? "Yes" : "No"}</td>
                     <td>
                       <div className="admin-value-actions">
                         <Button
@@ -159,14 +164,9 @@ export function AdminWorkshopsView() {
                         >
                           Edit
                         </Button>
-                        <Button
-                          type="button"
-                          variant="danger"
-                          size="sm"
+                        <DeleteIconButton
                           onClick={() => setPendingDelete(item)}
-                        >
-                          Delete
-                        </Button>
+                        />
                       </div>
                     </td>
                   </tr>

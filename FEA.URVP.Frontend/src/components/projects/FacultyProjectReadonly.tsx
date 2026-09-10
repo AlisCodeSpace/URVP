@@ -8,7 +8,11 @@ import {
   ReadOnlyValue,
 } from "@/components/ui/ReadOnlyField";
 import { editProjectHref, myProjectsHref } from "@/lib/auth";
-import { isFacultyProjectLocked, programDescription } from "@/lib/project-form";
+import {
+  facultyProjectEditLockMessage,
+  isFacultyProjectEditable,
+  programDescription,
+} from "@/lib/project-form";
 import type { ProjectDto } from "@/lib/projects-api";
 
 export function FacultyProjectReadonly({
@@ -154,9 +158,9 @@ export function FacultyProjectReadonly({
       {children}
 
       <div className="flex flex-wrap items-center gap-3 border-t border-primary/10 pt-8">
-        {isFacultyProjectLocked(project) ? (
+        {!isFacultyProjectEditable(project) ? (
           <Text as="p" size="2" className="!text-muted">
-            This project can no longer be edited after matching.
+            {facultyProjectEditLockMessage(project)}
           </Text>
         ) : (
           <Button

@@ -19,11 +19,17 @@ public sealed class WorkshopRepository : IWorkshopRepository
 
     public async Task<(IReadOnlyList<Workshop> Items, int TotalCount)> ListAsync(
         string? search,
+        bool publishedOnly,
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default)
     {
         var query = _db.Workshops.AsNoTracking();
+
+        if (publishedOnly)
+        {
+            query = query.Where(x => x.Published);
+        }
 
         if (!string.IsNullOrWhiteSpace(search))
         {

@@ -40,7 +40,6 @@ public sealed class UpdateEmailSettingsCommandValidatorTests
         var result = await new UpdateEmailSettingsCommandValidator().ValidateAsync(
             new UpdateEmailSettingsCommand
             {
-                UserName = "urvp-system@aub.edu.lb",
                 Password = "mailbox-secret",
             });
 

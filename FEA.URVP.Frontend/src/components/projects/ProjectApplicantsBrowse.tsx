@@ -166,7 +166,7 @@ export function ProjectApplicantsBrowse({
         </Text>
 
         <div className="mt-4">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div className="applicant-filter-select min-w-0">
               <label htmlFor="applicant-major" className="sr-only">
                 Major

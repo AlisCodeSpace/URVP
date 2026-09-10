@@ -8,7 +8,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useRealTimeNotifications } from "@/hooks/useRealTimeNotifications";
 import { notificationsHref } from "@/lib/auth";
 
-const PREVIEW_SIZE = 5;
+const PREVIEW_SIZE = 3;
 
 export function NotificationBell() {
   const menuId = useId();
@@ -76,11 +76,11 @@ export function NotificationBell() {
           <div className="notification-bell-head">
             <p>Notifications</p>
             <div className="notification-bell-actions">
-              <button type="button" onClick={() => void list.refresh()}>
-                Refresh
-              </button>
               <button type="button" onClick={() => void actions.markAllRead()}>
                 Mark all read
+              </button>
+              <button type="button" onClick={() => void list.refresh()}>
+                Refresh
               </button>
             </div>
           </div>
@@ -92,7 +92,7 @@ export function NotificationBell() {
             </p>
           ) : (
             <div className="notification-bell-list">
-              {list.items.map((notification) => (
+              {list.items.slice(0, PREVIEW_SIZE).map((notification) => (
                 <NotificationItem
                   key={notification.id}
                   notification={notification}

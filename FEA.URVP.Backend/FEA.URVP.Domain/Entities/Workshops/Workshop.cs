@@ -31,6 +31,9 @@ public class Workshop
     public string? PosterAlt { get; set; }
 
     [Required]
+    public bool Published { get; set; } = true;
+
+    [Required]
     public int SortOrder { get; set; }
 
     [Required]
