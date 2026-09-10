@@ -22,8 +22,8 @@ public sealed class UpsertAzureAdUserCommand : IRequest<User>
     /// </param>
     /// <param name="directoryGroupRole">
     /// Role resolved from AUB AD group membership at sign-in (Students-STD /
-    /// ALLACADstaff-STF). Applied when there is no <paramref name="roleOverride"/> and the
-    /// user is not a configured or stored admin.
+    /// ALLACADstaff-STF, including nested groups). Applied when there is no
+    /// <paramref name="roleOverride"/> and the user is not a configured or stored admin.
     /// </param>
     public UpsertAzureAdUserCommand(
         string email,

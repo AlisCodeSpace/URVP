@@ -317,16 +317,6 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
         </p>
       ) : null}
 
-      {applicationsOpen ? (
-        <p className="admin-users-banner" role="status">
-          Close the student application window before assigning students.
-        </p>
-      ) : !activeSemester ? (
-        <p className="admin-users-banner" role="status">
-          No active URVP cycle. Start a cycle before assigning students.
-        </p>
-      ) : null}
-
       <ListingPanel project={project} />
 
       <section
@@ -356,6 +346,16 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
           )}
         </ListingBlock>
       </section>
+
+      {applicationsOpen ? (
+        <p className="admin-users-banner" role="status">
+          Close the student application window before assigning students.
+        </p>
+      ) : !activeSemester ? (
+        <p className="admin-users-banner" role="status">
+          No active URVP cycle. Start a cycle before assigning students.
+        </p>
+      ) : null}
 
       <div className="admin-project-main">
         <section

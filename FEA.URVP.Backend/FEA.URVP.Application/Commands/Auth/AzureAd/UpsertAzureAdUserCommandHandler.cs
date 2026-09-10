@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Directory;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 using Microsoft.Extensions.Configuration;
@@ -40,8 +41,8 @@ public sealed class UpsertAzureAdUserCommandHandler
         var isStoredAdmin = user?.Role == UserRole.Admin;
 
         // TokenValidated role: explicit override (dev) > AdminEmails / stored Admin >
-        // AD groups (Student / Faculty). When groups cannot be resolved, keep the stored
-        // role (or Faculty for a first-time user) instead of guessing.
+        // AD groups (Student / Faculty) > mailbox domain. When none of those resolve,
+        // keep the stored role, or Student for a first-time user — never Faculty.
         UserRole? resolvedRole = request.RoleOverride;
         if (!resolvedRole.HasValue && (isConfiguredAdmin || isStoredAdmin))
         {
@@ -49,7 +50,19 @@ public sealed class UpsertAzureAdUserCommandHandler
         }
 
         resolvedRole ??= request.DirectoryGroupRole;
-        var userRole = resolvedRole ?? UserRole.Faculty;
+        if (!resolvedRole.HasValue)
+        {
+            resolvedRole = AubEmailDirectoryRole.FromEmail(normalizedEmail);
+            if (resolvedRole.HasValue)
+            {
+                Logger.LogInformation(
+                    "Directory groups did not resolve a role for {Email}; using mailbox domain role {Role}.",
+                    normalizedEmail,
+                    resolvedRole.Value);
+            }
+        }
+
+        var userRole = resolvedRole ?? UserRole.Student;
 
         if (user is null)
         {

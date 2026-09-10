@@ -59,117 +59,245 @@ public sealed class LdapDirectoryGroupLookup : IDirectoryGroupLookup
         try
         {
             SearchResultEntry? entry = null;
+            LdapConnection? foundOn = null;
             string? usedServer = null;
             var usedPort = 0;
             string? usedBaseDn = null;
 
             foreach (var port in ports.Distinct())
             {
-                using var connection = CreateConnection(server, port);
-                var baseDn = string.IsNullOrWhiteSpace(configuredBaseDn)
-                    ? DiscoverBaseDn(connection) ?? BuildBaseDn(server)
-                    : configuredBaseDn;
-
-                _logger.LogInformation(
-                    "LDAP: connected to {Server}:{Port}. Searching under {BaseDn} for sAMAccountName={Sam}, UPN={Upn}, mail={Mail}.",
-                    server,
-                    port,
-                    baseDn,
-                    samAccountName,
-                    upn,
-                    mail);
-
-                entry = FindUser(connection, baseDn, samAccountName, upn, mail);
-                if (entry is not null)
+                LdapConnection? connection = CreateConnection(server, port);
+                try
                 {
-                    usedServer = server;
-                    usedPort = port;
-                    usedBaseDn = baseDn;
-                    break;
-                }
+                    var baseDn = string.IsNullOrWhiteSpace(configuredBaseDn)
+                        ? DiscoverBaseDn(connection) ?? BuildBaseDn(server)
+                        : configuredBaseDn;
 
-                _logger.LogWarning(
-                    "LDAP: no user under {BaseDn} on {Server}:{Port}.",
-                    baseDn,
-                    server,
-                    port);
+                    _logger.LogInformation(
+                        "LDAP: connected to {Server}:{Port}. Searching under {BaseDn} for sAMAccountName={Sam}, UPN={Upn}, mail={Mail}.",
+                        server,
+                        port,
+                        baseDn,
+                        samAccountName,
+                        upn,
+                        mail);
+
+                    entry = FindUser(connection, baseDn, samAccountName, upn, mail);
+                    if (entry is not null)
+                    {
+                        foundOn = connection;
+                        connection = null;
+                        usedServer = server;
+                        usedPort = port;
+                        usedBaseDn = baseDn;
+                        break;
+                    }
+
+                    _logger.LogWarning(
+                        "LDAP: no user under {BaseDn} on {Server}:{Port}.",
+                        baseDn,
+                        server,
+                        port);
+                }
+                finally
+                {
+                    connection?.Dispose();
+                }
             }
 
-            if (entry is null)
+            if (entry is null || foundOn is null || usedBaseDn is null)
             {
                 _logger.LogWarning(
-                    "LDAP: AD did not return a user object. Entra can still show {Upn} because cloud identity is not the same as an LDAP search. Role will fall back to the database.",
+                    "LDAP: AD did not return a user object. Entra can still show {Upn} because cloud identity is not the same as an LDAP search. Role will fall back to the mailbox domain.",
                     upn);
                 return null;
             }
 
-            var foundSam = Attr(entry, "sAMAccountName");
-            var foundUpn = Attr(entry, "userPrincipalName");
-            var foundMail = Attr(entry, "mail");
-            var dn = entry.DistinguishedName;
-            var groupCns = ReadMemberOfCns(entry);
-
-            // Global Catalog (3268) only returns universal groups in memberOf.
-            if (usedPort == 3268 && !HasRoleGroup(groupCns, facultyGroup, studentGroup))
+            using (foundOn)
             {
-                _logger.LogInformation(
-                    "LDAP: found {Sam} on Global Catalog; re-reading memberOf from port 389.",
-                    foundSam);
-                using var dc = CreateConnection(server, 389);
-                var dcEntry = ReadByDn(dc, dn);
-                if (dcEntry is not null)
+                var membershipConnection = foundOn;
+                LdapConnection? dc = null;
+                SearchResultEntry membershipEntry = entry;
+
+                // Global Catalog (3268) omits non-universal groups from memberOf and from
+                // nested-member checks. Always re-read membership from a DC (389).
+                if (usedPort != 389)
                 {
-                    groupCns = ReadMemberOfCns(dcEntry);
+                    try
+                    {
+                        dc = CreateConnection(server, 389);
+                        var dcEntry = ReadByDn(dc, entry.DistinguishedName);
+                        if (dcEntry is not null)
+                        {
+                            membershipConnection = dc;
+                            membershipEntry = dcEntry;
+                            usedPort = 389;
+                            _logger.LogInformation(
+                                "LDAP: re-reading group membership for {Sam} from port 389.",
+                                Attr(membershipEntry, "sAMAccountName"));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(
+                            ex,
+                            "LDAP: could not re-read membership on port 389; using {Port}.",
+                            usedPort);
+                    }
+                }
+
+                using (dc)
+                {
+                    var foundSam = Attr(membershipEntry, "sAMAccountName");
+                    var foundUpn = Attr(membershipEntry, "userPrincipalName");
+                    var foundMail = Attr(membershipEntry, "mail");
+                    var dn = membershipEntry.DistinguishedName;
+                    var groupCns = ReadMemberOfCns(membershipEntry);
+
+                    _logger.LogInformation(
+                        "LDAP: found {Dn} via {Server}:{Port} ({BaseDn}). sAMAccountName={Sam}, UPN={Upn}, mail={Mail}. Direct member of {GroupCount} groups. CNs: {GroupCns}",
+                        dn,
+                        usedServer,
+                        usedPort,
+                        usedBaseDn,
+                        foundSam,
+                        foundUpn,
+                        foundMail,
+                        groupCns.Count,
+                        string.Join(", ", groupCns));
+
+                    var role = ResolveMembership(
+                        membershipConnection,
+                        usedBaseDn,
+                        dn,
+                        groupCns,
+                        facultyGroup,
+                        studentGroup);
+
+                    if (role == UserRole.Faculty)
+                    {
+                        _logger.LogInformation(
+                            "LDAP: {Sam} matched faculty group {Group}. Role: Faculty.",
+                            foundSam,
+                            facultyGroup);
+                        return UserRole.Faculty;
+                    }
+
+                    if (role == UserRole.Student)
+                    {
+                        _logger.LogInformation(
+                            "LDAP: {Sam} matched student group {Group}. Role: Student.",
+                            foundSam,
+                            studentGroup);
+                        return UserRole.Student;
+                    }
+
+                    _logger.LogWarning(
+                        "LDAP: {Sam} is not in {FacultyGroup} or {StudentGroup}.",
+                        foundSam,
+                        facultyGroup,
+                        studentGroup);
+                    return null;
                 }
             }
-
-            _logger.LogInformation(
-                "LDAP: found {Dn} via {Server}:{Port} ({BaseDn}). sAMAccountName={Sam}, UPN={Upn}, mail={Mail}. Direct member of {GroupCount} groups. CNs: {GroupCns}",
-                dn,
-                usedServer,
-                usedPort,
-                usedBaseDn,
-                foundSam,
-                foundUpn,
-                foundMail,
-                groupCns.Count,
-                string.Join(", ", groupCns));
-
-            if (groupCns.Contains(facultyGroup, StringComparer.OrdinalIgnoreCase))
-            {
-                _logger.LogInformation(
-                    "LDAP: {Sam} matched faculty group {Group}. Role: Faculty.",
-                    foundSam,
-                    facultyGroup);
-                return UserRole.Faculty;
-            }
-
-            if (groupCns.Contains(studentGroup, StringComparer.OrdinalIgnoreCase))
-            {
-                _logger.LogInformation(
-                    "LDAP: {Sam} matched student group {Group}. Role: Student.",
-                    foundSam,
-                    studentGroup);
-                return UserRole.Student;
-            }
-
-            _logger.LogWarning(
-                "LDAP: {Sam} is not in {FacultyGroup} or {StudentGroup}.",
-                foundSam,
-                facultyGroup,
-                studentGroup);
-            return null;
         }
         catch (Exception ex)
         {
             _logger.LogWarning(
                 ex,
-                "LDAP lookup failed for sAMAccountName={Sam}, UPN={Upn}, mail={Mail} against {Server}. Role will fall back to the database.",
+                "LDAP lookup failed for sAMAccountName={Sam}, UPN={Upn}, mail={Mail} against {Server}. Role will fall back to the mailbox domain.",
                 samAccountName,
                 upn,
                 mail,
                 server);
             return null;
+        }
+    }
+
+    private UserRole? ResolveMembership(
+        LdapConnection connection,
+        string baseDn,
+        string userDn,
+        IReadOnlyCollection<string> directGroupCns,
+        string facultyGroup,
+        string studentGroup)
+    {
+        var facultyDn = FindGroupDn(connection, baseDn, facultyGroup);
+        var studentDn = FindGroupDn(connection, baseDn, studentGroup);
+
+        var inFaculty = facultyDn is not null && IsTransitiveMember(connection, userDn, facultyDn);
+        var inStudent = studentDn is not null && IsTransitiveMember(connection, userDn, studentDn);
+
+        if (inFaculty || inStudent)
+        {
+            return LdapDirectoryQuery.RoleFromMembership(inFaculty, inStudent);
+        }
+
+        return LdapDirectoryQuery.RoleFromGroupCns(directGroupCns, facultyGroup, studentGroup);
+    }
+
+    private string? FindGroupDn(LdapConnection connection, string baseDn, string cn)
+    {
+        try
+        {
+            var request = new SearchRequest(
+                baseDn,
+                LdapDirectoryQuery.GroupByCnFilter(cn),
+                SearchScope.Subtree,
+                "distinguishedName",
+                "cn")
+            {
+                SizeLimit = 5
+            };
+
+            var response = (SearchResponse)connection.SendRequest(request);
+            foreach (SearchResultEntry entry in response.Entries)
+            {
+                var foundCn = Attr(entry, "cn");
+                if (foundCn.Equals(cn, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(
+                        LdapDirectoryQuery.ExtractCnFromDn(entry.DistinguishedName),
+                        cn,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return entry.DistinguishedName;
+                }
+            }
+
+            _logger.LogWarning("LDAP: group CN {Group} was not found under {BaseDn}.", cn, baseDn);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "LDAP: failed to resolve group CN {Group}.", cn);
+            return null;
+        }
+    }
+
+    private bool IsTransitiveMember(LdapConnection connection, string userDn, string groupDn)
+    {
+        try
+        {
+            var request = new SearchRequest(
+                groupDn,
+                LdapDirectoryQuery.NestedMemberFilter(userDn),
+                SearchScope.Base,
+                "distinguishedName")
+            {
+                SizeLimit = 1
+            };
+
+            var response = (SearchResponse)connection.SendRequest(request);
+            return response.Entries.Count > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "LDAP: nested member check failed for {UserDn} in {GroupDn}.",
+                userDn,
+                groupDn);
+            return false;
         }
     }
 
@@ -180,41 +308,73 @@ public sealed class LdapDirectoryGroupLookup : IDirectoryGroupLookup
         string upn,
         string mail)
     {
-        var clauses = new List<string>();
-        AddClause(clauses, "sAMAccountName", samAccountName);
-        foreach (var candidate in ExpandUpnOrMail(upn, mail))
+        var extra = ExpandUpnOrMail(upn, mail)
+            .Where(address =>
+                !address.Equals(upn, StringComparison.OrdinalIgnoreCase)
+                && !address.Equals(mail, StringComparison.OrdinalIgnoreCase));
+
+        var sequence = LdapDirectoryQuery.BuildUserLookupSequence(samAccountName, upn, mail, extra);
+
+        foreach (var (attribute, value) in sequence)
         {
-            AddClause(clauses, "userPrincipalName", candidate);
-            AddClause(clauses, "mail", candidate);
-            AddClause(clauses, "proxyAddresses", $"SMTP:{candidate}");
-            AddClause(clauses, "proxyAddresses", $"smtp:{candidate}");
+            var filter = LdapDirectoryQuery.UserObjectFilter(attribute, value);
+            _logger.LogInformation("LDAP: filter {Filter}", filter);
+
+            var request = new SearchRequest(
+                baseDn,
+                filter,
+                SearchScope.Subtree,
+                "sAMAccountName",
+                "userPrincipalName",
+                "mail",
+                "memberOf",
+                "distinguishedName")
+            {
+                SizeLimit = 5
+            };
+
+            SearchResponse response;
+            try
+            {
+                response = (SearchResponse)connection.SendRequest(request);
+            }
+            catch (DirectoryOperationException ex) when (ex.Response is SearchResponse partial)
+            {
+                response = partial;
+            }
+
+            _logger.LogInformation(
+                "LDAP: search result code {ResultCode}, entries {Count}.",
+                response.ResultCode,
+                response.Entries.Count);
+
+            if (response.Entries.Count == 0)
+            {
+                continue;
+            }
+
+            if (response.Entries.Count == 1)
+            {
+                return response.Entries[0];
+            }
+
+            foreach (SearchResultEntry candidate in response.Entries)
+            {
+                if (Attr(candidate, "sAMAccountName")
+                    .Equals(samAccountName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return candidate;
+                }
+            }
+
+            _logger.LogWarning(
+                "LDAP: filter matched {Count} users; skipping ambiguous result for {Attribute}={Value}.",
+                response.Entries.Count,
+                attribute,
+                value);
         }
 
-        if (clauses.Count == 0)
-        {
-            return null;
-        }
-
-        var filter = $"(&(objectCategory=person)(|{string.Join(string.Empty, clauses)}))";
-        _logger.LogInformation("LDAP: filter {Filter}", filter);
-
-        var request = new SearchRequest(
-            baseDn,
-            filter,
-            SearchScope.Subtree,
-            "sAMAccountName",
-            "userPrincipalName",
-            "mail",
-            "memberOf",
-            "distinguishedName");
-
-        var response = (SearchResponse)connection.SendRequest(request);
-        _logger.LogInformation(
-            "LDAP: search result code {ResultCode}, entries {Count}.",
-            response.ResultCode,
-            response.Entries.Count);
-
-        return response.Entries.Count == 0 ? null : response.Entries[0];
+        return null;
     }
 
     private static SearchResultEntry? ReadByDn(LdapConnection connection, string dn)
@@ -224,14 +384,18 @@ public sealed class LdapDirectoryGroupLookup : IDirectoryGroupLookup
             return null;
         }
 
-        var request = new SearchRequest(dn, "(objectClass=*)", SearchScope.Base, "memberOf");
+        var request = new SearchRequest(
+            dn,
+            "(objectClass=*)",
+            SearchScope.Base,
+            "sAMAccountName",
+            "userPrincipalName",
+            "mail",
+            "memberOf",
+            "distinguishedName");
         var response = (SearchResponse)connection.SendRequest(request);
         return response.Entries.Count == 0 ? null : response.Entries[0];
     }
-
-    private static bool HasRoleGroup(IReadOnlyCollection<string> groupCns, string facultyGroup, string studentGroup)
-        => groupCns.Contains(facultyGroup, StringComparer.OrdinalIgnoreCase)
-           || groupCns.Contains(studentGroup, StringComparer.OrdinalIgnoreCase);
 
     private IEnumerable<string> ExpandUpnOrMail(string upn, string mail)
     {
@@ -271,14 +435,26 @@ public sealed class LdapDirectoryGroupLookup : IDirectoryGroupLookup
         return values;
     }
 
-    private static void AddClause(List<string> clauses, string attribute, string? value)
+    private LdapConnection CreateConnection(string server, int port)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        var identifier = new LdapDirectoryIdentifier(server, port);
+        var connection = new LdapConnection(identifier)
         {
-            return;
+            AuthType = AuthType.Negotiate
+        };
+        connection.SessionOptions.ProtocolVersion = 3;
+        connection.SessionOptions.ReferralChasing = ReferralChasingOptions.None;
+        connection.Timeout = TimeSpan.FromSeconds(20);
+
+        var bindUser = _configuration["Ldap:BindUserName"];
+        var bindPassword = _configuration["Ldap:BindPassword"];
+        if (!string.IsNullOrWhiteSpace(bindUser) && !string.IsNullOrWhiteSpace(bindPassword))
+        {
+            connection.Credential = new NetworkCredential(bindUser, bindPassword);
         }
 
-        clauses.Add($"({attribute}={EscapeFilter(value)})");
+        connection.Bind();
+        return connection;
     }
 
     private static string? DiscoverBaseDn(LdapConnection connection)
@@ -293,28 +469,6 @@ public sealed class LdapDirectoryGroupLookup : IDirectoryGroupLookup
         return Attr(response.Entries[0], "defaultNamingContext");
     }
 
-    private LdapConnection CreateConnection(string server, int port)
-    {
-        var identifier = new LdapDirectoryIdentifier(server, port);
-        var connection = new LdapConnection(identifier)
-        {
-            AuthType = AuthType.Negotiate
-        };
-        connection.SessionOptions.ProtocolVersion = 3;
-        connection.SessionOptions.ReferralChasing = ReferralChasingOptions.All;
-        connection.Timeout = TimeSpan.FromSeconds(20);
-
-        var bindUser = _configuration["Ldap:BindUserName"];
-        var bindPassword = _configuration["Ldap:BindPassword"];
-        if (!string.IsNullOrWhiteSpace(bindUser) && !string.IsNullOrWhiteSpace(bindPassword))
-        {
-            connection.Credential = new NetworkCredential(bindUser, bindPassword);
-        }
-
-        connection.Bind();
-        return connection;
-    }
-
     private static List<string> ReadMemberOfCns(SearchResultEntry entry)
     {
         var cns = new List<string>();
@@ -325,7 +479,7 @@ public sealed class LdapDirectoryGroupLookup : IDirectoryGroupLookup
 
         foreach (var value in entry.Attributes["memberOf"].GetValues(typeof(string)))
         {
-            var cn = ExtractCnFromDn((string)value);
+            var cn = LdapDirectoryQuery.ExtractCnFromDn((string)value);
             if (!string.IsNullOrEmpty(cn))
             {
                 cns.Add(cn);
@@ -363,20 +517,6 @@ public sealed class LdapDirectoryGroupLookup : IDirectoryGroupLookup
     }
 
     /// <summary>
-    /// "CN=ALLACADstaff-STF,OU=...,DC=aub,DC=edu,DC=lb" → "ALLACADstaff-STF"
-    /// </summary>
-    private static string? ExtractCnFromDn(string dn)
-    {
-        if (!dn.StartsWith("CN=", StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
-
-        var commaIndex = dn.IndexOf(',');
-        return commaIndex > 3 ? dn[3..commaIndex] : dn[3..];
-    }
-
-    /// <summary>
     /// Hostnames like "win2k.aub.edu.lb" → "DC=aub,DC=edu,DC=lb".
     /// Plain domains like "aub.edu.lb" → "DC=aub,DC=edu,DC=lb".
     /// </summary>
@@ -390,12 +530,4 @@ public sealed class LdapDirectoryGroupLookup : IDirectoryGroupLookup
 
         return string.Join(",", labels.Select(p => $"DC={p}"));
     }
-
-    private static string EscapeFilter(string value)
-        => value
-            .Replace("\\", "\\5c", StringComparison.Ordinal)
-            .Replace("*", "\\2a", StringComparison.Ordinal)
-            .Replace("(", "\\28", StringComparison.Ordinal)
-            .Replace(")", "\\29", StringComparison.Ordinal)
-            .Replace("\0", "\\00", StringComparison.Ordinal);
 }
