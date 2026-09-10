@@ -82,23 +82,30 @@ export const introKeyFacts = [
   "Not matched this cycle? We encourage you to apply again in a future cycle.",
 ] as const;
 
-export const featuredItems = [
+export type FeaturedItem = {
+  kind: string;
+  title: string;
+  detail: string;
+  accent: "secondary" | "primary";
+};
+
+export const featuredItems: FeaturedItem[] = [
   {
     kind: "Deadline",
     title: "Student profiles",
     detail: "Open Aug 25 – Sep 30, 2026 to create or update your profile.",
-    accent: "secondary" as const,
+    accent: "secondary",
   },
   {
     kind: "Cycle",
     title: "URVP main cycle",
     detail: "Oct 13, 2025 – Aug 21, 2026. Contact jc14@aub.edu.lb.",
-    accent: "primary" as const,
+    accent: "primary",
   },
   {
     kind: "Workshop",
     title: "Profile writing clinic",
     detail: "Sep 5, 2025 — prepare before matching opens.",
-    accent: "secondary" as const,
+    accent: "secondary",
   },
-] as const;
+];

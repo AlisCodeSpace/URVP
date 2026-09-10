@@ -1,5 +1,6 @@
 using FEA.URVP.Infrastructure.Data.Context;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,8 @@ public static class DataProtectionConfiguration
 
     public const string CertificateThumbprintKey = "DataProtection:CertificateThumbprint";
 
+    public const string EncryptionKeySecretKey = "DataProtection:Key";
+
     public static IServiceCollection AddUrvpDataProtection(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -27,8 +30,22 @@ public static class DataProtectionConfiguration
         if (thumbprint is not null)
         {
             dataProtection.ProtectKeysWithCertificate(thumbprint);
+            return services;
         }
-        else if (OperatingSystem.IsWindows())
+
+        var secret = ReadEncryptionSecret(configuration);
+        if (secret is not null)
+        {
+            var key = DataProtectionEncryptionKey.FromSecret(secret);
+            services.AddSingleton(key);
+            dataProtection.Services.Configure<KeyManagementOptions>(options =>
+            {
+                options.XmlEncryptor = new AesXmlEncryptor(key);
+            });
+            return services;
+        }
+
+        if (OperatingSystem.IsWindows())
         {
             // User-level DPAPI. On IIS the app pool must have Load User Profile = true so the
             // identity has a real DPAPI store; the deploy script sets that on the pool.
@@ -44,10 +61,18 @@ public static class DataProtectionConfiguration
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     }
 
+    public static string? ReadEncryptionSecret(IConfiguration configuration)
+    {
+        var value = configuration[EncryptionKeySecretKey];
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
     /// <summary>
     /// True when newly generated keys will be encrypted before they are written to SQL.
     /// Existing plaintext rows remain readable so adding protection does not invalidate sessions.
     /// </summary>
     public static bool EncryptsKeysAtRest(IConfiguration configuration) =>
-        ReadCertificateThumbprint(configuration) is not null || OperatingSystem.IsWindows();
+        ReadCertificateThumbprint(configuration) is not null
+        || ReadEncryptionSecret(configuration) is not null
+        || OperatingSystem.IsWindows();
 }

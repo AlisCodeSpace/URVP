@@ -73,7 +73,7 @@ public sealed class SmtpEmailService : IEmailService
 
             var auth = await ResolveAuthAsync(cancellationToken);
 
-            success = await TrySendAsync(
+            var primary = await TrySendAsync(
                 _options.Smtp,
                 auth,
                 to,
@@ -81,23 +81,35 @@ public sealed class SmtpEmailService : IEmailService
                 subject,
                 html,
                 cancellationToken);
+            success = primary.Sent;
 
+            string? fallbackError = null;
             if (!success && _options.SmtpFallback is { IsConfigured: true } fallback)
             {
                 _logger.LogWarning("Primary SMTP failed for {To}; trying fallback host", to);
-                success = await TrySendAsync(fallback, auth, to, name, subject, html, cancellationToken);
+                var secondary = await TrySendAsync(
+                    fallback,
+                    auth,
+                    to,
+                    name,
+                    subject,
+                    html,
+                    cancellationToken);
+                success = secondary.Sent;
+                fallbackError = secondary.Error;
             }
 
             if (!success)
             {
-                exception ??= "SMTP send failed on primary and fallback.";
+                exception = SmtpSendError.Join(primary.Error, fallbackError)
+                    ?? "SMTP send failed.";
             }
 
             return success;
         }
         catch (Exception ex)
         {
-            exception = ex.ToString();
+            exception = SmtpSendError.Format(_options.Smtp.Host, _options.Smtp.Port, ex);
             _logger.LogError(ex, "SMTP send failed for {To}", to);
             return false;
         }
@@ -130,14 +142,23 @@ public sealed class SmtpEmailService : IEmailService
             _logger.LogError(ex, "Failed to load stored SMTP credentials; falling back to configuration.");
         }
 
-        return SmtpAuthCredentials.Resolve(
+        var auth = SmtpAuthCredentials.Resolve(
             _options.Smtp.UserName,
             _options.Smtp.Password,
-            storedPassword,
-            _options.From);
+            storedPassword);
+
+        if (auth is null
+            && !string.IsNullOrWhiteSpace(storedPassword)
+            && string.IsNullOrWhiteSpace(_options.Smtp.UserName))
+        {
+            _logger.LogInformation(
+                "SMTP password is stored but Email:Smtp:UserName is unset; sending without AUTH.");
+        }
+
+        return auth;
     }
 
-    private async Task<bool> TrySendAsync(
+    private async Task<(bool Sent, string? Error)> TrySendAsync(
         SmtpServerOptions smtp,
         SmtpAuthCredentials.Auth? auth,
         string to,
@@ -171,12 +192,13 @@ public sealed class SmtpEmailService : IEmailService
             message.To.Add(new MailAddress(to, string.IsNullOrWhiteSpace(name) ? to : name));
 
             await client.SendMailAsync(message, cancellationToken);
-            return true;
+            return (true, null);
         }
         catch (Exception ex)
         {
+            var error = SmtpSendError.Format(smtp.Host, smtp.Port, ex);
             _logger.LogError(ex, "SMTP host {Host} failed for {To}", smtp.Host, to);
-            return false;
+            return (false, error);
         }
     }
 

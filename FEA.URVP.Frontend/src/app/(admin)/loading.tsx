@@ -1,5 +1,1 @@
-import { PageLoader } from "@/components/ui/PageLoader";
-
-export default function AdminLoading() {
-  return <PageLoader label="Loading admin" />;
-}
+export { default } from "@/components/ui/PageLoader";

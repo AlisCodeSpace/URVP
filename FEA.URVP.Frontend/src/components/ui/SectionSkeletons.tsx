@@ -115,6 +115,28 @@ export function WorkshopTeaserSkeleton({ count = 4 }: { count?: number }) {
   );
 }
 
+export function FeaturedNowSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <ul
+      className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
+      aria-busy="true"
+      aria-label="Loading featured items"
+    >
+      {times(count).map((i) => (
+        <li
+          key={i}
+          className="rounded-lg border border-primary/12 bg-surface px-6 py-7"
+        >
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="mt-4 h-6 w-3/4" />
+          <Skeleton className="mt-3 h-4 w-full" />
+          <Skeleton className="mt-2 h-4 w-2/3" />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function NewsTickerSkeleton() {
   return (
     <section className="overflow-hidden bg-background py-16 sm:py-20" aria-busy="true" aria-label="Loading updates">

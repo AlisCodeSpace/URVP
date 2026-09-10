@@ -63,6 +63,34 @@ export function formatAppDate(value: string | Date | null | undefined): string {
   return date.toLocaleDateString("en-US", DATE_OPTIONS);
 }
 
+/** Compact Beirut date range, e.g. `Aug 25 – Sep 30, 2026`. */
+export function formatAppDateRange(
+  start: string | Date | null | undefined,
+  end: string | Date | null | undefined,
+): string {
+  const hasStart = start != null && start !== "";
+  const hasEnd = end != null && end !== "";
+  if (!hasStart && !hasEnd) return "Dates to be announced";
+  if (!hasStart) return `Until ${formatAppDate(end)}`;
+  if (!hasEnd) return `From ${formatAppDate(start)}`;
+
+  const startDate = asDate(start);
+  const endDate = asDate(end);
+  if (!startDate || !endDate) {
+    return `${formatAppDate(start)} – ${formatAppDate(end)}`;
+  }
+
+  const startParts = formatToParts(startDate, DATE_OPTIONS);
+  const endParts = formatToParts(endDate, DATE_OPTIONS);
+  if (startParts.year === endParts.year) {
+    if (startParts.month === endParts.month) {
+      return `${startParts.month} ${startParts.day}–${endParts.day}, ${endParts.year}`;
+    }
+    return `${startParts.month} ${startParts.day} – ${endParts.month} ${endParts.day}, ${endParts.year}`;
+  }
+  return `${formatAppDate(start)} – ${formatAppDate(end)}`;
+}
+
 /** Convert a UTC instant to a datetime-local string in Beirut: `YYYY-MM-DDTHH:mm`. */
 export function toAppDatetimeInput(iso: string | null | undefined): string {
   if (!iso) return "";

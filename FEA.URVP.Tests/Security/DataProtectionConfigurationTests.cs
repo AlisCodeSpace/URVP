@@ -38,4 +38,14 @@ public sealed class DataProtectionConfigurationTests
 
         Assert.True(DataProtectionConfiguration.EncryptsKeysAtRest(configuration));
     }
+
+    [Fact]
+    public void An_encryption_secret_encrypts_keys_on_any_platform()
+    {
+        var configuration = TestEnvironments.Config(
+            (DataProtectionConfiguration.EncryptionKeySecretKey, "render-generated-secret"));
+
+        Assert.Equal("render-generated-secret", DataProtectionConfiguration.ReadEncryptionSecret(configuration));
+        Assert.True(DataProtectionConfiguration.EncryptsKeysAtRest(configuration));
+    }
 }

@@ -51,27 +51,25 @@ export function Hero() {
         )
       }
       actions={
-        <>
-          {loading ? null : isSignedIn ? (
+        loading ? null : isSignedIn ? (
+          <>
             <Button href={primaryHref(role, userId)} variant="secondary" size="lg">
               {primaryLabel(role)}
             </Button>
-          ) : (
-            <Button href="/sign-in" variant="secondary" size="lg">
-              Log In
-            </Button>
-          )}
-          {loading ? null : (
             <Button href={projectsHref()} variant="outline-light" size="lg">
               {isStudent(role) ? "Apply to Projects" : "Browse Projects"}
             </Button>
-          )}
-          {loading || isSignedIn ? null : (
-            <Button href="/my-projects" variant="outline-light" size="lg">
-              Faculty Portal
+          </>
+        ) : (
+          <>
+            <Button href="/sign-in" variant="secondary" size="lg">
+              Log In
             </Button>
-          )}
-        </>
+            <Button href="/news" variant="outline-light" size="lg">
+              News
+            </Button>
+          </>
+        )
       }
     />
   );

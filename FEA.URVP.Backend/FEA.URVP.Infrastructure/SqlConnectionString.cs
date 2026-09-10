@@ -1,13 +1,20 @@
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+
 namespace FEA.URVP.Infrastructure;
 
 /// <summary>
-/// Normalizes SQL Server connection strings from PaaS dashboards.
+/// Normalizes SQL Server connection strings from PaaS dashboards and hardens TLS settings.
 /// Hosts like MonsterASP often copy as <c>host;Database=...</c> without <c>Server=</c>,
 /// which SqlClient rejects as keyword <c>host;database</c>.
 /// </summary>
 public static class SqlConnectionString
 {
-    public static string Normalize(string connectionString)
+    public static string Normalize(string connectionString, IConfiguration configuration)
+        => Normalize(connectionString, AllowsTrustServerCertificate(configuration));
+
+    public static string Normalize(string connectionString, bool allowTrustServerCertificate = false)
     {
         var value = connectionString.Trim().Trim('"').Trim('\'');
         if (value.Length == 0)
@@ -15,12 +22,56 @@ public static class SqlConnectionString
             return value;
         }
 
-        if (HasServerKeyword(value))
+        if (!HasServerKeyword(value))
         {
-            return EnsureMultipleActiveResultSets(value);
+            value = $"Server={value}";
         }
 
-        return EnsureMultipleActiveResultSets($"Server={value}");
+        try
+        {
+            var builder = new SqlConnectionStringBuilder(value)
+            {
+                MultipleActiveResultSets = true,
+                Encrypt = true
+            };
+
+            if (!allowTrustServerCertificate)
+            {
+                builder.TrustServerCertificate = false;
+            }
+
+            return builder.ConnectionString;
+        }
+        catch (ArgumentException)
+        {
+            return HardenUnparsed(EnsureMultipleActiveResultSets(value), allowTrustServerCertificate);
+        }
+    }
+
+    public static bool AllowsTrustServerCertificate(IConfiguration configuration)
+    {
+        var environment = configuration["ASPNETCORE_ENVIRONMENT"]
+            ?? configuration["DOTNET_ENVIRONMENT"]
+            ?? configuration[HostDefaults.EnvironmentKey]
+            ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")
+            ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+
+        return string.Equals(environment, Environments.Development, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool RequestsTrustServerCertificate(string connectionString)
+    {
+        try
+        {
+            return new SqlConnectionStringBuilder(connectionString).TrustServerCertificate;
+        }
+        catch (ArgumentException)
+        {
+            return connectionString.Contains("TrustServerCertificate=true", StringComparison.OrdinalIgnoreCase)
+                   || connectionString.Contains("TrustServerCertificate=yes", StringComparison.OrdinalIgnoreCase)
+                   || connectionString.Contains("Trust Server Certificate=true", StringComparison.OrdinalIgnoreCase)
+                   || connectionString.Contains("Trust Server Certificate=yes", StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     private static bool HasServerKeyword(string value)
@@ -45,5 +96,28 @@ public static class SqlConnectionString
         }
 
         return value.TrimEnd(';') + ";MultipleActiveResultSets=true";
+    }
+
+    private static string HardenUnparsed(string value, bool allowTrustServerCertificate)
+    {
+        if (!allowTrustServerCertificate)
+        {
+            value = StripKeyword(value, "TrustServerCertificate");
+        }
+
+        if (!value.Contains("Encrypt=", StringComparison.OrdinalIgnoreCase))
+        {
+            value = value.TrimEnd(';') + ";Encrypt=True";
+        }
+
+        return value;
+    }
+
+    private static string StripKeyword(string value, string keyword)
+    {
+        var parts = value.Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .Where(part => !part.TrimStart().StartsWith($"{keyword}=", StringComparison.OrdinalIgnoreCase));
+
+        return string.Join(';', parts);
     }
 }

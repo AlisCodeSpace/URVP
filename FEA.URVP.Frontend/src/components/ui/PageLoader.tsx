@@ -10,7 +10,7 @@ function cn(...parts: Array<string | undefined | false>) {
   return parts.filter(Boolean).join(" ");
 }
 
-/** Branded full-page / route loading indicator. */
+/** Branded full-viewport loading overlay used by every route. */
 export function PageLoader({
   label = "Loading",
   className,
@@ -36,4 +36,9 @@ export function PageLoader({
       <p className="page-loader-label">{label}</p>
     </div>
   );
+}
+
+/** Next.js `loading.tsx` default — same overlay for every route group. */
+export default function RouteLoading() {
+  return <PageLoader />;
 }

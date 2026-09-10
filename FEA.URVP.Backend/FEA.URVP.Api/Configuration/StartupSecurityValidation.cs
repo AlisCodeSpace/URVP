@@ -1,6 +1,7 @@
 using FEA.URVP.Api.Configuration.Auth;
 using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Services;
+using FEA.URVP.Infrastructure;
 using FEA.URVP.Infrastructure.DataProtection;
 
 namespace FEA.URVP.Api.Configuration;
@@ -129,23 +130,35 @@ public static class StartupSecurityValidation
         ILogger logger,
         IWebHostEnvironment environment)
     {
-        var connectionString = configuration.GetConnectionString("SqlServerConnection");
-        if (string.IsNullOrWhiteSpace(connectionString))
+        var raw = configuration.GetConnectionString("SqlServerConnection");
+        if (string.IsNullOrWhiteSpace(raw))
         {
             return;
         }
 
-        if (connectionString.Contains("TrustServerCertificate=true", StringComparison.OrdinalIgnoreCase))
+        var allowTrust = environment.IsDevelopment();
+        if (!allowTrust && SqlConnectionString.RequestsTrustServerCertificate(raw))
+        {
+            logger.LogWarning(
+                "The SQL connection string sets TrustServerCertificate=true in {Environment}. "
+                + "Certificate validation is enforced for this process; remove the setting from the "
+                + "host environment variable so Azure SQL (or another public-CA server) is verified.",
+                environment.EnvironmentName);
+        }
+
+        var connectionString = SqlConnectionString.Normalize(raw, allowTrust);
+
+        if (!allowTrust && SqlConnectionString.RequestsTrustServerCertificate(connectionString))
         {
             logger.LogError(
-                "The SQL connection string sets TrustServerCertificate=true in {Environment}. "
-                + "The server certificate is not verified, so the database connection can be "
-                + "intercepted. Install a trusted certificate and remove the setting.",
+                "The SQL connection string still trusts any server certificate in {Environment} "
+                + "after hardening. Install a trusted certificate and remove TrustServerCertificate.",
                 environment.EnvironmentName);
         }
 
         var encryptionDisabled =
-            connectionString.Contains("Encrypt=false", StringComparison.OrdinalIgnoreCase)
+            connectionString.Contains("Encrypt=False", StringComparison.OrdinalIgnoreCase)
+            || connectionString.Contains("Encrypt=Optional", StringComparison.OrdinalIgnoreCase)
             || connectionString.Contains("Encrypt=no", StringComparison.OrdinalIgnoreCase);
 
         if (encryptionDisabled)
@@ -153,12 +166,6 @@ public static class StartupSecurityValidation
             logger.LogError(
                 "The SQL connection string disables encryption in {Environment}. Set Encrypt=True.",
                 environment.EnvironmentName);
-        }
-        else if (!connectionString.Contains("Encrypt=", StringComparison.OrdinalIgnoreCase))
-        {
-            logger.LogWarning(
-                "The SQL connection string does not set Encrypt explicitly. Microsoft.Data.SqlClient "
-                + "defaults to encryption, but set Encrypt=True so the intent survives a driver change.");
         }
     }
 
@@ -181,9 +188,11 @@ public static class StartupSecurityValidation
         }
 
         logger.LogWarning(
-            "Data Protection keys are stored in SQL without encryption at rest. Set {Key} to a "
-            + "certificate thumbprint in the LocalMachine store so a database dump cannot unprotect "
-            + "session cookies, OIDC correlation cookies, or antiforgery tokens.",
+            "Data Protection keys are stored in SQL without encryption at rest. On Linux set {Key} "
+            + "to a long secret (Render: DataProtection__Key). On Windows IIS, DPAPI is used when "
+            + "Load User Profile is enabled; a LocalMachine certificate thumbprint at {Thumbprint} "
+            + "is also accepted.",
+            DataProtectionConfiguration.EncryptionKeySecretKey,
             DataProtectionConfiguration.CertificateThumbprintKey);
     }
 

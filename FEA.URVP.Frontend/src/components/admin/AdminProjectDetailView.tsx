@@ -206,12 +206,8 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
       ? Math.round((assigned.length / project.volunteersRequired) * 100)
       : 0;
   const seatsOpen = project.status !== "Closed" && remaining > 0;
-  const applicationsOpen = Boolean(activeSemester?.isApplicationWindowOpen);
   const canAssign =
-    seatsOpen &&
-    busyStudentId === null &&
-    Boolean(activeSemester) &&
-    !applicationsOpen;
+    seatsOpen && busyStudentId === null && Boolean(activeSemester);
   const rankGroups = groupedRankings(rankings, project.id);
   const rankingQuery = searchInput.trim();
   const filteredRankGroups = rankingQuery
@@ -290,9 +286,7 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
               ? "Listing is closed"
               : remaining === 0
                 ? "At capacity"
-                : applicationsOpen
-                  ? "Assignments locked until applications close"
-                  : "Open for assignment"}
+                : "Open for assignment"}
           </p>
         </div>
         <div className="admin-kpi">
@@ -347,11 +341,7 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
         </ListingBlock>
       </section>
 
-      {applicationsOpen ? (
-        <p className="admin-users-banner" role="status">
-          Close the student application window before assigning students.
-        </p>
-      ) : !activeSemester ? (
+      {!activeSemester ? (
         <p className="admin-users-banner" role="status">
           No active URVP cycle. Start a cycle before assigning students.
         </p>

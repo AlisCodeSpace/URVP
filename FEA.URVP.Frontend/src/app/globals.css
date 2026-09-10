@@ -3855,8 +3855,10 @@ body.admin-drawer-open {
 /* ── Page loader ── */
 
 .page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
   display: flex;
-  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -3865,23 +3867,18 @@ body.admin-drawer-open {
   min-height: 100dvh;
   padding: 3rem 1.5rem;
   box-sizing: border-box;
-}
-
-/* Route loading sits inside the site layout, so cover/hide chrome. */
-.site-loading {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
   background: var(--background);
 }
 
-.site-loading .page-loader {
-  min-height: 0;
+/* Nested loading UI sits inside layouts that keep nav/sidebar mounted. */
+body:has(.page-loader) {
+  overflow: hidden;
 }
 
-body:has(.site-loading) .site-nav,
-body:has(.site-loading) .site-footer {
+body:has(.page-loader) .site-nav,
+body:has(.page-loader) .site-footer,
+body:has(.page-loader) .admin-sidebar,
+body:has(.page-loader) .admin-menu-btn {
   display: none;
 }
 

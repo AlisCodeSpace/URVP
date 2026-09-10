@@ -106,7 +106,7 @@ export function AdminEmailSettingsView() {
       <div className="admin-panel admin-panel--wide">
         <AdminPageHeader
           title="Email"
-          description="SMTP credentials used to send program notifications."
+          description="SMTP host comes from server configuration. AUB campus mail is sent without AUTH."
         />
         <AdminFormSkeleton fields={4} />
       </div>
@@ -117,7 +117,7 @@ export function AdminEmailSettingsView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Email"
-        description="The SMTP host comes from server configuration. Store the mailbox password here — it is encrypted in the database and never shown again."
+        description="The SMTP host comes from server configuration. Campus mail uses the unauthenticated relay — only store a password if Email:Smtp:UserName is also set."
         tag={
           settings?.enabled
             ? "Sending on"
@@ -154,6 +154,10 @@ export function AdminEmailSettingsView() {
             <dd>{settings.enableSsl ? "SSL/TLS on" : "SSL/TLS off"}</dd>
           </div>
           <div>
+            <dt>Username</dt>
+            <dd>{settings.userName || "Not set (no SMTP AUTH)"}</dd>
+          </div>
+          <div>
             <dt>Password</dt>
             <dd>
               <Tag tone={settings.passwordIsSet ? "secondary" : "muted"}>
@@ -170,8 +174,10 @@ export function AdminEmailSettingsView() {
           label="SMTP password"
           hint={
             passwordIsSet
-              ? "A password is already stored. Remove it first if you need to replace it."
-              : "Stored encrypted. It will not be displayed after you save."
+              ? settings?.userName
+                ? "A password is already stored. Remove it first if you need to replace it."
+                : "A password is stored but AUTH is off because no SMTP username is configured. Remove it unless Email:Smtp:UserName is set."
+              : "Leave empty for the campus relay. Only store a password when Email:Smtp:UserName is also configured."
           }
         >
           <div className="admin-email-password-row">
@@ -215,7 +221,7 @@ export function AdminEmailSettingsView() {
         onClose={() => setConfirmClear(false)}
         onConfirm={onClearPassword}
         title="Remove stored SMTP password?"
-        description="Outgoing mail will no longer authenticate with the stored password until you enter a new one."
+        description="Outgoing mail will use the unauthenticated campus relay. Store a password again only if a username is configured."
         confirmLabel="Remove password"
         busy={clearing}
       />

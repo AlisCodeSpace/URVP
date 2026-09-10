@@ -7,10 +7,11 @@
 #
 # After the first deploy, set the sync:false variables in the dashboard:
 #   ConnectionStrings__SqlServerConnection, AzureAd__TenantId, AzureAd__ClientId,
-#   AzureAd__ClientSecret, AllowedHosts, AdminEmails__0
+#   AzureAd__ClientSecret, AllowedHosts, AdminEmails__0, DataProtection__Key
 #
 # Azure AD redirect URI: https://<host>/signin-oidc-ad
-# SQL Server is not hosted on Render — use Azure SQL (or another SQL Server) with Encrypt=True.
+# SQL Server is not hosted on Render — use Azure SQL (or another SQL Server) with Encrypt=True
+# and without TrustServerCertificate=true. The app enforces both at runtime.
 #
 # Role (Student/Faculty) is resolved via LDAP against AUB AD (win2k.aub.edu.lb), not token
 # group claims. Render cannot reach on-prem AD unless VPN/private networking is added;
@@ -70,7 +71,13 @@ services:
       - key: AllowedHosts
         sync: false
 
+      # Encrypts Data Protection keys in SQL. Required on Linux; Windows IIS uses DPAPI.
+      - key: DataProtection__Key
+        generateValue: true
+        sync: false
+
       # Must include Encrypt=True and must not include TrustServerCertificate=true.
+      # The app also strips TrustServerCertificate and forces Encrypt=True outside Development.
       - key: ConnectionStrings__SqlServerConnection
         sync: false
 

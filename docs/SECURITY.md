@@ -197,13 +197,15 @@ the window nor the budget.
   OIDC correlation/nonce cookies, and antiforgery tokens survive an IIS recycle and a wipe-and-unzip
   deploy, and are shared across instances of the same environment.
 - Newly generated keys are encrypted at rest: Windows (including AUB IIS) uses DPAPI for the app
-  pool identity; Linux needs `DataProtection:CertificateThumbprint` pointing at a certificate in
-  the machine store. Existing plaintext rows remain readable, so turning encryption on does not
-  invalidate current sessions. On IIS the app pool must have **Load User Profile = true** (set
-  once on the pool; `Deploy-IisSite.ps1` sets this).
+  pool identity; Linux uses `DataProtection:Key` (Render: `DataProtection__Key`) or
+  `DataProtection:CertificateThumbprint` in the machine store. Existing plaintext rows remain
+  readable, so turning encryption on does not invalidate current sessions. On IIS the app pool must
+  have **Load User Profile = true** (set once on the pool; `Deploy-IisSite.ps1` sets this).
 - All data access goes through EF Core with parameterized queries. No SQL is built from user input.
 - The connection string requires `Encrypt=True`. `TrustServerCertificate=true` is set **only** in
-  `appsettings.Development.json`; startup logs an error if it appears outside Development.
+  `appsettings.Development.json`. Outside Development the process strips that flag and forces
+  `Encrypt=True` even if a PaaS dashboard still has it; startup logs a warning so the host
+  variable can be cleaned up.
 - `AllowedHosts` is restricted to the real production domains, so Host-header spoofing returns 400.
 - Production explicitly overrides every development flag: `Auth:EnableDevSignIn: false`,
   `Database:ApplyMigrationsOnStartup: false`, `Database:SeedCatalogsOnStartup: false`.
@@ -246,7 +248,8 @@ or a committed compose file.
 | `Security__TrustedProxies__KnownNetworks__0` | CIDR alternative to the above |
 | `Security__Health__MonitoringNetworks__0` | CIDR permitted to read detailed readiness |
 | `Seq:ServerUrl`, `Seq:ApiKey` | Structured log sink. Set in `appsettings` (or a gitignored `appsettings.{Environment}.local.json`); do not put an API key in source control |
-| `DataProtection:CertificateThumbprint` | Required on Linux so key XML is encrypted before it is written to SQL. Not needed on AUB IIS: Windows DPAPI wraps keys automatically |
+| `DataProtection:Key` | Required on Linux (Render: `DataProtection__Key`) so key XML is encrypted before it is written to SQL. Any long secret is hashed to an AES key. Not needed on AUB IIS: Windows DPAPI wraps keys automatically |
+| `DataProtection:CertificateThumbprint` | Optional Linux alternative: a certificate thumbprint in the LocalMachine store |
 
 ### Deliberately left empty in Production
 

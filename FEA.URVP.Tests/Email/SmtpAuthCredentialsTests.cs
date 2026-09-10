@@ -7,7 +7,7 @@ public sealed class SmtpAuthCredentialsTests
     [Fact]
     public void No_credentials_when_nothing_is_configured()
     {
-        var auth = SmtpAuthCredentials.Resolve(null, null, null, "urvp-system@aub.edu.lb");
+        var auth = SmtpAuthCredentials.Resolve(null, null, null);
 
         Assert.Null(auth);
     }
@@ -18,8 +18,7 @@ public sealed class SmtpAuthCredentialsTests
         var auth = SmtpAuthCredentials.Resolve(
             "config-user",
             "config-secret",
-            "admin-secret",
-            "urvp-system@aub.edu.lb");
+            "admin-secret");
 
         Assert.NotNull(auth);
         Assert.Equal("config-user", auth.Value.UserName);
@@ -27,23 +26,28 @@ public sealed class SmtpAuthCredentialsTests
     }
 
     [Fact]
-    public void From_address_is_used_when_only_a_password_is_set()
+    public void Password_without_username_does_not_authenticate()
     {
         var auth = SmtpAuthCredentials.Resolve(
             null,
             null,
-            "mailbox-secret",
-            "urvp-system@aub.edu.lb");
+            "mailbox-secret");
 
-        Assert.NotNull(auth);
-        Assert.Equal("urvp-system@aub.edu.lb", auth.Value.UserName);
-        Assert.Equal("mailbox-secret", auth.Value.Password);
+        Assert.Null(auth);
+    }
+
+    [Fact]
+    public void Username_without_password_does_not_authenticate()
+    {
+        var auth = SmtpAuthCredentials.Resolve("urvp-system", null, null);
+
+        Assert.Null(auth);
     }
 
     [Fact]
     public void Whitespace_is_ignored()
     {
-        var auth = SmtpAuthCredentials.Resolve("  ", "  ", null, "urvp-system@aub.edu.lb");
+        var auth = SmtpAuthCredentials.Resolve("  ", "  ", null);
 
         Assert.Null(auth);
     }

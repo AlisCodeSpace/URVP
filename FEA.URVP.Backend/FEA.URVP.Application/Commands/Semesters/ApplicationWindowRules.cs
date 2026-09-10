@@ -8,7 +8,7 @@ internal static class ApplicationWindowRules
         "The student application window is closed. Rankings cannot be changed.";
 
     public const string MatchingWhileOpenMessage =
-        "Close the student application window before matching or assigning students.";
+        "Close the student application window before running matching.";
 
     public static void EnsureOpenForRanking(Semester? semester, DateTime utcNow)
     {
