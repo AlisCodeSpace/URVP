@@ -196,7 +196,7 @@ export function FacultyStudentProfileView({
                       ? ` (${firstChoiceUsed} of ${seats} used)`
                       : ""}
                     .
-                    {project && isFacultyProjectLocked(project)
+                    {project && isFacultyCandidateRankingLocked(project)
                       ? " Rankings are locked after matching."
                       : ""}
                   </Text>
@@ -212,7 +212,7 @@ export function FacultyStudentProfileView({
                       : "Not yet ranked"}
                   </Text>
                   <div className="mt-5">
-                    {project && isFacultyProjectLocked(project) ? null : (
+                    {project && isFacultyCandidateRankingLocked(project) ? null : (
                       <Button
                         type="button"
                         variant="primary"
