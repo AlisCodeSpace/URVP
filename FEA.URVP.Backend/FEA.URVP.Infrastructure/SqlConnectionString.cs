@@ -8,11 +8,18 @@ namespace FEA.URVP.Infrastructure;
 /// Normalizes SQL Server connection strings from PaaS dashboards and hardens TLS settings.
 /// Hosts like MonsterASP often copy as <c>host;Database=...</c> without <c>Server=</c>,
 /// which SqlClient rejects as keyword <c>host;database</c>.
+/// Shared SQL (Somee) typically requires <c>TrustServerCertificate=True</c> because the
+/// host name does not match the server certificate; that opt-in is preserved when present.
 /// </summary>
 public static class SqlConnectionString
 {
+    public const string AllowTrustServerCertificateKey = "SqlServer:AllowTrustServerCertificate";
+
     public static string Normalize(string connectionString, IConfiguration configuration)
-        => Normalize(connectionString, AllowsTrustServerCertificate(configuration));
+        => Normalize(
+            connectionString,
+            AllowsTrustServerCertificate(configuration)
+            || RequestsTrustServerCertificate(connectionString));
 
     public static string Normalize(string connectionString, bool allowTrustServerCertificate = false)
     {
@@ -50,6 +57,11 @@ public static class SqlConnectionString
 
     public static bool AllowsTrustServerCertificate(IConfiguration configuration)
     {
+        if (configuration.GetValue(AllowTrustServerCertificateKey, false))
+        {
+            return true;
+        }
+
         var environment = configuration["ASPNETCORE_ENVIRONMENT"]
             ?? configuration["DOTNET_ENVIRONMENT"]
             ?? configuration[HostDefaults.EnvironmentKey]

@@ -136,23 +136,17 @@ public static class StartupSecurityValidation
             return;
         }
 
-        var allowTrust = environment.IsDevelopment();
-        if (!allowTrust && SqlConnectionString.RequestsTrustServerCertificate(raw))
-        {
-            logger.LogWarning(
-                "The SQL connection string sets TrustServerCertificate=true in {Environment}. "
-                + "Certificate validation is enforced for this process; remove the setting from the "
-                + "host environment variable so Azure SQL (or another public-CA server) is verified.",
-                environment.EnvironmentName);
-        }
+        var allowTrust = SqlConnectionString.AllowsTrustServerCertificate(configuration)
+            || SqlConnectionString.RequestsTrustServerCertificate(raw);
 
         var connectionString = SqlConnectionString.Normalize(raw, allowTrust);
 
-        if (!allowTrust && SqlConnectionString.RequestsTrustServerCertificate(connectionString))
+        if (!environment.IsDevelopment() && SqlConnectionString.RequestsTrustServerCertificate(connectionString))
         {
-            logger.LogError(
-                "The SQL connection string still trusts any server certificate in {Environment} "
-                + "after hardening. Install a trusted certificate and remove TrustServerCertificate.",
+            logger.LogWarning(
+                "SQL TLS is encrypted but certificate name and CA checks are skipped in {Environment} "
+                + "(TrustServerCertificate). Use this only for hosts like Somee that do not present a "
+                + "matching public certificate.",
                 environment.EnvironmentName);
         }
 

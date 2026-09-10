@@ -31,10 +31,7 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
             ?? throw new InvalidOperationException(
                 "Connection string 'SqlServerConnection' was not found. " +
                 "Set ConnectionStrings:SqlServerConnection in appsettings or via environment variables."),
-            allowTrustServerCertificate: string.Equals(
-                environment,
-                "Development",
-                StringComparison.OrdinalIgnoreCase));
+            configuration);
 
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         optionsBuilder.UseSqlServer(connectionString);
