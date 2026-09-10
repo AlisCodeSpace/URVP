@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode, useMemo } from "react";
+import { useState, type ReactNode } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ExpressInterestModal } from "@/components/projects/ExpressInterestModal";
@@ -9,7 +9,10 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import { useMyStudentProfile } from "@/hooks/useMyStudentProfile";
-import { isResearchTopicMatch } from "@/hooks/useStudentResearchTopics";
+import {
+  isResearchTopicMatch,
+  useStudentResearchTopics,
+} from "@/hooks/useStudentResearchTopics";
 import { isStudent, projectsHref, studentProfileHref } from "@/lib/auth";
 import { openingsLeft, type CatalogProject } from "@/lib/projects";
 
