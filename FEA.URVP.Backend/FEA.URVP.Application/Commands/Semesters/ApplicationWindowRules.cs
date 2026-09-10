@@ -10,6 +10,9 @@ internal static class ApplicationWindowRules
     public const string MatchingWhileOpenMessage =
         "Close the student application window before running matching.";
 
+    public const string AssignmentWhileOpenMessage =
+        "Close the student application window before assigning students.";
+
     public static void EnsureOpenForRanking(Semester? semester, DateTime utcNow)
     {
         if (semester is null || !semester.IsApplicationWindowOpen(utcNow))
@@ -23,6 +26,14 @@ internal static class ApplicationWindowRules
         if (semester.IsApplicationWindowOpen(utcNow))
         {
             throw new InvalidOperationException(MatchingWhileOpenMessage);
+        }
+    }
+
+    public static void EnsureClosedForAssignment(Semester semester, DateTime utcNow)
+    {
+        if (semester.IsApplicationWindowOpen(utcNow))
+        {
+            throw new InvalidOperationException(AssignmentWhileOpenMessage);
         }
     }
 }

@@ -156,7 +156,34 @@ public sealed class AssignStudentToProjectCommandHandlerTests
     }
 
     [Fact]
-    public async Task Assigns_when_application_window_is_open()
+    public async Task Rejects_when_application_window_is_open()
+    {
+        var now = DateTime.UtcNow;
+        var (handler, _, _, project, student) = CreateHandler(semester: new Semester
+        {
+            Name = "Fall 2026",
+            IsActive = true,
+            CycleStart = now.AddDays(-20),
+            CycleEnd = now.AddDays(80),
+            ApplicationWindowStart = now.AddDays(-5),
+            ApplicationWindowEnd = now.AddDays(5),
+        });
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            handler.Handle(
+                new AssignStudentToProjectCommand
+                {
+                    CurrentUserId = Guid.NewGuid(),
+                    ProjectId = project.Id,
+                    StudentUserId = student.Id,
+                },
+                CancellationToken.None));
+
+        Assert.Contains("application window", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Assigns_when_application_window_is_closed()
     {
         var now = DateTime.UtcNow;
         var (handler, bus, _, project, student) = CreateHandler(semester: new Semester
@@ -165,8 +192,8 @@ public sealed class AssignStudentToProjectCommandHandlerTests
             IsActive = true,
             CycleStart = now.AddDays(-20),
             CycleEnd = now.AddDays(80),
-            ApplicationWindowStart = now.AddDays(-5),
-            ApplicationWindowEnd = now.AddDays(5),
+            ApplicationWindowStart = now.AddDays(-10),
+            ApplicationWindowEnd = now.AddDays(-1),
         });
 
         var dto = await handler.Handle(

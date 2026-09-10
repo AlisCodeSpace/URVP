@@ -205,9 +205,13 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
     project.volunteersRequired > 0
       ? Math.round((assigned.length / project.volunteersRequired) * 100)
       : 0;
+  const applicationsOpen = Boolean(activeSemester?.isApplicationWindowOpen);
   const seatsOpen = project.status !== "Closed" && remaining > 0;
   const canAssign =
-    seatsOpen && busyStudentId === null && Boolean(activeSemester);
+    seatsOpen &&
+    busyStudentId === null &&
+    Boolean(activeSemester) &&
+    !applicationsOpen;
   const rankGroups = groupedRankings(rankings, project.id);
   const rankingQuery = searchInput.trim();
   const filteredRankGroups = rankingQuery
@@ -286,7 +290,9 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
               ? "Listing is closed"
               : remaining === 0
                 ? "At capacity"
-                : "Open for assignment"}
+                : applicationsOpen
+                  ? "After applications close"
+                  : "Open for assignment"}
           </p>
         </div>
         <div className="admin-kpi">
@@ -344,6 +350,11 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
       {!activeSemester ? (
         <p className="admin-users-banner" role="status">
           No active URVP cycle. Start a cycle before assigning students.
+        </p>
+      ) : applicationsOpen ? (
+        <p className="admin-users-banner" role="status">
+          The student application window is still open. Close it before
+          assigning students.
         </p>
       ) : null}
 
@@ -429,6 +440,11 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
                       ranking={ranking}
                       projectId={project.id}
                       canAssign={canAssign}
+                      assignBlockedReason={
+                        applicationsOpen
+                          ? "Close the student application window before assigning students."
+                          : undefined
+                      }
                       busy={busyStudentId === ranking.studentUserId}
                       onAssign={() => void assign(ranking.studentUserId)}
                     />
@@ -524,12 +540,14 @@ function RankedCard({
   ranking,
   projectId,
   canAssign,
+  assignBlockedReason,
   busy,
   onAssign,
 }: {
   ranking: ProjectRankingStudentDto;
   projectId: string;
   canAssign: boolean;
+  assignBlockedReason?: string;
   busy: boolean;
   onAssign: () => void;
 }) {
@@ -568,6 +586,7 @@ function RankedCard({
             variant="primary"
             size="sm"
             disabled={!canAssign || busy}
+            title={!canAssign ? assignBlockedReason : undefined}
             onClick={onAssign}
           >
             {busy ? "Assigning…" : "Assign"}
