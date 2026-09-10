@@ -89,6 +89,13 @@ export function TourProvider({ children }: { children: ReactNode }) {
       targetWaitTimeout: 8000,
       beforeTimeout: 15000,
       spotlightRadius: 12,
+      scrollOffset: 96,
+      scrollDuration: 400,
+    },
+    styles: {
+      tooltipTitle: {
+        color: "#662076",
+      },
     },
     onEvent: (event) => {
       if (event.type !== EVENTS.TOUR_END) return;

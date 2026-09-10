@@ -7,6 +7,8 @@ import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { ProjectCardsSkeleton } from "@/components/ui/SectionSkeletons";
+import { Tag } from "@/components/ui/Tag";
+import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import { useStudentResearchTopics } from "@/hooks/useStudentResearchTopics";
 import { ApiError } from "@/lib/api";
 import { projectsHref } from "@/lib/auth";
@@ -267,6 +269,7 @@ export function ProjectsBrowse({
   const { status, loading: authLoading } = useAuth();
   const isSignedIn = Boolean(status?.isAuthenticated);
   const studentTopics = useStudentResearchTopics();
+  const appWindow = useApplicationWindow();
 
   const [projects, setProjects] = useState<CatalogProject[] | null>(null);
   const [rankings, setRankings] = useState<ProjectRankingDto[] | null>(null);
@@ -513,14 +516,23 @@ export function ProjectsBrowse({
         {!ranked ? (
           <div className="flex flex-col gap-2 border-b border-primary/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <Heading
-                as="h2"
-                size="6"
-                weight="medium"
-                className="!font-[family-name:var(--font-display)] !text-primary"
-              >
-                Open Opportunities
-              </Heading>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <Heading
+                  as="h2"
+                  size="6"
+                  weight="medium"
+                  className="!font-[family-name:var(--font-display)] !text-primary"
+                >
+                  Opportunities
+                </Heading>
+                {!appWindow.loading ? (
+                  <Tag tone={appWindow.isOpen ? "secondary" : "muted"}>
+                    {appWindow.isOpen
+                      ? "Applications Open"
+                      : "Applications Closed"}
+                  </Tag>
+                ) : null}
+              </div>
               <Text as="p" size="2" mt="1" className="!text-muted">
                 {loadingList ? "Loading" : `${visibleCount} result${visibleCount === 1 ? "" : "s"}`}
                 {query.trim() ? ` for “${query.trim()}”` : null}

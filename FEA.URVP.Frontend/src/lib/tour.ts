@@ -68,10 +68,33 @@ export async function waitForTourPath(
 export async function waitForTourTarget(
   selector: string,
   timeoutMs = 7000,
-): Promise<void> {
+): Promise<Element | null> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    if (document.querySelector(selector)) return;
+    const el = document.querySelector(selector);
+    if (el) return el;
     await new Promise((resolve) => setTimeout(resolve, 40));
   }
+  return null;
+}
+
+/** Bring a tour target into view, accounting for the fixed site header. */
+export async function scrollTourTargetIntoView(
+  selector: string,
+): Promise<void> {
+  const el = document.querySelector(selector);
+  if (!(el instanceof HTMLElement)) return;
+
+  const headerOffset = 96;
+  const rect = el.getBoundingClientRect();
+  const fullyVisible =
+    rect.top >= headerOffset &&
+    rect.bottom <= window.innerHeight - 24 &&
+    rect.left >= 0 &&
+    rect.right <= window.innerWidth;
+
+  if (fullyVisible) return;
+
+  el.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+  await new Promise((resolve) => setTimeout(resolve, 350));
 }

@@ -634,15 +634,7 @@ export function StudentProfileForm() {
       </Section>
 
       <Section title="Research Interests" tour="student-interests">
-        <Field
-          id="researchTopics"
-          label="Research topic(s)"
-          hint={
-            editing
-              ? `Select up to ${maxTopics} topics from the same catalog used when posting projects.`
-              : undefined
-          }
-        >
+        <Field id="researchTopics" label="Research topic(s)">
           <MultiSelectSearch
             id="researchTopics"
             options={researchTopicOptions}
@@ -651,6 +643,15 @@ export function StudentProfileForm() {
             max={maxTopics}
             placeholder="Choose from list"
             disabled={readOnly}
+            hint={
+              editing
+                ? `Select up to ${maxTopics} topics from the same catalog used when posting projects${
+                    values.researchTopics.length > 0
+                      ? ` (${values.researchTopics.length}/${maxTopics})`
+                      : ""
+                  }.`
+                : undefined
+            }
           />
         </Field>
 

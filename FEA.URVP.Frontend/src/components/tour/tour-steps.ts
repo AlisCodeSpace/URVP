@@ -6,7 +6,7 @@ import {
   studentProfileHref,
   studentRankingsHref,
 } from "@/lib/auth";
-import { waitForTourTarget } from "@/lib/tour";
+import { waitForTourTarget, scrollTourTargetIntoView } from "@/lib/tour";
 
 type Go = (href: string) => Promise<void>;
 
@@ -23,8 +23,10 @@ function step(
     placement: "bottom",
     before: async () => {
       await go(href);
-      if (typeof next.target === "string") {
-        await waitForTourTarget(next.target);
+      if (typeof next.target !== "string") return;
+      await waitForTourTarget(next.target);
+      if (!next.skipScroll) {
+        await scrollTourTargetIntoView(next.target);
       }
     },
     ...next,
