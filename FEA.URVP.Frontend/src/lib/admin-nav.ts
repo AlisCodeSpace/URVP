@@ -52,6 +52,11 @@ export const adminNav: AdminNavGroup[] = [
         label: "Email",
         description: "SMTP credentials for outgoing mail.",
       },
+      {
+        href: "/admin/notifications",
+        label: "Notifications",
+        description: "In-app updates for this admin account.",
+      },
     ],
     children: [
       {

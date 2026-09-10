@@ -10,11 +10,7 @@ import { notificationsHref } from "@/lib/auth";
 
 const PREVIEW_SIZE = 5;
 
-type NotificationBellProps = {
-  variant?: "site" | "admin";
-};
-
-export function NotificationBell({ variant = "site" }: NotificationBellProps) {
+export function NotificationBell() {
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
@@ -45,7 +41,7 @@ export function NotificationBell({ variant = "site" }: NotificationBellProps) {
   const badge = list.unreadCount > 9 ? "9+" : String(list.unreadCount);
 
   return (
-    <div ref={rootRef} className={`notification-bell is-${variant}`}>
+    <div ref={rootRef} className="notification-bell">
       <button
         type="button"
         className="notification-bell-btn"

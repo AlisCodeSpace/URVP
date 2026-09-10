@@ -3393,14 +3393,6 @@ body:has(.site-loading) .site-footer {
   box-shadow: 0 16px 40px color-mix(in srgb, var(--primary-deep) 18%, transparent);
 }
 
-.notification-bell.is-admin .notification-bell-menu {
-  top: auto;
-  right: auto;
-  left: calc(100% + 8px);
-  bottom: 0;
-  margin-top: 0;
-}
-
 .notification-bell-head,
 .notification-bell-all {
   display: flex;
