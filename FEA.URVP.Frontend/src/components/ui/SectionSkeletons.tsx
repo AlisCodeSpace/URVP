@@ -97,11 +97,11 @@ export function WorkshopCardsSkeleton({ count = 3 }: { count?: number }) {
 
 export function NewsTickerSkeleton() {
   return (
-    <section className="overflow-hidden bg-background py-16 sm:py-20" aria-busy="true" aria-label="Loading updates">
+    <section className="overflow-hidden border-y border-primary/10 bg-primary/10 py-16 sm:py-20" aria-busy="true" aria-label="Loading updates">
       <div className="site-container mb-10">
         <Skeleton className="h-3 w-24" />
       </div>
-      <div className="relative border-y border-secondary/25 bg-secondary/8 py-5">
+      <div className="relative border-y border-primary/15 bg-primary/5 py-5">
         <div className="flex gap-12 overflow-hidden px-6">
           {times(4).map((i) => (
             <div key={i} className="flex shrink-0 items-baseline gap-3">
