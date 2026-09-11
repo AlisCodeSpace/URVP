@@ -30,24 +30,24 @@ export function ResearchDayContent() {
 
       <section
         id="research-day-deadlines"
-        className="scroll-mt-24 border-y border-primary/10 bg-primary-deep text-white"
+        className="scroll-mt-24 border-y border-primary/10 bg-primary/10"
       >
         <div className="site-container py-16 sm:py-20">
           <Heading
             as="h2"
             size="7"
             weight="medium"
-            className="!font-[family-name:var(--font-display)] !text-white"
+            className="!font-[family-name:var(--font-display)] !text-primary"
           >
             Deadlines
           </Heading>
-          <Text as="p" size="3" mt="2" className="max-w-xl !text-white/70">
+          <Text as="p" size="3" mt="2" className="max-w-xl !text-muted">
             Key dates for poster submission, registration, program confirmation,
             and the Best Poster Competition. Exact deadlines will replace the
             placeholders below.
           </Text>
 
-          <ol className="mt-12 divide-y divide-white/15 border-y border-white/15">
+          <ol className="mt-12 divide-y divide-primary/10 border-y border-primary/10">
             {researchDayDeadlines.map((item, index) => (
               <li
                 key={item.id}
@@ -55,7 +55,7 @@ export function ResearchDayContent() {
               >
                 <span
                   aria-hidden
-                  className="font-[family-name:var(--font-display)] text-3xl font-medium text-secondary"
+                  className="font-[family-name:var(--font-display)] text-3xl font-medium text-secondary-deep"
                 >
                   {String(index + 1).padStart(2, "0")}
                 </span>
@@ -64,11 +64,11 @@ export function ResearchDayContent() {
                     as="h3"
                     size="5"
                     weight="medium"
-                    className="!font-[family-name:var(--font-display)] !text-white"
+                    className="!font-[family-name:var(--font-display)] !text-primary"
                   >
                     {item.label}
                   </Heading>
-                  <Text as="p" size="3" mt="2" className="!leading-relaxed !text-white/70">
+                  <Text as="p" size="3" mt="2" className="!leading-relaxed !text-muted">
                     {item.detail}
                   </Text>
                 </div>
@@ -76,7 +76,7 @@ export function ResearchDayContent() {
                   as="p"
                   size="2"
                   weight="medium"
-                  className="shrink-0 !uppercase !tracking-[0.16em] !text-secondary"
+                  className="shrink-0 !uppercase !tracking-[0.16em] !text-secondary-deep"
                 >
                   {item.date}
                 </Text>
