@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { isStudent } from "@/lib/auth";
 import { getActiveSemester } from "@/lib/semesters-api";
 
 export type WindowStatus =
@@ -72,4 +74,26 @@ export function useApplicationWindow(): WindowStatus {
   }, []);
 
   return status;
+}
+
+/**
+ * Students may not browse or open project listings while the application window
+ * is closed. Faculty and admin keep access. `pending` is true until role and
+ * window status are known, so the catalog is not flashed before the lock.
+ */
+export function useStudentProjectsLocked(): {
+  pending: boolean;
+  locked: boolean;
+  semesterName: string | null;
+} {
+  const { status, loading: authLoading } = useAuth();
+  const appWindow = useApplicationWindow();
+  const studentUser = isStudent(status?.role);
+
+  return {
+    pending: authLoading || (studentUser && appWindow.loading),
+    locked:
+      !authLoading && studentUser && !appWindow.loading && !appWindow.isOpen,
+    semesterName: appWindow.semesterName,
+  };
 }

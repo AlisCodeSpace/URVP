@@ -3,12 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Heading, Text } from "@radix-ui/themes";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { ApplicationWindowClosedNotice } from "@/components/projects/ApplicationWindowClosedNotice";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { ProjectCardsSkeleton } from "@/components/ui/SectionSkeletons";
 import { Tag } from "@/components/ui/Tag";
-import { useApplicationWindow } from "@/hooks/useApplicationWindow";
+import {
+  useApplicationWindow,
+  useStudentProjectsLocked,
+} from "@/hooks/useApplicationWindow";
 import { useStudentResearchTopics } from "@/hooks/useStudentResearchTopics";
 import { ApiError } from "@/lib/api";
 import { projectsHref } from "@/lib/auth";
@@ -270,6 +274,9 @@ export function ProjectsBrowse({
   const isSignedIn = Boolean(status?.isAuthenticated);
   const studentTopics = useStudentResearchTopics();
   const appWindow = useApplicationWindow();
+  const studentProjects = useStudentProjectsLocked();
+  const catalogClosedForStudent = !ranked && studentProjects.locked;
+  const catalogAccessPending = !ranked && studentProjects.pending;
 
   const [projects, setProjects] = useState<CatalogProject[] | null>(null);
   const [rankings, setRankings] = useState<ProjectRankingDto[] | null>(null);
@@ -283,6 +290,12 @@ export function ProjectsBrowse({
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
+    if (studentProjects.pending || studentProjects.locked) {
+      setProjects(studentProjects.locked ? [] : null);
+      setLoadError(null);
+      return;
+    }
+
     let cancelled = false;
 
     void (async () => {
@@ -305,7 +318,7 @@ export function ProjectsBrowse({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [studentProjects.pending, studentProjects.locked]);
 
   useEffect(() => {
     if (!ranked) {
@@ -407,6 +420,16 @@ export function ProjectsBrowse({
     setActivity("All activities");
     setSort("newest");
     setPageNumber(1);
+  }
+
+  if (catalogAccessPending) {
+    return <ProjectCardsSkeleton className="" />;
+  }
+
+  if (catalogClosedForStudent) {
+    return (
+      <ApplicationWindowClosedNotice semesterName={studentProjects.semesterName} />
+    );
   }
 
   return (
@@ -554,6 +577,10 @@ export function ProjectsBrowse({
           </div>
         ) : ranked && rankings == null ? (
           <ProjectCardsSkeleton count={3} className="" />
+        ) : rankedEmpty && studentProjects.locked ? (
+          <ApplicationWindowClosedNotice
+            semesterName={studentProjects.semesterName}
+          />
         ) : rankedEmpty ? (
           <RankedEmptyCta />
         ) : loadError ? (

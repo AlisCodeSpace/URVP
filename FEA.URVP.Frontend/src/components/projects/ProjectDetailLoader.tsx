@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Text } from "@radix-ui/themes";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { ApplicationWindowClosedNotice } from "@/components/projects/ApplicationWindowClosedNotice";
 import { ProjectDetail } from "@/components/projects/ProjectDetail";
+import { useStudentProjectsLocked } from "@/hooks/useApplicationWindow";
 import { ApiError } from "@/lib/api";
 import type { CatalogProject } from "@/lib/projects";
 import { projectsHref } from "@/lib/auth";
@@ -13,11 +15,19 @@ import { NotFoundView } from "@/components/ui/NotFoundView";
 import { ProjectDetailSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function ProjectDetailLoader({ id }: { id: string }) {
+  const studentProjects = useStudentProjectsLocked();
   const [project, setProject] = useState<CatalogProject | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
+    if (studentProjects.pending || studentProjects.locked) {
+      setProject(null);
+      setError(null);
+      setNotFound(false);
+      return;
+    }
+
     let cancelled = false;
 
     void (async () => {
@@ -41,7 +51,31 @@ export function ProjectDetailLoader({ id }: { id: string }) {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, studentProjects.locked, studentProjects.pending]);
+
+  if (studentProjects.locked) {
+    return (
+      <>
+        <PageHeader
+          title="Projects"
+          description="Research listings are hidden while the student application window is closed."
+        >
+          <Link
+            href={projectsHref()}
+            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+          >
+            <span aria-hidden>←</span>
+            Back to projects
+          </Link>
+        </PageHeader>
+        <section className="site-container py-14 sm:py-16">
+          <ApplicationWindowClosedNotice
+            semesterName={studentProjects.semesterName}
+          />
+        </section>
+      </>
+    );
+  }
 
   if (notFound) {
     return (
