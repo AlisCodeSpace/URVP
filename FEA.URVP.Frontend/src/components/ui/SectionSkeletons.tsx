@@ -97,7 +97,7 @@ export function WorkshopCardsSkeleton({ count = 3 }: { count?: number }) {
 
 export function NewsTickerSkeleton() {
   return (
-    <section className="overflow-hidden border-y border-primary/10 bg-primary/10 py-16 sm:py-20" aria-busy="true" aria-label="Loading updates">
+    <section className="overflow-hidden border-y border-primary/10 bg-primary/8 py-16 sm:py-20" aria-busy="true" aria-label="Loading updates">
       <div className="site-container mb-10">
         <Skeleton className="h-3 w-24" />
       </div>

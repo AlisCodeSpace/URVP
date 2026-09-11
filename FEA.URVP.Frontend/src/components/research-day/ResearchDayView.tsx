@@ -30,7 +30,7 @@ export function ResearchDayContent() {
 
       <section
         id="research-day-deadlines"
-        className="scroll-mt-24 border-y border-primary/10 bg-primary/10"
+        className="scroll-mt-24 border-y border-primary/10 bg-primary/8"
       >
         <div className="site-container py-16 sm:py-20">
           <Heading
