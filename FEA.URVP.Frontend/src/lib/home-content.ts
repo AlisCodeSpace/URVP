@@ -1,4 +1,3 @@
-import { workshops as workshopCatalog, type Workshop } from "./workshops";
 import { newsArticles, type NewsArticle } from "./news";
 import { newsArticleHref } from "./auth";
 
@@ -37,13 +36,6 @@ export type NewsTickerItem = {
   href: string;
 };
 
-export type WorkshopTeaser = {
-  title: string;
-  date: string;
-  blurb: string;
-  href: string;
-};
-
 export function toNewsTickerItems(articles: NewsArticle[]): NewsTickerItem[] {
   return articles.map((article) => ({
     title: article.title,
@@ -52,20 +44,8 @@ export function toNewsTickerItems(articles: NewsArticle[]): NewsTickerItem[] {
   }));
 }
 
-export function toWorkshopTeasers(items: Workshop[]): WorkshopTeaser[] {
-  return items.map((workshop) => ({
-    title: workshop.title,
-    date: workshop.date,
-    blurb: workshop.description,
-    href: "/workshops",
-  }));
-}
-
 /** Home marquee — derived from the News catalog. */
 export const newsItems = toNewsTickerItems(newsArticles);
-
-/** Home teaser — derived from the Workshops page catalog. */
-export const workshops = toWorkshopTeasers(workshopCatalog);
 
 export const introHeadline = "Research starts earlier than you think.";
 
@@ -81,31 +61,3 @@ export const introKeyFacts = [
   "Incomplete profiles will not be considered.",
   "Not matched this cycle? We encourage you to apply again in a future cycle.",
 ] as const;
-
-export type FeaturedItem = {
-  kind: string;
-  title: string;
-  detail: string;
-  accent: "secondary" | "primary";
-};
-
-export const featuredItems: FeaturedItem[] = [
-  {
-    kind: "Deadline",
-    title: "Student profiles",
-    detail: "Open Aug 25 – Sep 30, 2026 to create or update your profile.",
-    accent: "secondary",
-  },
-  {
-    kind: "Cycle",
-    title: "URVP main cycle",
-    detail: "Oct 13, 2025 – Aug 21, 2026. Contact jc14@aub.edu.lb.",
-    accent: "primary",
-  },
-  {
-    kind: "Workshop",
-    title: "Profile writing clinic",
-    detail: "Sep 5, 2025 — prepare before matching opens.",
-    accent: "secondary",
-  },
-];

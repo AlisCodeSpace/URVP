@@ -4,6 +4,7 @@ import {
   researchDayForms,
   researchDayIntro,
   researchDayUpdates,
+  showResearchDayForms,
 } from "@/lib/research-day";
 
 export function ResearchDayContent() {
@@ -29,23 +30,24 @@ export function ResearchDayContent() {
 
       <section
         id="research-day-deadlines"
-        className="scroll-mt-24 border-y border-primary/10 bg-surface"
+        className="scroll-mt-24 border-y border-primary/10 bg-primary-deep text-white"
       >
         <div className="site-container py-16 sm:py-20">
           <Heading
             as="h2"
             size="7"
             weight="medium"
-            className="!font-[family-name:var(--font-display)] !text-primary"
+            className="!font-[family-name:var(--font-display)] !text-white"
           >
             Deadlines
           </Heading>
-          <Text as="p" size="3" mt="2" className="max-w-xl !text-muted">
-            Key dates for abstracts, registration, and presenter confirmation.
-            Exact deadlines will replace the placeholders below.
+          <Text as="p" size="3" mt="2" className="max-w-xl !text-white/70">
+            Key dates for poster submission, registration, program confirmation,
+            and the Best Poster Competition. Exact deadlines will replace the
+            placeholders below.
           </Text>
 
-          <ol className="mt-12 divide-y divide-primary/10 border-y border-primary/10">
+          <ol className="mt-12 divide-y divide-white/15 border-y border-white/15">
             {researchDayDeadlines.map((item, index) => (
               <li
                 key={item.id}
@@ -53,7 +55,7 @@ export function ResearchDayContent() {
               >
                 <span
                   aria-hidden
-                  className="font-[family-name:var(--font-display)] text-3xl font-medium text-secondary-deep"
+                  className="font-[family-name:var(--font-display)] text-3xl font-medium text-secondary"
                 >
                   {String(index + 1).padStart(2, "0")}
                 </span>
@@ -62,11 +64,11 @@ export function ResearchDayContent() {
                     as="h3"
                     size="5"
                     weight="medium"
-                    className="!font-[family-name:var(--font-display)] !text-primary"
+                    className="!font-[family-name:var(--font-display)] !text-white"
                   >
                     {item.label}
                   </Heading>
-                  <Text as="p" size="3" mt="2" className="!leading-relaxed !text-muted">
+                  <Text as="p" size="3" mt="2" className="!leading-relaxed !text-white/70">
                     {item.detail}
                   </Text>
                 </div>
@@ -74,7 +76,7 @@ export function ResearchDayContent() {
                   as="p"
                   size="2"
                   weight="medium"
-                  className="shrink-0 !uppercase !tracking-[0.16em] !text-secondary-deep"
+                  className="shrink-0 !uppercase !tracking-[0.16em] !text-secondary"
                 >
                   {item.date}
                 </Text>
@@ -84,6 +86,7 @@ export function ResearchDayContent() {
         </div>
       </section>
 
+      {showResearchDayForms ? (
       <section
         id="research-day-forms"
         className="scroll-mt-24 border-t border-primary/10 bg-primary-deep text-white"
@@ -137,6 +140,7 @@ export function ResearchDayContent() {
           </ul>
         </div>
       </section>
+      ) : null}
 
       <section className="site-container py-16 sm:py-20">
         <Heading
