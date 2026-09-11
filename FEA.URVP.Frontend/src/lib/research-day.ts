@@ -19,11 +19,11 @@ export type ResearchDayDeadline = {
 
 export const researchDayDeadlines: ResearchDayDeadline[] = [
   {
-    id: "abstract",
-    label: "Abstract submission",
+    id: "poster",
+    label: "Poster Submission",
     date: "TBA",
     detail:
-      "Submit a short abstract of your URVP project for consideration on the Research Day program.",
+      "Submit a poster about your URVP project for consideration on the Research Day program.",
   },
   {
     id: "registration",
@@ -33,13 +33,23 @@ export const researchDayDeadlines: ResearchDayDeadline[] = [
       "Register to attend Research Day — open to URVP volunteers, mentors, and the AUB community.",
   },
   {
-    id: "presenter",
-    label: "Presenter confirmation",
+    id: "program-confirmation",
+    label: "Program confirmation",
     date: "TBA",
     detail:
-      "Selected presenters confirm participation and presentation format (poster or short talk).",
+      "Presenters confirm participation and presentation format - Agenda will be published.",
+  },
+  {
+    id: "best-poster",
+    label: "Best Poster Competition",
+    date: "TBA",
+    detail:
+      "A jury will evaluate the posters presented - winning projects will be rewarded",
   },
 ];
+
+/** Forms section is kept in data but hidden on the page until official links open. */
+export const showResearchDayForms = false;
 
 export type ResearchDayUpdate = {
   id: string;

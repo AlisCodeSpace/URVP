@@ -6,7 +6,7 @@ import { researchDayBanner } from "@/lib/research-day";
 export const metadata: Metadata = {
   title: "Research Day | URVP",
   description:
-    "URVP Research Day — deadlines, updates, and Google Form links for applications and registration at AUB.",
+    "URVP Research Day — deadlines and updates for the undergraduate research showcase at AUB.",
 };
 
 export default function ResearchDayPage() {

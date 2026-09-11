@@ -4,6 +4,7 @@ import {
   researchDayForms,
   researchDayIntro,
   researchDayUpdates,
+  showResearchDayForms,
 } from "@/lib/research-day";
 
 export function ResearchDayContent() {
@@ -29,7 +30,7 @@ export function ResearchDayContent() {
 
       <section
         id="research-day-deadlines"
-        className="scroll-mt-24 border-y border-primary/10 bg-surface"
+        className="scroll-mt-24 border-y border-primary/10 bg-primary/8"
       >
         <div className="site-container py-16 sm:py-20">
           <Heading
@@ -41,8 +42,9 @@ export function ResearchDayContent() {
             Deadlines
           </Heading>
           <Text as="p" size="3" mt="2" className="max-w-xl !text-muted">
-            Key dates for abstracts, registration, and presenter confirmation.
-            Exact deadlines will replace the placeholders below.
+            Key dates for poster submission, registration, program confirmation,
+            and the Best Poster Competition. Exact deadlines will replace the
+            placeholders below.
           </Text>
 
           <ol className="mt-12 divide-y divide-primary/10 border-y border-primary/10">
@@ -84,6 +86,7 @@ export function ResearchDayContent() {
         </div>
       </section>
 
+      {showResearchDayForms ? (
       <section
         id="research-day-forms"
         className="scroll-mt-24 border-t border-primary/10 bg-primary-deep text-white"
@@ -137,6 +140,7 @@ export function ResearchDayContent() {
           </ul>
         </div>
       </section>
+      ) : null}
 
       <section className="site-container py-16 sm:py-20">
         <Heading

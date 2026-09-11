@@ -39,7 +39,7 @@ export function RollingBanners({ items }: { items?: NewsTickerItem[] }) {
   const news = [...ticker, ...ticker];
 
   return (
-    <section className="overflow-hidden bg-background py-16 sm:py-20">
+    <section className="overflow-hidden border-y border-primary/10 bg-primary/8 py-16 sm:py-20">
       <div className="site-container mb-10">
         <Text
           as="p"
@@ -51,7 +51,7 @@ export function RollingBanners({ items }: { items?: NewsTickerItem[] }) {
         </Text>
       </div>
 
-      <div className="relative border-y border-secondary/25 bg-secondary/8 py-5">
+      <div className="relative border-y border-primary/15 bg-primary/5 py-5">
         <div
           className="marquee-track flex gap-12 px-6"
           style={{ animationDuration: "32s" }}

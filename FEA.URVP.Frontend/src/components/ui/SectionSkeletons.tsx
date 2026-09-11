@@ -95,55 +95,13 @@ export function WorkshopCardsSkeleton({ count = 3 }: { count?: number }) {
   );
 }
 
-export function WorkshopTeaserSkeleton({ count = 4 }: { count?: number }) {
-  return (
-    <ul
-      className="mt-12 divide-y divide-white/15 border-y border-white/15"
-      aria-busy="true"
-      aria-label="Loading workshops"
-    >
-      {times(count).map((i) => (
-        <li key={i} className="flex flex-col gap-3 py-7 sm:flex-row sm:items-baseline sm:justify-between">
-          <div className="w-full max-w-lg space-y-3">
-            <Skeleton tone="dark" className="h-6 w-3/4" />
-            <Skeleton tone="dark" className="h-4 w-full" />
-          </div>
-          <Skeleton tone="dark" className="h-3 w-28 shrink-0" />
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-export function FeaturedNowSkeleton({ count = 3 }: { count?: number }) {
-  return (
-    <ul
-      className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
-      aria-busy="true"
-      aria-label="Loading featured items"
-    >
-      {times(count).map((i) => (
-        <li
-          key={i}
-          className="rounded-lg border border-primary/12 bg-surface px-6 py-7"
-        >
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className="mt-4 h-6 w-3/4" />
-          <Skeleton className="mt-3 h-4 w-full" />
-          <Skeleton className="mt-2 h-4 w-2/3" />
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export function NewsTickerSkeleton() {
   return (
-    <section className="overflow-hidden bg-background py-16 sm:py-20" aria-busy="true" aria-label="Loading updates">
+    <section className="overflow-hidden border-y border-primary/10 bg-primary/8 py-16 sm:py-20" aria-busy="true" aria-label="Loading updates">
       <div className="site-container mb-10">
         <Skeleton className="h-3 w-24" />
       </div>
-      <div className="relative border-y border-secondary/25 bg-secondary/8 py-5">
+      <div className="relative border-y border-primary/15 bg-primary/5 py-5">
         <div className="flex gap-12 overflow-hidden px-6">
           {times(4).map((i) => (
             <div key={i} className="flex shrink-0 items-baseline gap-3">
