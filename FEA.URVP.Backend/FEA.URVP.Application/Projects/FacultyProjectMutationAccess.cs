@@ -13,9 +13,6 @@ public sealed class FacultyProjectMutationAccess
     public const string LockedAfterRankingMessage =
         "This project can no longer be edited once a student has ranked it.";
 
-    public const string LockedAfterWindowClosedMessage =
-        "This project can no longer be edited after the application window closes.";
-
     public const string LockedAfterCycleEndedMessage =
         "This project can no longer be edited after the URVP cycle ends.";
 
@@ -72,11 +69,6 @@ public sealed class FacultyProjectMutationAccess
             return LockedAfterCycleEndedMessage;
         }
 
-        if (context.ApplicationWindowEnded)
-        {
-            return LockedAfterWindowClosedMessage;
-        }
-
         var counts = await _rankings.CountByProjectIdsAsync([project.Id], cancellationToken);
         if (counts.GetValueOrDefault(project.Id) > 0)
         {
@@ -111,15 +103,11 @@ public sealed class FacultyProjectMutationAccess
 
         if (activeSemester is not null)
         {
-            return new CycleContext(
-                activeSemester.HasEnded(now),
-                activeSemester.HasApplicationWindowEnded(now));
+            return new CycleContext(activeSemester.HasEnded(now));
         }
 
         var semesters = await _semesters.ListAllAsync(cancellationToken);
-        return new CycleContext(
-            semesters.Any(semester => semester.HasEnded(now)),
-            ApplicationWindowEnded: false);
+        return new CycleContext(semesters.Any(semester => semester.HasEnded(now)));
     }
 
     private static string? ResolveEditLockReason(
@@ -137,11 +125,6 @@ public sealed class FacultyProjectMutationAccess
             return LockedAfterCycleEndedMessage;
         }
 
-        if (context.ApplicationWindowEnded)
-        {
-            return LockedAfterWindowClosedMessage;
-        }
-
         if (rankingCounts.GetValueOrDefault(project.Id) > 0)
         {
             return LockedAfterRankingMessage;
@@ -150,5 +133,5 @@ public sealed class FacultyProjectMutationAccess
         return null;
     }
 
-    private sealed record CycleContext(bool CycleEnded, bool ApplicationWindowEnded);
+    private sealed record CycleContext(bool CycleEnded);
 }
