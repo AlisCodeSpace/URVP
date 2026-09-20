@@ -2,7 +2,6 @@
 
 import { Heading, Text } from "@radix-ui/themes";
 import { Button } from "@/components/ui/Button";
-import { formatApplicationAnnouncement } from "@/hooks/useApplicationWindow";
 import { studentProfileHref } from "@/lib/auth";
 
 const otherPages = [
@@ -38,7 +37,7 @@ export function ApplicationWindowClosedNotice({
           className="mx-auto max-w-lg !leading-relaxed !text-muted"
         >
           {semesterName
-            ? `${formatApplicationAnnouncement(semesterName, false)} Please wait until it opens to browse research projects and express interest.`
+            ? `Applications for the URVP ${semesterName} are closed. Please wait until it opens to browse research projects and express interest.`
             : "The student application window is currently closed. Please wait until it opens to browse research projects and express interest."}{" "}
           In the meantime, you can visit other pages on the website.
         </Text>

@@ -43,12 +43,11 @@ function fetchWindowStatus(): Promise<WindowStatus> {
 /** Home/hero copy for the active cycle’s student application window. */
 export function formatApplicationAnnouncement(
   semesterName: string | null,
-  isOpen: boolean,
 ): string {
   if (!semesterName) {
     return "URVP is not currently active.";
   }
-  return `Applications for the URVP ${semesterName} are ${isOpen ? "open" : "closed"}.`;
+  return `Applications for the URVP ${semesterName} are open.`;
 }
 
 /**
