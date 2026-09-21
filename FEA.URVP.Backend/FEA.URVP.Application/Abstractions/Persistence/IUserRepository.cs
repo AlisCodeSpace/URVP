@@ -18,6 +18,13 @@ public interface IUserRepository
         int pageSize,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<User>> ListAllAsync(
+        string? search,
+        UserRole? role,
+        UserSortField sortBy,
+        SortDirection sortDir,
+        CancellationToken cancellationToken = default);
+
     Task<int> CountByRoleAsync(UserRole role, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<Guid>> ListUserIdsByRolesAsync(

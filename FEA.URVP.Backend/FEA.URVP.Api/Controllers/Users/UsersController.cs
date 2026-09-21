@@ -1,10 +1,13 @@
+using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.Users.AssignRole;
+using FEA.URVP.Application.Queries.Users.Export;
 using FEA.URVP.Application.Queries.Users.List;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FEA.URVP.Api.Controllers.Users;
 
@@ -44,6 +47,32 @@ public sealed class UsersController : ApiControllerBase
             cancellationToken);
 
         return PaginatedResponse(items, pageNumber, pageSize, totalCount);
+    }
+
+    /// <summary>
+    /// Download matching user accounts as PDF or Excel. Admin only.
+    /// Honors the same search, role, and sort filters as the users list.
+    /// </summary>
+    [HttpGet("export")]
+    [EnableRateLimiting(RateLimitingConfiguration.DownloadPolicy)]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? format = "xlsx",
+        [FromQuery] string? search = null,
+        [FromQuery] UserRole? role = null,
+        [FromQuery] UserSortField sortBy = UserSortField.Name,
+        [FromQuery] SortDirection sortDir = SortDirection.Asc,
+        CancellationToken cancellationToken = default)
+    {
+        if (!UserHasRole(nameof(UserRole.Admin)))
+        {
+            return ForbiddenResponse();
+        }
+
+        var file = await _mediator.Send(
+            new ExportUsersQuery(format, search, role, sortBy, sortDir),
+            cancellationToken);
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        return File(file.Content, file.MimeType, file.FileName);
     }
 
     /// <summary>Assign a role to a user account. Admin only.</summary>

@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api";
+import { apiDownloadFile, apiFetch } from "@/lib/api";
 
 export type UserRoleName = "Student" | "Faculty" | "Admin";
 export type UserSortField = "Name" | "Email" | "Role";
@@ -50,6 +50,25 @@ export async function listUsers(
   query.set("pageSize", String(params.pageSize ?? 20));
 
   return apiFetch<PaginatedUsers>(`/api/users?${query.toString()}`);
+}
+
+export type UserExportFormat = "pdf" | "xlsx";
+
+export async function exportUsers(
+  format: UserExportFormat,
+  params: Pick<ListUsersParams, "search" | "role" | "sortBy" | "sortDir"> = {},
+): Promise<void> {
+  const query = new URLSearchParams();
+  query.set("format", format);
+  if (params.search?.trim()) query.set("search", params.search.trim());
+  if (params.role) query.set("role", params.role);
+  query.set("sortBy", params.sortBy ?? "Name");
+  query.set("sortDir", params.sortDir ?? "Asc");
+
+  await apiDownloadFile(
+    `/api/users/export?${query.toString()}`,
+    format === "pdf" ? "urvp-users.pdf" : "urvp-users.xlsx",
+  );
 }
 
 export async function assignUserRole(

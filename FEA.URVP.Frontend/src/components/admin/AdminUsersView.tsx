@@ -4,16 +4,19 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
+import { IconDownload } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import {
   assignUserRole,
+  exportUsers,
   listUsers,
   USER_ROLE_OPTIONS,
   type PaginatedUsers,
   type SortDirection,
   type UserDto,
+  type UserExportFormat,
   type UserRoleName,
   type UserSortField,
 } from "@/lib/users-api";
@@ -48,6 +51,7 @@ export function AdminUsersView() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [rowError, setRowError] = useState<string | null>(null);
   const [draftRoles, setDraftRoles] = useState<Record<string, UserRoleName>>({});
+  const [exporting, setExporting] = useState<UserExportFormat | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -128,6 +132,27 @@ export function AdminUsersView() {
     }
   }
 
+  async function onExport(format: UserExportFormat) {
+    setExporting(format);
+    setRowError(null);
+    try {
+      await exportUsers(format, {
+        search,
+        role: (roleFilter as UserRoleName | "") || undefined,
+        sortBy,
+        sortDir,
+      });
+    } catch (err) {
+      setRowError(
+        err instanceof ApiError
+          ? err.message
+          : "Failed to export users.",
+      );
+    } finally {
+      setExporting(null);
+    }
+  }
+
   const totalPages = data
     ? Math.max(1, Math.ceil(data.totalCount / data.pageSize))
     : 1;
@@ -136,7 +161,7 @@ export function AdminUsersView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Users"
-        description="View accounts and assign Student, Faculty, or Admin roles."
+        description="View accounts and assign Student, Faculty, or Admin roles. Exports include the users matching the current search and role filters."
       />
 
       <div className="admin-users-filters">
@@ -168,6 +193,28 @@ export function AdminUsersView() {
               setRoleFilter(value);
             }}
           />
+        </div>
+        <div className="admin-users-export">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            disabled={exporting !== null}
+            onClick={() => void onExport("pdf")}
+          >
+            <IconDownload />
+            {exporting === "pdf" ? "Exporting…" : "Export PDF"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            disabled={exporting !== null}
+            onClick={() => void onExport("xlsx")}
+          >
+            <IconDownload />
+            {exporting === "xlsx" ? "Exporting…" : "Export Excel"}
+          </Button>
         </div>
         <div className="admin-users-refresh">
           <RefreshIconButton loading={loading} onClick={() => void load()} />

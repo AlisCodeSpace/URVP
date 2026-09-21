@@ -253,7 +253,8 @@ select:disabled {
 .admin-users-filters .btn,
 .admin-value-toolbar-actions .btn,
 .admin-list-toolbar-actions .btn,
-.admin-users-refresh .btn {
+.admin-users-refresh .btn,
+.admin-users-export .btn {
   height: 2.75rem;
   min-height: 2.75rem;
   padding-top: 0.65rem;
@@ -3200,6 +3201,13 @@ button.admin-widget-link {
   gap: 0.55rem;
 }
 
+.admin-users-export {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+}
+
 .admin-users-refresh {
   display: flex;
   align-items: end;
@@ -3207,7 +3215,7 @@ button.admin-widget-link {
 
 @media (min-width: 768px) {
   .admin-users-filters {
-    grid-template-columns: minmax(0, 1fr) 14rem auto;
+    grid-template-columns: minmax(0, 1fr) 14rem auto auto;
     align-items: end;
   }
 

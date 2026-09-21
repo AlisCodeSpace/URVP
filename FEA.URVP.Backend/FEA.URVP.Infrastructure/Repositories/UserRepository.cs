@@ -30,24 +30,8 @@ public sealed class UserRepository : IUserRepository
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        var query = _db.Users.AsNoTracking().AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var term = search.Trim();
-            query = query.Where(u =>
-                u.Name.Contains(term) ||
-                u.Email.Contains(term) ||
-                u.UserName.Contains(term));
-        }
-
-        if (role.HasValue)
-        {
-            query = query.Where(u => u.Role == role.Value);
-        }
-
+        var query = ApplyFilters(_db.Users.AsNoTracking(), search, role);
         var totalCount = await query.CountAsync(cancellationToken);
-
         query = ApplySort(query, sortBy, sortDir);
 
         var items = await query
@@ -56,6 +40,17 @@ public sealed class UserRepository : IUserRepository
             .ToListAsync(cancellationToken);
 
         return (items, totalCount);
+    }
+
+    public async Task<IReadOnlyList<User>> ListAllAsync(
+        string? search,
+        UserRole? role,
+        UserSortField sortBy,
+        SortDirection sortDir,
+        CancellationToken cancellationToken = default)
+    {
+        var query = ApplyFilters(_db.Users.AsNoTracking(), search, role);
+        return await ApplySort(query, sortBy, sortDir).ToListAsync(cancellationToken);
     }
 
     public Task<int> CountByRoleAsync(UserRole role, CancellationToken cancellationToken = default) =>
@@ -77,6 +72,28 @@ public sealed class UserRepository : IUserRepository
     }
 
     public void Add(User user) => _db.Users.Add(user);
+
+    private static IQueryable<User> ApplyFilters(
+        IQueryable<User> query,
+        string? search,
+        UserRole? role)
+    {
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            query = query.Where(u =>
+                u.Name.Contains(term) ||
+                u.Email.Contains(term) ||
+                u.UserName.Contains(term));
+        }
+
+        if (role.HasValue)
+        {
+            query = query.Where(u => u.Role == role.Value);
+        }
+
+        return query;
+    }
 
     private static IQueryable<User> ApplySort(
         IQueryable<User> query,
