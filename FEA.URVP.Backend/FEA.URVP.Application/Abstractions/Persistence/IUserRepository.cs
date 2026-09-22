@@ -18,11 +18,17 @@ public interface IUserRepository
         int pageSize,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// All users matching the list filters, without paging.
+    /// When <paramref name="completedStudentProfilesOnly"/> is true, student
+    /// accounts are included only if they have saved a student profile.
+    /// </summary>
     Task<IReadOnlyList<User>> ListAllAsync(
         string? search,
         UserRole? role,
         UserSortField sortBy,
         SortDirection sortDir,
+        bool completedStudentProfilesOnly,
         CancellationToken cancellationToken = default);
 
     Task<int> CountByRoleAsync(UserRole role, CancellationToken cancellationToken = default);

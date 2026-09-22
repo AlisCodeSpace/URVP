@@ -52,6 +52,8 @@ public sealed class UsersController : ApiControllerBase
     /// <summary>
     /// Download matching user accounts as PDF or Excel. Admin only.
     /// Honors the same search, role, and sort filters as the users list.
+    /// Student rows include only accounts with a completed profile.
+    /// Each row includes name, username, email, and role.
     /// </summary>
     [HttpGet("export")]
     [EnableRateLimiting(RateLimitingConfiguration.DownloadPolicy)]

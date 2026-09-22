@@ -29,9 +29,14 @@ public sealed class ExportUsersQueryHandler : IRequestHandler<ExportUsersQuery, 
             request.Role,
             request.SortBy,
             request.SortDir,
+            completedStudentProfilesOnly: true,
             cancellationToken);
         var rows = users
-            .Select(user => new UserExportRow(user.UserName, user.Email, UserMappings.ToLabel(user.Role)))
+            .Select(user => new UserExportRow(
+                user.Name,
+                user.UserName,
+                user.Email,
+                UserMappings.ToLabel(user.Role)))
             .ToList();
 
         var stamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmm");

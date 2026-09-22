@@ -47,9 +47,17 @@ public sealed class UserRepository : IUserRepository
         UserRole? role,
         UserSortField sortBy,
         SortDirection sortDir,
+        bool completedStudentProfilesOnly,
         CancellationToken cancellationToken = default)
     {
         var query = ApplyFilters(_db.Users.AsNoTracking(), search, role);
+        if (completedStudentProfilesOnly && role is null or UserRole.Student)
+        {
+            query = query.Where(u =>
+                u.Role != UserRole.Student ||
+                _db.StudentProfiles.Any(p => p.UserId == u.Id));
+        }
+
         return await ApplySort(query, sortBy, sortDir).ToListAsync(cancellationToken);
     }
 

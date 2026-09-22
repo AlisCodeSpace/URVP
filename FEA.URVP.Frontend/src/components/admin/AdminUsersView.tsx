@@ -161,7 +161,7 @@ export function AdminUsersView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Users"
-        description="View accounts and assign Student, Faculty, or Admin roles. Exports include the users matching the current search and role filters."
+        description="View accounts and assign Student, Faculty, or Admin roles. Exports include the users matching the current search and role filters. Student rows include only students who have completed their profile, and each row includes the user's name."
       />
 
       <div className="admin-users-filters">

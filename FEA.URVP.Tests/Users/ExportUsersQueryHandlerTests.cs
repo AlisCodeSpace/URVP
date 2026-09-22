@@ -63,6 +63,7 @@ public sealed class ExportUsersQueryHandlerTests
             UserRole.Student,
             UserSortField.Email,
             SortDirection.Desc,
+            true,
             Arg.Any<CancellationToken>());
     }
 
@@ -80,6 +81,7 @@ public sealed class ExportUsersQueryHandlerTests
             Arg.Any<UserRole?>(),
             Arg.Any<UserSortField>(),
             Arg.Any<SortDirection>(),
+            Arg.Any<bool>(),
             Arg.Any<CancellationToken>()).Returns([
             new User
             {

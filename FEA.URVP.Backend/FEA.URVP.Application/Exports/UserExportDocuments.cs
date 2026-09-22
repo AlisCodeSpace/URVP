@@ -4,7 +4,7 @@ using System.Text;
 
 namespace FEA.URVP.Application.Exports;
 
-public sealed record UserExportRow(string UserName, string Email, string Role);
+public sealed record UserExportRow(string Name, string UserName, string Email, string Role);
 
 /// <summary>
 /// Builds admin user exports without third-party document libraries.
@@ -43,18 +43,19 @@ public static class UserExportDocuments
             <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
             <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
               <cols>
-                <col min="1" max="1" width="22" customWidth="1"/>
-                <col min="2" max="2" width="36" customWidth="1"/>
-                <col min="3" max="3" width="14" customWidth="1"/>
+                <col min="1" max="1" width="28" customWidth="1"/>
+                <col min="2" max="2" width="22" customWidth="1"/>
+                <col min="3" max="3" width="36" customWidth="1"/>
+                <col min="4" max="4" width="14" customWidth="1"/>
               </cols>
               <sheetData>
             """);
 
-        AppendRow(xml, 1, ["Username", "Email", "Role"], header: true);
+        AppendRow(xml, 1, ["Name", "Username", "Email", "Role"], header: true);
         for (var i = 0; i < rows.Count; i++)
         {
             var row = rows[i];
-            AppendRow(xml, i + 2, [row.UserName, row.Email, row.Role], header: false);
+            AppendRow(xml, i + 2, [row.Name, row.UserName, row.Email, row.Role], header: false);
         }
 
         xml.Append("</sheetData></worksheet>");
@@ -264,13 +265,14 @@ internal static class UserExportPdf
         sb.Append("0.2 w\n");
 
         WriteText(sb, TitleSize, Margin, PageHeight - Margin - 8, "URVP users");
-        WriteText(sb, 8, Margin, PageHeight - Margin - 22, $"Username, email, and role · {generated}");
+        WriteText(sb, 8, Margin, PageHeight - Margin - 22, $"Name, username, email, and role · {generated}");
 
         var columns = new (float X, float Width, string Title)[]
         {
-            (Margin, 130, "Username"),
-            (Margin + 130, 290, "Email"),
-            (Margin + 420, 112, "Role"),
+            (Margin, 150, "Name"),
+            (Margin + 150, 96, "Username"),
+            (Margin + 246, 194, "Email"),
+            (Margin + 440, 92, "Role"),
         };
         var tableRight = columns[^1].X + columns[^1].Width;
         var y = StartY();
@@ -301,9 +303,17 @@ internal static class UserExportPdf
             }
 
             DrawVertical(sb, tableRight, y, y - RowHeight);
-            WriteText(sb, FontSize, columns[0].X + 4, y - 12, Fit(row.UserName, columns[0].Width - 8));
-            WriteText(sb, FontSize, columns[1].X + 4, y - 12, Fit(row.Email, columns[1].Width - 8));
-            WriteText(sb, FontSize, columns[2].X + 4, y - 12, Fit(row.Role, columns[2].Width - 8));
+            var values = new[] { row.Name, row.UserName, row.Email, row.Role };
+            for (var i = 0; i < columns.Length; i++)
+            {
+                WriteText(
+                    sb,
+                    FontSize,
+                    columns[i].X + 4,
+                    y - 12,
+                    Fit(values[i], columns[i].Width - 8));
+            }
+
             y -= RowHeight;
         }
 
