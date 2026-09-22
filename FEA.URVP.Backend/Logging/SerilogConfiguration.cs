@@ -10,16 +10,11 @@ public static class SerilogConfiguration
 {
     public static void AddSeriLog(this WebApplicationBuilder builder)
     {
-        var seqServerUrl = OperatingSystem.IsWindows()
-            ? Environment.GetEnvironmentVariable("SEQ_SERVER_URL", EnvironmentVariableTarget.Machine)
-            : Environment.GetEnvironmentVariable("SEQ_SERVER_URL");
-        if (string.IsNullOrWhiteSpace(seqServerUrl))
-            throw new InvalidOperationException("SEQ_SERVER_URL is not configured.");
+        var seqServerUrl = ReadEnvironmentVariable("SEQ_SERVER_URL");
+        var apiKey = ReadEnvironmentVariable("SEQ_API_KEY");
+        var writeToSeq = !string.IsNullOrWhiteSpace(seqServerUrl);
 
-        var apiKey = OperatingSystem.IsWindows()
-            ? Environment.GetEnvironmentVariable("SEQ_API_KEY", EnvironmentVariableTarget.Machine)
-            : Environment.GetEnvironmentVariable("SEQ_API_KEY");
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (writeToSeq && string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("SEQ_API_KEY is not configured.");
 
         var loggerConfig = GetCommonLoggerConfiguration(builder);
@@ -28,13 +23,36 @@ public static class SerilogConfiguration
             loggerConfig.Enrich.WithRequestHeader("Authorization");
         }
 
-        var logger = loggerConfig
-            .WriteTo.Seq(seqServerUrl, apiKey: apiKey)
-            .CreateLogger();
+        if (writeToSeq)
+        {
+            loggerConfig.WriteTo.Seq(seqServerUrl, apiKey: apiKey);
+        }
+
+        var logger = loggerConfig.CreateLogger();
 
         Log.Logger = logger;
         builder.Logging.ClearProviders();
         builder.Host.UseSerilog(logger);
+
+        if (!writeToSeq)
+        {
+            Log.Warning("SEQ_SERVER_URL is not configured. Logging to the console only.");
+        }
+    }
+
+    /// <summary>
+    /// Process environment first, then the machine environment on Windows.
+    /// Render and other Linux hosts only have a process environment.
+    /// </summary>
+    private static string? ReadEnvironmentVariable(string name)
+    {
+        var value = Environment.GetEnvironmentVariable(name);
+        if (!string.IsNullOrWhiteSpace(value) || !OperatingSystem.IsWindows())
+        {
+            return value;
+        }
+
+        return Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Machine);
     }
 
     private static LoggerConfiguration GetCommonLoggerConfiguration(WebApplicationBuilder builder)

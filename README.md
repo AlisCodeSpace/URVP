@@ -121,7 +121,7 @@ npm run audit:ci
 
 ## Logging (Serilog + Seq)
 
-The backend uses [Serilog](https://serilog.net/). Console logging is always on. Seq is required: the process throws at startup if either variable is missing.
+The backend uses [Serilog](https://serilog.net/). Console logging is always on. Seq is optional: when `SEQ_SERVER_URL` is unset, events stay on the console. If the URL is set, `SEQ_API_KEY` is required.
 
 - `AddSeriLog` clears the default logging providers, reads levels from the `Serilog` section, and enriches events with `Application`, `EnvironmentName`, `MachineName`, and `ThreadId`.
 - On Windows the values are read from the machine environment. On Linux they are read from the process environment.
@@ -129,8 +129,8 @@ The backend uses [Serilog](https://serilog.net/). Console logging is always on. 
 
 | Variable | Required | Description |
 | --- | --- | --- |
-| `SEQ_SERVER_URL` | Yes | Ingestion URL (e.g. `http://localhost:5342`). |
-| `SEQ_API_KEY` | Yes | Seq API key. Set it on the machine. **Never commit it.** |
+| `SEQ_SERVER_URL` | No | Ingestion URL (e.g. `http://localhost:5342`). Unset keeps console logging only. |
+| `SEQ_API_KEY` | When Seq is used | Seq API key. Set it on the machine. **Never commit it.** |
 
 Local Seq (`docker-compose.yml`):
 
