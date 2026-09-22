@@ -1,9 +1,7 @@
 using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Domain.Enums;
-using FEA.URVP.Infrastructure.Data.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace FEA.URVP.Api.Controllers;
@@ -12,29 +10,23 @@ namespace FEA.URVP.Api.Controllers;
 /// Liveness and readiness probes.
 /// </summary>
 /// <remarks>
-/// Liveness is public and says nothing beyond "this process is answering". Readiness performs a
-/// dependency check, but only an authenticated administrator or a caller from a configured
-/// monitoring network sees which dependency failed. Everyone else receives the healthy/unhealthy
-/// state alone, which keeps load balancer probes working without disclosing topology.
+/// Liveness is public and does not touch a dependency. Readiness is not public: it requires an
+/// authenticated administrator or a caller on <c>Security:Health:MonitoringNetworks</c>. The
+/// database result is cached, so a probe does not open a live connection on every call.
 /// </remarks>
 [ApiController]
 [Route("health")]
 public sealed class HealthController : ControllerBase
 {
-    private static readonly TimeSpan DependencyProbeTimeout = TimeSpan.FromSeconds(5);
-
-    private readonly AppDbContext _dbContext;
+    private readonly DatabaseReadinessCheck _readiness;
     private readonly SecurityOptions _securityOptions;
-    private readonly ILogger<HealthController> _logger;
 
     public HealthController(
-        AppDbContext dbContext,
-        IOptions<SecurityOptions> securityOptions,
-        ILogger<HealthController> logger)
+        DatabaseReadinessCheck readiness,
+        IOptions<SecurityOptions> securityOptions)
     {
-        _dbContext = dbContext;
+        _readiness = readiness;
         _securityOptions = securityOptions.Value;
-        _logger = logger;
     }
 
     /// <summary>
@@ -52,17 +44,19 @@ public sealed class HealthController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Ready(CancellationToken cancellationToken)
     {
-        var (isReachable, failureType) = await CheckDatabaseAsync(cancellationToken);
+        if (!IsReadyAuthorized())
+        {
+            return User.Identity?.IsAuthenticated == true
+                ? Forbid()
+                : Unauthorized();
+        }
 
-        var status = isReachable ? "healthy" : "unhealthy";
-        var statusCode = isReachable
+        var snapshot = await _readiness.GetAsync(cancellationToken);
+
+        var status = snapshot.IsReachable ? "healthy" : "unhealthy";
+        var statusCode = snapshot.IsReachable
             ? StatusCodes.Status200OK
             : StatusCodes.Status503ServiceUnavailable;
-
-        if (!IsDetailAuthorized())
-        {
-            return StatusCode(statusCode, new { status });
-        }
 
         return StatusCode(statusCode, new
         {
@@ -73,33 +67,13 @@ public sealed class HealthController : ControllerBase
                 {
                     name = "sqlserver",
                     status,
-                    // Exception type only. The message can carry the server name, database name
-                    // or credentials from the connection string.
-                    error = failureType
+                    error = snapshot.FailureType
                 }
             }
         });
     }
 
-    private async Task<(bool IsReachable, string? FailureType)> CheckDatabaseAsync(
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeout.CancelAfter(DependencyProbeTimeout);
-
-            var canConnect = await _dbContext.Database.CanConnectAsync(timeout.Token);
-            return (canConnect, canConnect ? null : "ConnectionRefused");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Readiness probe: database connectivity check failed.");
-            return (false, ex.GetType().Name);
-        }
-    }
-
-    private bool IsDetailAuthorized()
+    private bool IsReadyAuthorized()
     {
         if (User.Identity?.IsAuthenticated == true && User.IsInRole(nameof(UserRole.Admin)))
         {

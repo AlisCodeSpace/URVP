@@ -13,7 +13,7 @@ namespace FEA.URVP.Api.Middleware;
 /// Applied as middleware rather than an MVC filter so a newly added controller action cannot
 /// silently opt out of CSRF protection by forgetting an attribute.
 /// <para>
-/// Two paths are deliberately outside the check. The Azure AD callback (<c>/signin-oidc-ad</c>)
+/// Two paths are deliberately outside the check. The Azure AD callback (<c>/signin-oidc</c>)
 /// is a cross-site <c>form_post</c> by protocol design and is protected instead by the OIDC
 /// state, correlation and nonce validation. The CSP report endpoint is posted directly by the
 /// browser, which cannot attach a custom header; it is anonymous, size-capped and rate-limited.

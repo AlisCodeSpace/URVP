@@ -23,10 +23,30 @@ import {
 
 const PAGE_SIZE = 20;
 
+const FACULTY_WITH_PROJECTS = "FacultyWithProjects";
+
 const roleFilterOptions = [
   { value: "", label: "All roles" },
-  ...USER_ROLE_OPTIONS,
+  { value: "Student", label: "Student" },
+  { value: "Faculty", label: "Faculty" },
+  { value: FACULTY_WITH_PROJECTS, label: "Faculty with projects" },
+  { value: "Admin", label: "Admin" },
 ] as const;
+
+function usersFilter(roleFilter: string): {
+  role?: UserRoleName;
+  facultyWithProjects?: boolean;
+} {
+  if (roleFilter === FACULTY_WITH_PROJECTS) {
+    return { role: "Faculty", facultyWithProjects: true };
+  }
+
+  if (roleFilter === "Student" || roleFilter === "Faculty" || roleFilter === "Admin") {
+    return { role: roleFilter };
+  }
+
+  return {};
+}
 
 const SORTABLE: { field: UserSortField; label: string }[] = [
   { field: "Name", label: "Name" },
@@ -59,7 +79,7 @@ export function AdminUsersView() {
     try {
       const page = await listUsers({
         search,
-        role: (roleFilter as UserRoleName | "") || undefined,
+        ...usersFilter(roleFilter),
         sortBy,
         sortDir,
         pageNumber,
@@ -138,7 +158,7 @@ export function AdminUsersView() {
     try {
       await exportUsers(format, {
         search,
-        role: (roleFilter as UserRoleName | "") || undefined,
+        ...usersFilter(roleFilter),
         sortBy,
         sortDir,
       });
@@ -161,7 +181,7 @@ export function AdminUsersView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Users"
-        description="View accounts and assign Student, Faculty, or Admin roles. Exports include the users matching the current search and role filters. Student rows include only students who have completed their profile, and each row includes the user's name."
+        description="View accounts and assign Student, Faculty, or Admin roles. Exports follow the current search and role filters. Student exports include only students who have completed their profile. Faculty with projects includes only faculty who have posted a project. Each row includes the user's name."
       />
 
       <div className="admin-users-filters">

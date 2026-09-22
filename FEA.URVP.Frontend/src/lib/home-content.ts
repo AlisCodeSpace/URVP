@@ -1,7 +1,5 @@
-import { newsArticles, type NewsArticle } from "./news";
+import type { NewsArticle } from "./news";
 import { newsArticleHref } from "./auth";
-
-export { navLinks } from "./site";
 
 export const testimonials = [
   {
@@ -43,9 +41,6 @@ export function toNewsTickerItems(articles: NewsArticle[]): NewsTickerItem[] {
     href: newsArticleHref(article.slug),
   }));
 }
-
-/** Home marquee — derived from the News catalog. */
-export const newsItems = toNewsTickerItems(newsArticles);
 
 export const introHeadline = "Research starts earlier than you think.";
 

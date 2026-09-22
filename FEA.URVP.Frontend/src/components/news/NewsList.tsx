@@ -211,12 +211,19 @@ function usePageParam(): number {
 export function NewsList() {
   const page = usePageParam();
   const [articles, setArticles] = useState<NewsArticle[] | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    void loadPublicNews().then((items) => {
-      if (!cancelled) setArticles(items);
-    });
+    void loadPublicNews()
+      .then((items) => {
+        if (!cancelled) setArticles(items);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setFailed(true);
+        setArticles([]);
+      });
     return () => {
       cancelled = true;
     };
@@ -236,8 +243,16 @@ export function NewsList() {
         >
           Latest updates
         </Heading>
-        <Text as="p" size="3" mt="4" className="max-w-xl !text-muted">
-          News will appear here once stories are published.
+        <Text
+          as="p"
+          size="3"
+          mt="4"
+          role={failed ? "alert" : undefined}
+          className="max-w-xl !text-muted"
+        >
+          {failed
+            ? "Updates could not be loaded right now. Please refresh to try again."
+            : "News will appear here once stories are published."}
         </Text>
       </section>
     );

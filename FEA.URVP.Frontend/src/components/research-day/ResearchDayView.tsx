@@ -1,10 +1,8 @@
 import { Heading, Text } from "@radix-ui/themes";
 import {
   researchDayDeadlines,
-  researchDayForms,
   researchDayIntro,
   researchDayUpdates,
-  showResearchDayForms,
 } from "@/lib/research-day";
 
 export function ResearchDayContent() {
@@ -85,62 +83,6 @@ export function ResearchDayContent() {
           </ol>
         </div>
       </section>
-
-      {showResearchDayForms ? (
-      <section
-        id="research-day-forms"
-        className="scroll-mt-24 border-t border-primary/10 bg-primary-deep text-white"
-      >
-        <div className="site-container py-16 sm:py-20">
-          <Heading
-            as="h2"
-            size="7"
-            weight="medium"
-            className="!font-[family-name:var(--font-display)] !text-white"
-          >
-            Forms &amp; applications
-          </Heading>
-          <Text as="p" size="3" mt="2" className="max-w-xl !text-white/70">
-            Use the Google Forms below to apply, register, or request updates.
-            Links will be replaced with the official forms when they open.
-          </Text>
-
-          <ul className="mt-12 grid gap-5 lg:grid-cols-3">
-            {researchDayForms.map((form) => (
-              <li
-                key={form.id}
-                className="flex flex-col rounded-lg border border-white/15 bg-white/5 px-6 py-7 transition hover:border-secondary/60"
-              >
-                <Heading
-                  as="h3"
-                  size="4"
-                  weight="medium"
-                  className="!font-[family-name:var(--font-display)] !text-white"
-                >
-                  {form.title}
-                </Heading>
-                <Text
-                  as="p"
-                  size="3"
-                  mt="3"
-                  className="flex-1 !leading-relaxed !text-white/70"
-                >
-                  {form.description}
-                </Text>
-                <a
-                  href={form.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-secondary btn-md mt-6 w-full"
-                >
-                  {form.cta}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-      ) : null}
 
       <section className="site-container py-16 sm:py-20">
         <Heading

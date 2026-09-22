@@ -80,7 +80,7 @@ Then run the backend and open <https://localhost:7222>. `Security:Frontend:Enabl
 ### Sign-in
 
 - **Demo accounts** (Development only; never registered in Production): `faculty@urvp.com`, `student@urvp.com`, `admin@urvp.com`. Use the sign-in page; there is no password.
-- **Azure AD SSO**: AUB staff and students via the app registration. Add redirect URI `https://localhost:7222/signin-oidc-ad`. Role (Student / Faculty) is resolved against AUB LDAP, not token group claims. Admins are the addresses in `AdminEmails`.
+- **Azure AD SSO**: AUB staff and students via the app registration. Add redirect URI `https://localhost:7222/signin-oidc`. Each environment file supplies its own `AzureAd:ClientId`. Role (Student / Faculty) is resolved against AUB LDAP, not token group claims. Admins are the addresses in that environment's `AdminEmails` list, which is empty unless overridden.
 
 Store secrets (Seq API key, Azure AD client secret, non-dev connection strings) in `appsettings.{Environment}.local.json`. That file is gitignored and loaded after the committed `appsettings`.
 
@@ -121,27 +121,27 @@ npm run audit:ci
 
 ## Logging (Serilog + Seq)
 
-The backend uses [Serilog](https://serilog.net/). Console logging is always on; shipping to [Seq](https://datalust.co/seq) is optional.
+The backend uses [Serilog](https://serilog.net/). Console logging is always on. Seq is required: the process throws at startup if either variable is missing.
 
-- `Program.cs` builds the pipeline before the host starts, clears default logging providers, reads levels from the `Serilog` section, and enriches events with `Application`, `EnvironmentName`, `MachineName`, and `ThreadId`.
-- The Seq sink is added only when `Seq:ServerUrl` is non-empty. `Seq:ApiKey` is optional.
+- `AddSeriLog` clears the default logging providers, reads levels from the `Serilog` section, and enriches events with `Application`, `EnvironmentName`, `MachineName`, and `ThreadId`.
+- On Windows the values are read from the machine environment. On Linux they are read from the process environment.
 - `app.UseSerilogRequestLogging()` emits one structured event per HTTP request: `HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms` (`Error` on exception, `Warning` if slower than 1000 ms, otherwise `Information`).
 
-| Setting | Required | Description |
+| Variable | Required | Description |
 | --- | --- | --- |
-| `Seq:ServerUrl` | No | Ingestion URL (e.g. `http://localhost:5342`). Empty ⇒ console only. Development defaults to the local compose service. |
-| `Seq:ApiKey` | No (secret) | Only if the Seq instance requires one. Put it in `appsettings.{Environment}.local.json`. **Never commit it.** |
+| `SEQ_SERVER_URL` | Yes | Ingestion URL (e.g. `http://localhost:5342`). |
+| `SEQ_API_KEY` | Yes | Seq API key. Set it on the machine. **Never commit it.** |
 
 Local Seq (`docker-compose.yml`):
 
 - UI: <http://localhost:5341> (first run: `admin` / `change-me-locally`)
-- Ingestion (`Seq:ServerUrl`): <http://localhost:5342>
+- Ingestion (`SEQ_SERVER_URL`): <http://localhost:5342>
 
 ```powershell
 docker compose up -d seq
 ```
 
-Filter in Seq with `Application = 'FEA.URVP.Backend'`. Production leaves `Seq:ServerUrl` empty unless a Seq instance is available; set it (and `Seq:ApiKey` if required) on the host and recycle the app pool.
+Filter in Seq with `Application = 'FEA.URVP.Backend'`.
 
 ## CI/CD and environments
 
@@ -155,7 +155,7 @@ Azure Pipelines (`azure-pipelines.yml`) builds on `ubuntu-latest`, publishes a `
 | `Staging` | CI + package | Staging IIS (`urvp-staging.aub.edu.lb`) |
 | `Master` | CI + package | Production IIS (`urvp.aub.edu.lb`) |
 
-Health: `GET /health/live` and `GET /health/ready`. Anonymous callers get `{"status":"healthy"}` with no dependency detail.
+Health: `GET /health/live` is anonymous and does not touch SQL. `GET /health/ready` requires an administrator or a configured monitoring network, and reuses a cached database result.
 
 A Docker image (`Dockerfile` at the repo root) and `render.yaml` exist for a same-origin container deploy. AUB production is IIS, not Render.
 

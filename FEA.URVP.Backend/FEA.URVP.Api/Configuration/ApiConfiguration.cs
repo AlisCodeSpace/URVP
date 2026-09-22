@@ -10,11 +10,17 @@ namespace FEA.URVP.Api.Configuration;
 /// </summary>
 public static class ApiConfiguration
 {
-    public static IServiceCollection AddApiServices(this IServiceCollection services)
+    public static IServiceCollection AddApiServices(
+        this IServiceCollection services,
+        IWebHostEnvironment environment)
     {
         services.AddControllers(options =>
             {
                 options.Filters.Add<ValidationFilter>();
+                if (!environment.IsDevelopment())
+                {
+                    options.Conventions.Add(new DevelopmentOnlyConvention());
+                }
             })
             .AddApplicationPart(typeof(ApiControllerBase).Assembly)
             .AddJsonOptions(options =>

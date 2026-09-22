@@ -1,4 +1,3 @@
-using FEA.URVP.Api.Configuration.Auth;
 using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Services;
 using FEA.URVP.Application;
@@ -26,13 +25,12 @@ public static class ServiceCollectionConfiguration
 
         services
             .AddForwardedHeadersSupport(configuration)
-            .AddApiServices()
+            .AddApiServices(environment)
+            .AddSingleton<DatabaseReadinessCheck>()
             .AddApplication(configuration)
             .AddInfrastructure(configuration)
             .AddCorsPolicy(configuration, environment)
             .AddCookiePolicyConfiguration(environment)
-            .AddUrvpAuthentication(configuration, environment)
-            .AddAuthorizationPolicies()
             .AddUrvpAntiforgery(configuration, environment)
             .AddUrvpRateLimiting(configuration)
             .AddHstsPolicy(configuration)

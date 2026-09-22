@@ -1,7 +1,7 @@
 using FEA.URVP.Api.Configuration;
+using FEA.URVP.Api.Configuration.Auth;
 using FEA.URVP.Backend;
 using Serilog;
-using Serilog.Events;
 
 // Render (and similar Linux PaaS) often exhaust inotify watches. Config file
 // reload is not needed outside local Development.
@@ -20,41 +20,10 @@ builder.Configuration.AddJsonFile(
     optional: true,
     reloadOnChange: false);
 
-builder.Logging.ClearProviders();
+builder.AddSeriLog();
 
-var seqServerUrl = builder.Configuration["Seq:ServerUrl"];
-var seqApiKey = builder.Configuration["Seq:ApiKey"];
-
-var loggerConfiguration = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .Enrich.WithProperty("Application", builder.Environment.ApplicationName)
-    .Enrich.WithEnvironmentName()
-    .Enrich.WithMachineName()
-    .Enrich.WithThreadId();
-
-// Config-driven overrides win; these are only a safety net when appsettings
-// does not define its own Microsoft/System levels.
-if (builder.Configuration["Serilog:MinimumLevel:Override:Microsoft"] is null)
-{
-    loggerConfiguration.MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
-}
-
-if (builder.Configuration["Serilog:MinimumLevel:Override:System"] is null)
-{
-    loggerConfiguration.MinimumLevel.Override("System", LogEventLevel.Warning);
-}
-
-loggerConfiguration.WriteTo.Console();
-
-if (!string.IsNullOrWhiteSpace(seqServerUrl))
-{
-    loggerConfiguration.WriteTo.Seq(seqServerUrl, apiKey: seqApiKey);
-}
-
-Log.Logger = loggerConfiguration.CreateLogger();
-
-builder.Host.UseSerilog(Log.Logger);
+builder.Services.AddUrvpAuthentication(builder.Configuration, builder.Environment);
+builder.Services.AddAuthorizationPolicies();
 
 try
 {

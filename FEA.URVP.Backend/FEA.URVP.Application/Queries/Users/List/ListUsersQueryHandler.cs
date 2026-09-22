@@ -26,6 +26,7 @@ public sealed class ListUsersQueryHandler
             request.SortDir,
             request.PageNumber,
             request.PageSize,
+            request.FacultyWithProjectsOnly,
             cancellationToken);
 
         return (items.Select(u => u.ToDto()).ToList(), totalCount);

@@ -16,12 +16,15 @@ public interface IUserRepository
         SortDirection sortDir,
         int pageNumber,
         int pageSize,
+        bool facultyWithProjectsOnly,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// All users matching the list filters, without paging.
     /// When <paramref name="completedStudentProfilesOnly"/> is true, student
     /// accounts are included only if they have saved a student profile.
+    /// When <paramref name="facultyWithProjectsOnly"/> is true, only faculty
+    /// who have posted at least one project are included.
     /// </summary>
     Task<IReadOnlyList<User>> ListAllAsync(
         string? search,
@@ -29,6 +32,7 @@ public interface IUserRepository
         UserSortField sortBy,
         SortDirection sortDir,
         bool completedStudentProfilesOnly,
+        bool facultyWithProjectsOnly,
         CancellationToken cancellationToken = default);
 
     Task<int> CountByRoleAsync(UserRole role, CancellationToken cancellationToken = default);

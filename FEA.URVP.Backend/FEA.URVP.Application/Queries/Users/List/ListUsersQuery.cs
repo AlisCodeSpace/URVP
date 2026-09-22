@@ -12,6 +12,7 @@ public sealed class ListUsersQuery : IRequest<(IReadOnlyList<UserDto> Items, int
     public SortDirection SortDir { get; }
     public int PageNumber { get; }
     public int PageSize { get; }
+    public bool FacultyWithProjectsOnly { get; }
 
     public ListUsersQuery(
         string? search,
@@ -19,7 +20,8 @@ public sealed class ListUsersQuery : IRequest<(IReadOnlyList<UserDto> Items, int
         UserSortField sortBy,
         SortDirection sortDir,
         int pageNumber,
-        int pageSize)
+        int pageSize,
+        bool facultyWithProjectsOnly = false)
     {
         Search = search;
         Role = role;
@@ -27,5 +29,6 @@ public sealed class ListUsersQuery : IRequest<(IReadOnlyList<UserDto> Items, int
         SortDir = sortDir;
         PageNumber = pageNumber;
         PageSize = pageSize;
+        FacultyWithProjectsOnly = facultyWithProjectsOnly;
     }
 }

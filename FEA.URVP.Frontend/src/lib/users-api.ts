@@ -26,6 +26,7 @@ export type PaginatedUsers = {
 export type ListUsersParams = {
   search?: string;
   role?: UserRoleName | "";
+  facultyWithProjects?: boolean;
   sortBy?: UserSortField;
   sortDir?: SortDirection;
   pageNumber?: number;
@@ -44,6 +45,7 @@ export async function listUsers(
   const query = new URLSearchParams();
   if (params.search?.trim()) query.set("search", params.search.trim());
   if (params.role) query.set("role", params.role);
+  if (params.facultyWithProjects) query.set("facultyWithProjects", "true");
   query.set("sortBy", params.sortBy ?? "Name");
   query.set("sortDir", params.sortDir ?? "Asc");
   query.set("pageNumber", String(params.pageNumber ?? 1));
@@ -56,12 +58,16 @@ export type UserExportFormat = "pdf" | "xlsx";
 
 export async function exportUsers(
   format: UserExportFormat,
-  params: Pick<ListUsersParams, "search" | "role" | "sortBy" | "sortDir"> = {},
+  params: Pick<
+    ListUsersParams,
+    "search" | "role" | "facultyWithProjects" | "sortBy" | "sortDir"
+  > = {},
 ): Promise<void> {
   const query = new URLSearchParams();
   query.set("format", format);
   if (params.search?.trim()) query.set("search", params.search.trim());
   if (params.role) query.set("role", params.role);
+  if (params.facultyWithProjects) query.set("facultyWithProjects", "true");
   query.set("sortBy", params.sortBy ?? "Name");
   query.set("sortDir", params.sortDir ?? "Asc");
 

@@ -32,6 +32,7 @@ public sealed class UsersController : ApiControllerBase
         [FromQuery] SortDirection sortDir = SortDirection.Asc,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20,
+        [FromQuery] bool facultyWithProjects = false,
         CancellationToken cancellationToken = default)
     {
         if (!UserHasRole(nameof(UserRole.Admin)))
@@ -43,7 +44,14 @@ public sealed class UsersController : ApiControllerBase
         pageSize = Math.Clamp(pageSize, 1, 100);
 
         var (items, totalCount) = await _mediator.Send(
-            new ListUsersQuery(search, role, sortBy, sortDir, pageNumber, pageSize),
+            new ListUsersQuery(
+                search,
+                role,
+                sortBy,
+                sortDir,
+                pageNumber,
+                pageSize,
+                facultyWithProjects),
             cancellationToken);
 
         return PaginatedResponse(items, pageNumber, pageSize, totalCount);
@@ -53,6 +61,7 @@ public sealed class UsersController : ApiControllerBase
     /// Download matching user accounts as PDF or Excel. Admin only.
     /// Honors the same search, role, and sort filters as the users list.
     /// Student rows include only accounts with a completed profile.
+    /// When facultyWithProjects is set, only faculty who posted a project are included.
     /// Each row includes name, username, email, and role.
     /// </summary>
     [HttpGet("export")]
@@ -63,6 +72,7 @@ public sealed class UsersController : ApiControllerBase
         [FromQuery] UserRole? role = null,
         [FromQuery] UserSortField sortBy = UserSortField.Name,
         [FromQuery] SortDirection sortDir = SortDirection.Asc,
+        [FromQuery] bool facultyWithProjects = false,
         CancellationToken cancellationToken = default)
     {
         if (!UserHasRole(nameof(UserRole.Admin)))
@@ -71,7 +81,7 @@ public sealed class UsersController : ApiControllerBase
         }
 
         var file = await _mediator.Send(
-            new ExportUsersQuery(format, search, role, sortBy, sortDir),
+            new ExportUsersQuery(format, search, role, sortBy, sortDir, facultyWithProjects),
             cancellationToken);
         Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
         return File(file.Content, file.MimeType, file.FileName);

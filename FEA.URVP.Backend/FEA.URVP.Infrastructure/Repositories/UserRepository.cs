@@ -28,9 +28,10 @@ public sealed class UserRepository : IUserRepository
         SortDirection sortDir,
         int pageNumber,
         int pageSize,
+        bool facultyWithProjectsOnly,
         CancellationToken cancellationToken = default)
     {
-        var query = ApplyFilters(_db.Users.AsNoTracking(), search, role);
+        var query = ApplyFilters(_db.Users.AsNoTracking(), search, role, facultyWithProjectsOnly);
         var totalCount = await query.CountAsync(cancellationToken);
         query = ApplySort(query, sortBy, sortDir);
 
@@ -48,9 +49,10 @@ public sealed class UserRepository : IUserRepository
         UserSortField sortBy,
         SortDirection sortDir,
         bool completedStudentProfilesOnly,
+        bool facultyWithProjectsOnly,
         CancellationToken cancellationToken = default)
     {
-        var query = ApplyFilters(_db.Users.AsNoTracking(), search, role);
+        var query = ApplyFilters(_db.Users.AsNoTracking(), search, role, facultyWithProjectsOnly);
         if (completedStudentProfilesOnly && role is null or UserRole.Student)
         {
             query = query.Where(u =>
@@ -81,10 +83,11 @@ public sealed class UserRepository : IUserRepository
 
     public void Add(User user) => _db.Users.Add(user);
 
-    private static IQueryable<User> ApplyFilters(
+    private IQueryable<User> ApplyFilters(
         IQueryable<User> query,
         string? search,
-        UserRole? role)
+        UserRole? role,
+        bool facultyWithProjectsOnly)
     {
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -98,6 +101,13 @@ public sealed class UserRepository : IUserRepository
         if (role.HasValue)
         {
             query = query.Where(u => u.Role == role.Value);
+        }
+
+        if (facultyWithProjectsOnly)
+        {
+            query = query.Where(u =>
+                u.Role == UserRole.Faculty &&
+                _db.Projects.Any(p => p.CreatedByUserId == u.Id));
         }
 
         return query;

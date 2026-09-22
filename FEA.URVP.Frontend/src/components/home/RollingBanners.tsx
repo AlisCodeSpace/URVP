@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Text } from "@radix-ui/themes";
-import { newsItems, toNewsTickerItems, type NewsTickerItem } from "@/lib/home-content";
+import { toNewsTickerItems, type NewsTickerItem } from "@/lib/home-content";
 import { loadPublicNews } from "@/lib/news-api";
 import { NewsTickerSkeleton } from "@/components/ui/SectionSkeletons";
 
@@ -18,12 +18,12 @@ export function RollingBanners({ items }: { items?: NewsTickerItem[] }) {
     let cancelled = false;
     void loadPublicNews()
       .then((articles) => {
-        if (cancelled) return;
-        const next = toNewsTickerItems(articles);
-        setTicker(next.length > 0 ? next : newsItems);
+        if (!cancelled) setTicker(toNewsTickerItems(articles));
       })
+      // The marquee is decorative: an unreachable feed collapses the section
+      // rather than pushing an error onto the landing page.
       .catch(() => {
-        if (!cancelled) setTicker(newsItems);
+        if (!cancelled) setTicker([]);
       });
     return () => {
       cancelled = true;

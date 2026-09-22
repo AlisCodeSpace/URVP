@@ -2,7 +2,7 @@ import { apiFetch } from "@/lib/api";
 import { getApiBaseUrl } from "@/lib/config";
 import { formatAppDate } from "@/lib/datetime";
 import { formatTimeDisplay } from "@/lib/time";
-import { workshops as fallbackWorkshops, type Workshop } from "@/lib/workshops";
+import type { Workshop } from "@/lib/workshops";
 import type { FileMetadataDto } from "@/lib/student-profile-api";
 
 export type WorkshopDto = {
@@ -117,11 +117,12 @@ export async function uploadWorkshopPoster(
   });
 }
 
+/** Rejects when the schedule cannot be read, so callers surface the failure instead of stale copy. */
 export async function loadPublicWorkshops(): Promise<Workshop[]> {
-  try {
-    const page = await listWorkshops({ pageNumber: 1, pageSize: 200, publishedOnly: true });
-    return page.items.map(toWorkshop);
-  } catch {
-    return fallbackWorkshops;
-  }
+  const page = await listWorkshops({
+    pageNumber: 1,
+    pageSize: 200,
+    publishedOnly: true,
+  });
+  return page.items.map(toWorkshop);
 }

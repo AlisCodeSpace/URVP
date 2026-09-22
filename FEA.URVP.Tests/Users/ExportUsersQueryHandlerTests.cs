@@ -64,6 +64,27 @@ public sealed class ExportUsersQueryHandlerTests
             UserSortField.Email,
             SortDirection.Desc,
             true,
+            false,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Faculty_with_projects_filter_is_forwarded_to_the_repository()
+    {
+        var users = Users();
+        var handler = new ExportUsersQueryHandler(users);
+
+        await handler.Handle(
+            new ExportUsersQuery("xlsx", facultyWithProjectsOnly: true),
+            CancellationToken.None);
+
+        await users.Received(1).ListAllAsync(
+            null,
+            null,
+            UserSortField.Name,
+            SortDirection.Asc,
+            true,
+            true,
             Arg.Any<CancellationToken>());
     }
 
@@ -81,6 +102,7 @@ public sealed class ExportUsersQueryHandlerTests
             Arg.Any<UserRole?>(),
             Arg.Any<UserSortField>(),
             Arg.Any<SortDirection>(),
+            Arg.Any<bool>(),
             Arg.Any<bool>(),
             Arg.Any<CancellationToken>()).Returns([
             new User

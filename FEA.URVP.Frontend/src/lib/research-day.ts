@@ -48,9 +48,6 @@ export const researchDayDeadlines: ResearchDayDeadline[] = [
   },
 ];
 
-/** Forms section is kept in data but hidden on the page until official links open. */
-export const showResearchDayForms = false;
-
 export type ResearchDayUpdate = {
   id: string;
   title: string;
@@ -70,41 +67,5 @@ export const researchDayUpdates: ResearchDayUpdate[] = [
     title: "Call for abstracts",
     date: "Coming soon",
     body: "Eligible URVP volunteers will be invited to submit abstracts. Watch this page and your AUB email for the official call.",
-  },
-];
-
-export type ResearchDayForm = {
-  id: string;
-  title: string;
-  description: string;
-  /** Google Form registration / application URL */
-  href: string;
-  cta: string;
-};
-
-export const researchDayForms: ResearchDayForm[] = [
-  {
-    id: "apply-present",
-    title: "Apply to present",
-    description:
-      "Submit your project abstract and preferred presentation format for Research Day.",
-    href: "https://forms.gle/urvp-research-day-present-placeholder",
-    cta: "Open application form",
-  },
-  {
-    id: "register-attend",
-    title: "Register to attend",
-    description:
-      "Reserve your place for Research Day. Mentors, volunteers, and guests are welcome.",
-    href: "https://forms.gle/urvp-research-day-attend-placeholder",
-    cta: "Open registration form",
-  },
-  {
-    id: "updates-interest",
-    title: "Get updates",
-    description:
-      "Leave your contact details to receive Research Day announcements and deadline reminders.",
-    href: "https://forms.gle/urvp-research-day-updates-placeholder",
-    cta: "Sign up for updates",
   },
 ];

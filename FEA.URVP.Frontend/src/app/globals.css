@@ -3215,7 +3215,7 @@ button.admin-widget-link {
 
 @media (min-width: 768px) {
   .admin-users-filters {
-    grid-template-columns: minmax(0, 1fr) 14rem auto auto;
+    grid-template-columns: minmax(0, 1fr) 16.5rem auto auto;
     align-items: end;
   }
 

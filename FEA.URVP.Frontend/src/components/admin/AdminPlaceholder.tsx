@@ -34,24 +34,3 @@ export function AdminPageHeader({
     </header>
   );
 }
-
-type AdminPlaceholderProps = {
-  title: string;
-  description: string;
-};
-
-/** Temporary empty state until CRUD screens are built. */
-export function AdminPlaceholder({ title, description }: AdminPlaceholderProps) {
-  return (
-    <div className="admin-panel">
-      <AdminPageHeader title={title} description={description} />
-      <div className="admin-empty">
-        <div className="admin-empty-mark" aria-hidden />
-        <p className="admin-empty-title">Ready for configuration</p>
-        <p className="admin-empty-text">
-          Fields and actions for {title.toLowerCase()} will land here next.
-        </p>
-      </div>
-    </div>
-  );
-}

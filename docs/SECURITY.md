@@ -60,7 +60,7 @@ This is the complete list. Everything else requires a session.
 | Endpoint | Why it is public |
 | --- | --- |
 | `GET /health/live` | Liveness probe; returns `{"status":"healthy"}` and nothing else |
-| `GET /health/ready` | Same minimal body unless the caller is an admin or on a monitoring network |
+| `GET /health/ready` | Not public. An administrator session or `Security:Health:MonitoringNetworks` is required. The SQL check is cached for 30 seconds |
 | `GET /api/auth/status` | The frontend must be able to ask "am I signed in?" before it has a session |
 | `GET /api/auth/csrf` | Issues the antiforgery token pair; needed before the first mutation |
 | `GET /api/auth/azuread-sso/signin`, `signout` | Sign-in and sign-out cannot require a session |
@@ -114,10 +114,10 @@ registration. Add these redirect URIs on the app registration whose `ClientId` i
 
 | Environment | Redirect URI |
 | --- | --- |
-| Development | `https://localhost:7222/signin-oidc-ad` |
-| Staging | `https://urvp-staging.aub.edu.lb/signin-oidc-ad` |
-| Production | `https://urvp.aub.edu.lb/signin-oidc-ad` |
-| Production | `https://www.urvp.aub.edu.lb/signin-oidc-ad` |
+| Development | `https://localhost:7222/signin-oidc` |
+| Staging | `https://urvp-staging.aub.edu.lb/signin-oidc` |
+| Production | `https://urvp.aub.edu.lb/signin-oidc` |
+| Production | `https://www.urvp.aub.edu.lb/signin-oidc` |
 
 The post-login SPA path `/auth/callback` is same-origin and is not an Azure redirect URI.
 
@@ -243,11 +243,11 @@ or a committed compose file.
 | Variable | Notes |
 | --- | --- |
 | `AzureAd__ClientSecret` | Enables authorization code + PKCE instead of the `id_token` fallback |
-| `AzureAd__CallbackPath` | Defaults to `/signin-oidc-ad`; must match the app registration redirect URI |
+| `AzureAd__CallbackPath` | Defaults to `/signin-oidc`; must match the app registration redirect URI |
 | `Security__TrustedProxies__KnownProxies__0` | Reverse-proxy IP allowed to set `X-Forwarded-*` |
 | `Security__TrustedProxies__KnownNetworks__0` | CIDR alternative to the above |
 | `Security__Health__MonitoringNetworks__0` | CIDR permitted to read detailed readiness |
-| `Seq:ServerUrl`, `Seq:ApiKey` | Structured log sink. Set in `appsettings` (or a gitignored `appsettings.{Environment}.local.json`); do not put an API key in source control |
+| `SEQ_SERVER_URL`, `SEQ_API_KEY` | Machine environment variables (process environment on Linux). The process refuses to start if either is missing. Do not put the API key in source control |
 | `DataProtection:Key` | Required on Linux (Render: `DataProtection__Key`) so key XML is encrypted before it is written to SQL. Any long secret is hashed to an AES key. Not needed on AUB IIS: Windows DPAPI wraps keys automatically |
 | `DataProtection:CertificateThumbprint` | Optional Linux alternative: a certificate thumbprint in the LocalMachine store |
 
@@ -324,12 +324,13 @@ does not work with `output: 'export'`.
    Staging IIS; `Master` → Production IIS with a pre-deployment approval. Do not deploy from `Dev`
    or from a pull request.
 7. After the first Staging release, confirm: HTTPS site, `/health/live` is 200, `/api/...` uses the
-   session cookie, Azure AD round-trips to `/signin-oidc-ad`, and a SPA deep link such as
+   session cookie, Azure AD round-trips to `/signin-oidc`, and a SPA deep link such as
    `/projects` returns HTML rather than 401.
 
 `appsettings.{Environment}.local.json` (gitignored) and `logs\` are copied aside and restored by
-`Deploy-IisSite.ps1` before the site folder is wiped. Put a client secret, Seq API key, or a
-DBA-supplied connection string there — never in Git.
+`Deploy-IisSite.ps1` before the site folder is wiped. Put a client secret or a
+DBA-supplied connection string there — never in Git. `SEQ_SERVER_URL` and `SEQ_API_KEY` are
+machine environment variables, not file settings.
 
 - For a local IIS-shaped build, `npm run build:deploy` in `FEA.URVP.Frontend` runs the export and
   copies it to `FEA.URVP.Backend/wwwroot`. That directory is gitignored.
@@ -410,7 +411,8 @@ Runtime checks, and what they returned:
 | SVG upload | 400 |
 | 26 requests to `/api/security/csp-report` | 20 × 204 then 6 × 429 with `Retry-After: 60` |
 | Same 26 requests with a rotating forged `X-Forwarded-For` behind a constant edge IP | still 20 × 204 then 6 × 429; limiter partitioned on the edge IP and ignored every forgery |
-| `/health/live`, `/health/ready` anonymous | `{"status":"healthy"}`, no dependency detail |
+| `/health/live` anonymous | `{"status":"healthy"}` |
+| `/health/ready` anonymous | 401, and no database connection is opened |
 | HSTS on the production hostname | `max-age=31536000` (absent on `localhost` by design) |
 | `Host: evil.example` | 400 |
 | `Origin: https://evil.example` | no `Access-Control-Allow-Origin` in the response |

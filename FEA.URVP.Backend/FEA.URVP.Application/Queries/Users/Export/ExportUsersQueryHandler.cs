@@ -30,6 +30,7 @@ public sealed class ExportUsersQueryHandler : IRequestHandler<ExportUsersQuery, 
             request.SortBy,
             request.SortDir,
             completedStudentProfilesOnly: true,
+            request.FacultyWithProjectsOnly,
             cancellationToken);
         var rows = users
             .Select(user => new UserExportRow(

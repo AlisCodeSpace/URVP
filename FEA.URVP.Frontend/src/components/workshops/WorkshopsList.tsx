@@ -105,6 +105,7 @@ export function WorkshopsList({
   items?: Workshop[];
 }) {
   const [list, setList] = useState<Workshop[] | null>(items ?? null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     if (items) {
@@ -112,9 +113,15 @@ export function WorkshopsList({
       return;
     }
     let cancelled = false;
-    void loadPublicWorkshops().then((next) => {
-      if (!cancelled) setList(next);
-    });
+    void loadPublicWorkshops()
+      .then((next) => {
+        if (!cancelled) setList(next);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setFailed(true);
+        setList([]);
+      });
     return () => {
       cancelled = true;
     };
@@ -126,18 +133,22 @@ export function WorkshopsList({
 
   if (list.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-primary/20 px-6 py-16 text-center">
+      <div
+        className="rounded-lg border border-dashed border-primary/20 px-6 py-16 text-center"
+        role={failed ? "alert" : undefined}
+      >
         <Heading
           as="h2"
           size="5"
           weight="medium"
           className="!font-[family-name:var(--font-display)] !text-primary"
         >
-          Workshops coming soon
+          {failed ? "Workshops unavailable" : "Workshops coming soon"}
         </Heading>
         <Text as="p" size="3" mt="2" className="mx-auto max-w-md !text-muted">
-          Sessions are announced at the beginning of each semester. Check back
-          once the AY schedule is published.
+          {failed
+            ? "The workshop schedule could not be loaded right now. Please refresh to try again."
+            : "Sessions are announced at the beginning of each semester. Check back once the AY schedule is published."}
         </Text>
       </div>
     );

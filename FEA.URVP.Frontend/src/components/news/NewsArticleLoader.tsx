@@ -13,21 +13,25 @@ export function NewsArticleLoader({ slug }: { slug: string }) {
     previous: NewsArticle | null;
     next: NewsArticle | null;
   } | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "missing">(
-    "loading",
-  );
+  const [status, setStatus] = useState<
+    "loading" | "ready" | "missing" | "failed"
+  >("loading");
 
   useEffect(() => {
     let cancelled = false;
-    void loadPublicNewsArticle(slug).then((next) => {
-      if (cancelled) return;
-      if (!next) {
-        setStatus("missing");
-        return;
-      }
-      setResult(next);
-      setStatus("ready");
-    });
+    void loadPublicNewsArticle(slug)
+      .then((next) => {
+        if (cancelled) return;
+        if (!next) {
+          setStatus("missing");
+          return;
+        }
+        setResult(next);
+        setStatus("ready");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("failed");
+      });
     return () => {
       cancelled = true;
     };
@@ -40,6 +44,15 @@ export function NewsArticleLoader({ slug }: { slug: string }) {
       <NotFoundView
         title="Story not found"
         description="This news story is no longer available. Browse the latest updates below."
+      />
+    );
+  }
+
+  if (status === "failed") {
+    return (
+      <NotFoundView
+        title="Story unavailable"
+        description="This news story could not be loaded right now. Please refresh to try again."
       />
     );
   }

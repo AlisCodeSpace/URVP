@@ -48,12 +48,18 @@ public static class AzureAdOidcConfiguration
         var clientId = configuration["AzureAd:ClientId"]!;
         var clientSecret = configuration["AzureAd:ClientSecret"];
 
-        var authority = $"{instance.TrimEnd('/')}/{tenantId}/v2.0";
+        var authority = configuration["AzureAd:Authority"];
+        if (string.IsNullOrWhiteSpace(authority))
+        {
+            authority = $"{instance.TrimEnd('/')}/{tenantId}/v2.0";
+        }
+
+        authority = authority.TrimEnd('/');
 
         options.Authority = authority;
         options.MetadataAddress = $"{authority}/.well-known/openid-configuration";
         options.ClientId = clientId;
-        options.CallbackPath = configuration["AzureAd:CallbackPath"] ?? "/signin-oidc-ad";
+        options.CallbackPath = configuration["AzureAd:CallbackPath"] ?? "/signin-oidc";
         options.SignInScheme = AuthenticationConfiguration.CookieScheme;
 
         // Metadata must be fetched over TLS everywhere except local development, where a
@@ -82,7 +88,7 @@ public static class AzureAdOidcConfiguration
         options.Scope.Add("profile");
         options.Scope.Add("email");
 
-        options.TokenValidationParameters = BuildTokenValidation(clientId, instance, tenantId);
+        options.TokenValidationParameters = BuildTokenValidation(clientId, authority, tenantId);
         options.Events = OidcEventHandlers.CreateAzureAdOidcEvents(configuration);
     }
 
@@ -163,7 +169,7 @@ public static class AzureAdOidcConfiguration
 
     private static TokenValidationParameters BuildTokenValidation(
         string clientId,
-        string instance,
+        string authority,
         string tenantId)
     {
         var parameters = new TokenValidationParameters
@@ -185,7 +191,7 @@ public static class AzureAdOidcConfiguration
         // are left to metadata-driven validation.
         if (Guid.TryParse(tenantId, out _))
         {
-            parameters.ValidIssuer = $"{instance.TrimEnd('/')}/{tenantId}/v2.0";
+            parameters.ValidIssuer = authority;
         }
 
         return parameters;

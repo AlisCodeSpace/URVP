@@ -255,11 +255,6 @@ export function studentRankingsHref(): string {
   return studentProjectsHref();
 }
 
-/** @deprecated Use studentRankingsHref — kept for older links. */
-export function studentApplicationsHref(): string {
-  return studentRankingsHref();
-}
-
 export function myProjectsHref(userId: string): string {
   return withParams("/my-projects", { [RouteParam.User]: userId });
 }

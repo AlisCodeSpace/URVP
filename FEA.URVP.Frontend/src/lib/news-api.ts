@@ -1,11 +1,7 @@
 import { ApiError, apiFetch } from "@/lib/api";
 import { getApiBaseUrl } from "@/lib/config";
 import { formatAppDate } from "@/lib/datetime";
-import {
-  getNewsNeighborsFrom,
-  newsArticles,
-  type NewsArticle,
-} from "@/lib/news";
+import { getNewsNeighborsFrom, type NewsArticle } from "@/lib/news";
 import type { FileMetadataDto } from "@/lib/student-profile-api";
 
 export type NewsArticleDto = {
@@ -149,6 +145,7 @@ export async function uploadNewsImage(
   });
 }
 
+/** Rejects when the feed cannot be read, so callers surface the failure instead of stale copy. */
 export async function loadPublicNews(): Promise<NewsArticle[]> {
   try {
     const page = await listNews({ pageNumber: 1, pageSize: 200, publishedOnly: true });
@@ -157,7 +154,7 @@ export async function loadPublicNews(): Promise<NewsArticle[]> {
     if (err instanceof ApiError && err.status === 404) {
       return [];
     }
-    return newsArticles;
+    throw err;
   }
 }
 

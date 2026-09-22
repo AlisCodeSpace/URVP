@@ -1,3 +1,4 @@
+using FEA.URVP.Api.Configuration;
 using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.Notifications.Create;
 using FEA.URVP.Application.Commands.Notifications.DeleteAll;
@@ -109,6 +110,7 @@ public sealed class NotificationController : ApiControllerBase
         return SuccessResponse(new NotificationCountDto { Count = count }, "Notifications deleted");
     }
 
+    [DevelopmentOnly]
     [HttpPost("test")]
     public async Task<IActionResult> CreateTest(CancellationToken cancellationToken)
     {
