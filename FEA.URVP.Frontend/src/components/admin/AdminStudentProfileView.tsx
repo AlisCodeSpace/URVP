@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { StudentProfileReadonly } from "@/components/student/StudentProfileReadonly";
 import { BackLink } from "@/components/ui/BackLink";
 import { ProfileFormSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
 import { adminProjectHref } from "@/lib/auth";
 import {
   getStudentProfile,
   toStudentProfileValues,
 } from "@/lib/student-profile-api";
-import type { StudentProfileValues } from "@/lib/student-profile";
 
 export function AdminStudentProfileView({
   projectId,
@@ -20,33 +18,17 @@ export function AdminStudentProfileView({
   projectId: string;
   studentUserId: string;
 }) {
-  const [values, setValues] = useState<StudentProfileValues | null>(null);
-  const [exists, setExists] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const dto = await getStudentProfile(studentUserId);
-        if (cancelled) return;
-        setExists(dto.exists);
-        setValues(toStudentProfileValues(dto));
-      } catch (err) {
-        if (cancelled) return;
-        setError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load this student profile.",
-        );
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [studentUserId]);
+  const profileQuery = useCancellableQuery(
+    async () => {
+      const dto = await getStudentProfile(studentUserId);
+      return { exists: dto.exists, values: toStudentProfileValues(dto) };
+    },
+    [studentUserId],
+    { fallbackError: "Could not load this student profile." },
+  );
+  const values = profileQuery.data?.values ?? null;
+  const exists = profileQuery.data?.exists ?? true;
+  const error = profileQuery.error;
 
   const displayName = values
     ? `${values.firstName} ${values.lastName}`.trim() || "Student profile"

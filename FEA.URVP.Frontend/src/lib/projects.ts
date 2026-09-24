@@ -1,8 +1,4 @@
-import {
-  researchActivityTypes,
-  researchAreas,
-  type MyProjectStatus,
-} from "./project-form";
+import type { MyProjectStatus } from "./project-form";
 
 export type CatalogProject = {
   id: string;
@@ -28,5 +24,3 @@ export const projectsIntro =
 export function openingsLeft(project: CatalogProject): number {
   return Math.max(0, project.volunteersRequired - project.volunteersFilled);
 }
-
-export { researchAreas, researchActivityTypes };

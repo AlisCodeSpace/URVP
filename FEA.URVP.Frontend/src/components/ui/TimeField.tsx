@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Popover } from "@radix-ui/themes";
+import { Popover } from "@/components/ui/Popover";
 import { IconClock } from "@/components/ui/Icons";
 import {
   formatClock,
@@ -65,9 +65,6 @@ export function TimeField({
         </button>
       </Popover.Trigger>
       <Popover.Content
-        size="1"
-        width="auto"
-        minWidth="0"
         align="start"
         sideOffset={8}
         collisionPadding={16}

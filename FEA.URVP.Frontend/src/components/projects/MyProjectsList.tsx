@@ -1,13 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { useState } from "react";
+import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { IconPencil, IconPlus } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { ApiError } from "@/lib/api";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { editProjectHref, newProjectHref, viewProjectHref } from "@/lib/auth";
 import {
   isFacultyProjectEditable,
@@ -98,33 +99,20 @@ function ProjectRow({
 }
 
 export function MyProjectsList({ userId }: { userId: string }) {
-  const [projects, setProjects] = useState<MyProject[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<MyProject | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const items = await listMyProjects();
-      setProjects(items.map(toMyProject));
-    } catch (err) {
-      setProjects([]);
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : "Could not load your projects.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const {
+    data,
+    loading,
+    error,
+    setData,
+    setError,
+    reload: load,
+  } = useCancellableQuery(() => listMyProjects().then((items) => items.map(toMyProject)), [], {
+    fallbackError: "Could not load your projects.",
+    dataOnError: () => [],
+  });
+  const projects = data;
 
   async function handleConfirmDelete() {
     if (!pendingDelete) return;
@@ -135,7 +123,7 @@ export function MyProjectsList({ userId }: { userId: string }) {
     try {
       await deleteProject(id);
       setPendingDelete(null);
-      setProjects((prev) => (prev ?? []).filter((p) => p.id !== id));
+      setData((prev) => (prev ?? []).filter((project) => project.id !== id));
     } catch (err) {
       setError(
         err instanceof ApiError ? err.message : "Could not delete project.",

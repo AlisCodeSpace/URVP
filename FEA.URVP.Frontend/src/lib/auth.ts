@@ -167,10 +167,6 @@ export function isStudent(role: number | null | undefined): boolean {
   return role === UserRole.Student;
 }
 
-export function isFacultyOrAdmin(role: number | null | undefined): boolean {
-  return role === UserRole.Faculty || role === UserRole.Admin;
-}
-
 export function isAdmin(role: number | null | undefined): boolean {
   return role === UserRole.Admin;
 }
@@ -237,10 +233,6 @@ export function projectsHref(): string {
 
 export function projectDetailHref(projectId: string): string {
   return withParams("/projects/detail", { [RouteParam.Id]: projectId });
-}
-
-export function newsHref(): string {
-  return "/news";
 }
 
 export function newsArticleHref(slug: string): string {

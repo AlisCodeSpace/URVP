@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -222,31 +223,21 @@ function ActiveSemesterPanel({
 }
 
 export function AdminSemestersView() {
-  const [semesters, setSemesters] = useState<SemesterDto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<SemesterDto | null>(null);
   const [startingId, setStartingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-
-  const load = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    setError(null);
-    try {
-      setSemesters(await listSemesters());
-    } catch (err) {
-      setSemesters([]);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load URVP cycles.",
-      );
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const {
+    data,
+    loading,
+    error,
+    setError,
+    reload: load,
+  } = useCancellableQuery(() => listSemesters(), [], {
+    fallbackError: "Failed to load URVP cycles.",
+    initialData: [],
+    dataOnError: () => [],
+  });
+  const semesters = data ?? [];
 
   async function onConfirmDelete() {
     if (!pendingDelete) return;
@@ -269,7 +260,7 @@ export function AdminSemestersView() {
     setError(null);
     try {
       await setSemesterActive(semester.id, true);
-      await load(true);
+      await load({ silent: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to start cycle.");
     } finally {
@@ -336,7 +327,7 @@ export function AdminSemestersView() {
           </p>
           <ActiveSemesterPanel
             semester={activeSemester}
-            onReload={() => load(true)}
+            onReload={() => load({ silent: true })}
             onError={(msg) => setError(msg)}
           />
         </div>

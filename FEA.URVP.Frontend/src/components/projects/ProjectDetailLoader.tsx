@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Text } from "@radix-ui/themes";
+import { Text } from "@/components/ui/Typography";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApplicationWindowClosedNotice } from "@/components/projects/ApplicationWindowClosedNotice";
 import { ProjectDetail } from "@/components/projects/ProjectDetail";
 import { useStudentProjectsLocked } from "@/hooks/useApplicationWindow";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { ApiError } from "@/lib/api";
-import type { CatalogProject } from "@/lib/projects";
 import { projectsHref } from "@/lib/auth";
 import { getProject, toCatalogProject } from "@/lib/projects-api";
 import { NotFoundView } from "@/components/ui/NotFoundView";
@@ -16,42 +15,31 @@ import { ProjectDetailSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function ProjectDetailLoader({ id }: { id: string }) {
   const studentProjects = useStudentProjectsLocked();
-  const [project, setProject] = useState<CatalogProject | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [notFound, setNotFound] = useState(false);
-
-  useEffect(() => {
-    if (studentProjects.pending || studentProjects.locked) {
-      setProject(null);
-      setError(null);
-      setNotFound(false);
-      return;
-    }
-
-    let cancelled = false;
-
-    void (async () => {
+  const projectQuery = useCancellableQuery(
+    async () => {
       try {
         const dto = await getProject(id);
-        if (!cancelled) setProject(toCatalogProject(dto));
+        return { kind: "ok" as const, project: toCatalogProject(dto), message: null };
       } catch (err) {
-        if (cancelled) return;
         if (err instanceof ApiError && err.status === 404) {
-          setNotFound(true);
-        } else {
-          setError(
-            err instanceof ApiError
-              ? err.message
-              : "Could not load this project.",
-          );
+          return { kind: "missing" as const, project: null, message: null };
         }
+        return {
+          kind: "error" as const,
+          project: null,
+          message:
+            err instanceof ApiError ? err.message : "Could not load this project.",
+        };
       }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [id, studentProjects.locked, studentProjects.pending]);
+    },
+    [id],
+    {
+      enabled: !studentProjects.pending && !studentProjects.locked,
+    },
+  );
+  const project = projectQuery.data?.project ?? null;
+  const notFound = projectQuery.data?.kind === "missing";
+  const error = projectQuery.data?.message ?? null;
 
   if (studentProjects.locked) {
     return (

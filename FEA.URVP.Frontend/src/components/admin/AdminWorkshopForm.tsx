@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { useRouter } from "next/navigation";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
@@ -61,12 +62,26 @@ function toValues(dto: WorkshopDto): WorkshopFormValues {
 export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
   const router = useRouter();
   const isEdit = Boolean(workshopId);
+  const workshopQuery = useCancellableQuery(
+    () => getWorkshop(workshopId!),
+    [workshopId],
+    {
+      enabled: isEdit,
+      initialLoading: isEdit,
+      fallbackError: "Failed to load workshop.",
+    },
+  );
   const [values, setValues] = useState<WorkshopFormValues>(emptyValues);
   const [posterFile, setPosterFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(isEdit);
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [seenWorkshop, setSeenWorkshop] = useState<WorkshopDto | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { loading, error, setError } = workshopQuery;
+
+  if (workshopQuery.data && workshopQuery.data !== seenWorkshop) {
+    setSeenWorkshop(workshopQuery.data);
+    setValues(toValues(workshopQuery.data));
+  }
 
   const titleId = useId();
   const dateId = useId();
@@ -75,32 +90,22 @@ export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
   const descriptionId = useId();
   const urlId = useId();
 
-  const load = useCallback(async () => {
-    if (!workshopId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const item = await getWorkshop(workshopId);
-      const next = toValues(item);
-      setValues(next);
-      setPreviewUrl(workshopPosterUrl(next.posterFileId) ?? null);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load workshop.");
-    } finally {
-      setLoading(false);
-    }
-  }, [workshopId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
   useEffect(() => {
     if (!posterFile) return;
     const url = URL.createObjectURL(posterFile);
-    setPreviewUrl(url);
-    return () => URL.revokeObjectURL(url);
+    let active = true;
+    queueMicrotask(() => {
+      if (active) setObjectUrl(url);
+    });
+    return () => {
+      active = false;
+      URL.revokeObjectURL(url);
+    };
   }, [posterFile]);
+
+  const previewUrl = posterFile
+    ? objectUrl
+    : (workshopPosterUrl(values.posterFileId) ?? null);
 
   function setField<K extends keyof WorkshopFormValues>(
     key: K,
@@ -113,7 +118,6 @@ export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
     setPosterFile(file);
     if (file) return;
     setField("posterFileId", null);
-    setPreviewUrl(null);
   }
 
   async function onSubmit(event: React.FormEvent) {

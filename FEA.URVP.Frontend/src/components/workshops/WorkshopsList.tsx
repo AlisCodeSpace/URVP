@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import type { Workshop } from "@/lib/workshops";
 import { loadPublicWorkshops } from "@/lib/workshops-api";
 import { WorkshopCardsSkeleton } from "@/components/ui/SectionSkeletons";
@@ -104,28 +104,13 @@ export function WorkshopsList({
 }: {
   items?: Workshop[];
 }) {
-  const [list, setList] = useState<Workshop[] | null>(items ?? null);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    if (items) {
-      setList(items);
-      return;
-    }
-    let cancelled = false;
-    void loadPublicWorkshops()
-      .then((next) => {
-        if (!cancelled) setList(next);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setFailed(true);
-        setList([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [items]);
+  const fetched = useCancellableQuery(() => loadPublicWorkshops(), [], {
+    enabled: !items,
+    dataOnError: () => [],
+    fallbackError: "The workshop schedule could not be loaded right now. Please refresh to try again.",
+  });
+  const list = items ?? fetched.data;
+  const failed = !items && Boolean(fetched.error);
 
   if (!list) {
     return <WorkshopCardsSkeleton />;

@@ -1,26 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Text } from "@radix-ui/themes";
+import { Text } from "@/components/ui/Typography";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { FacultyProjectParticipants } from "@/components/projects/FacultyProjectParticipants";
 import { FacultyProjectRankings } from "@/components/projects/FacultyProjectRankings";
 import { FacultyProjectReadonly } from "@/components/projects/FacultyProjectReadonly";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { ApiError } from "@/lib/api";
 import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
-import {
-  getProjectRankings,
-  type ProjectRankingStudentDto,
-} from "@/lib/project-rankings-api";
+import { getProjectRankings } from "@/lib/project-rankings-api";
 import { isFacultyCandidateRankingLocked } from "@/lib/project-form";
-import {
-  getProject,
-  getProjectParticipants,
-  type ProjectDto,
-  type ProjectParticipantDto,
-} from "@/lib/projects-api";
+import { getProject, getProjectParticipants } from "@/lib/projects-api";
 import { ProjectDetailSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function FacultyProjectView({
@@ -30,99 +22,50 @@ export function FacultyProjectView({
   userId: string;
   projectId: string;
 }) {
-  const [project, setProject] = useState<ProjectDto | null>(null);
-  const [rankings, setRankings] = useState<ProjectRankingStudentDto[] | null>(
-    null,
-  );
-  const [rankingsError, setRankingsError] = useState<string | null>(null);
-  const [participants, setParticipants] = useState<
-    ProjectParticipantDto[] | null
-  >(null);
-  const [participantsError, setParticipantsError] = useState<string | null>(
-    null,
-  );
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
+  const projectQuery = useCancellableQuery(
+    async () => {
       try {
         const next = await getProject(projectId);
-        if (cancelled) return;
         if (next.createdByUserId.toLowerCase() !== userId.toLowerCase()) {
-          setError("You can only view your own projects here.");
-          return;
+          return {
+            project: null,
+            message: "You can only view your own projects here.",
+          };
         }
-        setProject(next);
+        return { project: next, message: null };
       } catch (err) {
-        if (cancelled) return;
-        setError(
-          err instanceof ApiError ? err.message : "Could not load project.",
-        );
+        return {
+          project: null,
+          message:
+            err instanceof ApiError ? err.message : "Could not load project.",
+        };
       }
-    })();
+    },
+    [projectId, userId],
+  );
+  const project = projectQuery.data?.project ?? null;
+  const error = projectQuery.data?.message ?? null;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [projectId, userId]);
-
-  const loadRankings = useCallback(async () => {
-    const next = await getProjectRankings(projectId);
-    setRankings(next);
-    setRankingsError(null);
-  }, [projectId]);
-
-  const loadParticipants = useCallback(async () => {
-    const next = await getProjectParticipants(projectId);
-    setParticipants(next);
-    setParticipantsError(null);
-  }, [projectId]);
-
-  useEffect(() => {
-    if (!project) return;
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        await loadRankings();
-      } catch (err) {
-        if (cancelled) return;
-        setRankingsError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load ranked students.",
-        );
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [project, loadRankings]);
-
-  useEffect(() => {
-    if (!project) return;
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        await loadParticipants();
-      } catch (err) {
-        if (cancelled) return;
-        setParticipantsError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load participating students.",
-        );
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [project, loadParticipants]);
+  const rankingsQuery = useCancellableQuery(
+    () => getProjectRankings(projectId),
+    [projectId, project?.id],
+    {
+      enabled: Boolean(project),
+      fallbackError: "Could not load ranked students.",
+    },
+  );
+  const participantsQuery = useCancellableQuery(
+    () => getProjectParticipants(projectId),
+    [projectId, project?.id],
+    {
+      enabled: Boolean(project),
+      fallbackError: "Could not load participating students.",
+    },
+  );
+  const rankings = rankingsQuery.data;
+  const rankingsError = rankingsQuery.error;
+  const participants = participantsQuery.data;
+  const participantsError = participantsQuery.error;
 
   return (
     <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
@@ -172,13 +115,18 @@ export function FacultyProjectView({
                 error={rankingsError}
                 locked={isFacultyCandidateRankingLocked(project)}
                 onRankingsChanged={() => {
-                  void loadRankings().catch((err: unknown) => {
-                    setRankingsError(
-                      err instanceof ApiError
-                        ? err.message
-                        : "Could not refresh ranked students.",
-                    );
-                  });
+                  void getProjectRankings(projectId)
+                    .then((next) => {
+                      rankingsQuery.setData(next);
+                      rankingsQuery.setError(null);
+                    })
+                    .catch((err: unknown) => {
+                      rankingsQuery.setError(
+                        err instanceof ApiError
+                          ? err.message
+                          : "Could not refresh ranked students.",
+                      );
+                    });
                 }}
               />
             </FacultyProjectReadonly>

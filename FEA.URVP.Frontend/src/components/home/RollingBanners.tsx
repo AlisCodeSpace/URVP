@@ -1,34 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Text } from "@radix-ui/themes";
+import { Text } from "@/components/ui/Typography";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { toNewsTickerItems, type NewsTickerItem } from "@/lib/home-content";
 import { loadPublicNews } from "@/lib/news-api";
 import { NewsTickerSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function RollingBanners({ items }: { items?: NewsTickerItem[] }) {
-  const [ticker, setTicker] = useState<NewsTickerItem[] | null>(items ?? null);
-
-  useEffect(() => {
-    if (items) {
-      setTicker(items);
-      return;
-    }
-    let cancelled = false;
-    void loadPublicNews()
-      .then((articles) => {
-        if (!cancelled) setTicker(toNewsTickerItems(articles));
-      })
-      // The marquee is decorative: an unreachable feed collapses the section
-      // rather than pushing an error onto the landing page.
-      .catch(() => {
-        if (!cancelled) setTicker([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [items]);
+  const fetched = useCancellableQuery(
+    () => loadPublicNews().then((articles) => toNewsTickerItems(articles)),
+    [],
+    {
+      enabled: !items,
+      dataOnError: () => [],
+      fallbackError: "News is unavailable.",
+    },
+  );
+  const ticker = items ?? fetched.data;
 
   if (ticker == null) {
     return <NewsTickerSkeleton />;

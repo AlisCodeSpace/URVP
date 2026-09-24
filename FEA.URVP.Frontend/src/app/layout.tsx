@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Exo } from "next/font/google";
-import { Theme } from "@radix-ui/themes";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import "./globals.css";
 
@@ -36,15 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${exo.variable} h-full antialiased`}>
       <body className={`${exo.className} min-h-full flex flex-col`}>
-        <Theme
-          accentColor="purple"
-          grayColor="slate"
-          radius="large"
-          scaling="100%"
-          appearance="light"
-        >
-          <AuthProvider>{children}</AuthProvider>
-        </Theme>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

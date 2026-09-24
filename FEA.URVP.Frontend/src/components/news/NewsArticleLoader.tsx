@@ -1,41 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { NewsArticleView } from "@/components/news/NewsArticleView";
 import { NewsArticleSkeleton } from "@/components/ui/SectionSkeletons";
 import { NotFoundView } from "@/components/ui/NotFoundView";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { loadPublicNewsArticle } from "@/lib/news-api";
-import type { NewsArticle } from "@/lib/news";
 
 export function NewsArticleLoader({ slug }: { slug: string }) {
-  const [result, setResult] = useState<{
-    article: NewsArticle;
-    previous: NewsArticle | null;
-    next: NewsArticle | null;
-  } | null>(null);
-  const [status, setStatus] = useState<
-    "loading" | "ready" | "missing" | "failed"
-  >("loading");
-
-  useEffect(() => {
-    let cancelled = false;
-    void loadPublicNewsArticle(slug)
-      .then((next) => {
-        if (cancelled) return;
-        if (!next) {
-          setStatus("missing");
-          return;
-        }
-        setResult(next);
-        setStatus("ready");
-      })
-      .catch(() => {
-        if (!cancelled) setStatus("failed");
-      });
-    return () => {
-      cancelled = true;
-    };
+  const articleQuery = useCancellableQuery(async () => {
+    try {
+      const next = await loadPublicNewsArticle(slug);
+      if (!next) return { status: "missing" as const, result: null };
+      return { status: "ready" as const, result: next };
+    } catch {
+      return { status: "failed" as const, result: null };
+    }
   }, [slug]);
+
+  const status = articleQuery.data?.status ?? "loading";
+  const result = articleQuery.data?.result ?? null;
 
   // Rendered inline rather than via notFound(): the article is fetched in the browser, and
   // notFound() belongs to server rendering, which a static export does not perform.

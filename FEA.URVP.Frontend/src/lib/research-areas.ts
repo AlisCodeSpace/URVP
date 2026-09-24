@@ -177,18 +177,4 @@ export const RESEARCH_AREAS = [
   "women's economic empowerment",
 ] as const;
 
-export type ResearchAreaLabel = (typeof RESEARCH_AREAS)[number];
-
 export const MAX_RESEARCH_AREAS = 6;
-
-const allowSet = new Set<string>(RESEARCH_AREAS);
-
-export function isAllowedResearchArea(value: string): boolean {
-  return allowSet.has(value);
-}
-
-export function filterResearchAreas(query: string): string[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return [...RESEARCH_AREAS];
-  return RESEARCH_AREAS.filter((area) => area.toLowerCase().includes(q));
-}

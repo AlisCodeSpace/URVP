@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { isStudent } from "@/lib/auth";
 import { getActiveSemester } from "@/lib/semesters-api";
 
@@ -56,23 +56,12 @@ export function formatApplicationAnnouncement(
  * computed flag.
  */
 export function useApplicationWindow(): WindowStatus {
-  const [status, setStatus] = useState<WindowStatus>({
-    loading: true,
-    isOpen: false,
-    semesterName: null,
+  const query = useCancellableQuery(() => fetchWindowStatus(), [], {
+    initialData: { loading: true, isOpen: false, semesterName: null },
+    initialLoading: true,
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    fetchWindowStatus().then((next) => {
-      if (!cancelled) setStatus(next);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return status;
+  return query.data ?? { loading: query.loading, isOpen: false, semesterName: null };
 }
 
 /**

@@ -121,27 +121,34 @@ npm run audit:ci
 
 ## Logging (Serilog + Seq)
 
-The backend uses [Serilog](https://serilog.net/). Console logging is always on. Seq is optional: when `SEQ_SERVER_URL` is unset, events stay on the console. If the URL is set, `SEQ_API_KEY` is required.
+The backend always logs to the console. It sends events to Seq only when `SEQ_SERVER_URL` is set. The frontend does not talk to Seq.
 
-- `AddSeriLog` clears the default logging providers, reads levels from the `Serilog` section, and enriches events with `Application`, `EnvironmentName`, `MachineName`, and `ThreadId`.
-- On Windows the values are read from the machine environment. On Linux they are read from the process environment.
-- `app.UseSerilogRequestLogging()` emits one structured event per HTTP request: `HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms` (`Error` on exception, `Warning` if slower than 1000 ms, otherwise `Information`).
+`ASPNETCORE_ENVIRONMENT` picks `appsettings.Development.json`, `appsettings.Staging.json`, or `appsettings.Production.json`, and Serilog stamps that same value on every event as `EnvironmentName`. It does not choose the Seq server. The server is whichever URL is in the machine variable on that box. Those URLs and API keys are not in git: not in `appsettings.*.json`, `web.config`, or pipeline YAML. Each environment file's `Serilog` section sets minimum levels only.
 
-| Variable | Required | Description |
+On Windows, `SEQ_SERVER_URL` and `SEQ_API_KEY` are read from machine scope (`HKLM\...\Session Manager\Environment`). A user variable, a value exported in the current shell, and `launchSettings.json` are ignored. On Linux (including Render) they are read from the process environment. `SEQ_API_KEY` is optional; Seq accepts a null key when ingestion is open.
+
+Every event is enriched with `Application`, `EnvironmentName`, `MachineName`, and `ThreadId`. `UseSerilogRequestLogging` writes `HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms`. Over 1000 ms is a warning; an exception is an error. `Log.CloseAndFlush()` runs in a `finally`, so the last events are pushed on shutdown.
+
+| Where it runs | Config file | Seq |
 | --- | --- | --- |
-| `SEQ_SERVER_URL` | No | Ingestion URL (e.g. `http://localhost:5342`). Unset keeps console logging only. |
-| `SEQ_API_KEY` | When Seq is used | Seq API key. Set it on the machine. **Never commit it.** |
+| `dotnet run` on your machine (`https://localhost:7222`) | `appsettings.Development.json` | `docker-compose.yml` (`datalust/seq:2024.1`) |
+| IIS on the staging Windows host (`https://urvp-staging.aub.edu.lb`) | `appsettings.Staging.json` | Machine `SEQ_SERVER_URL` on that host. Seq itself is not in this repo. |
+| IIS on the production Windows host (`https://urvp.aub.edu.lb`) | `appsettings.Production.json` | Same hook, on the production host. |
 
-Local Seq (`docker-compose.yml`):
-
-- UI: <http://localhost:5341> (first run: `admin` / `change-me-locally`)
-- Ingestion (`SEQ_SERVER_URL`): <http://localhost:5342>
+Local Seq UI: <http://localhost:5341>. Ingestion accepts events on that same URL. <http://localhost:5342> is the dedicated ingestion port. The first-run admin password is `DevPassword123` (username `admin`) and applies only to an empty `seq-data` volume. Change it if the container is reachable beyond your machine. Do not reuse it on an AUB server.
 
 ```powershell
 docker compose up -d seq
+[System.Environment]::SetEnvironmentVariable("SEQ_SERVER_URL", "http://localhost:5341", "Machine")
+# After creating an ingest API key in the Seq UI (Settings → API Keys):
+[System.Environment]::SetEnvironmentVariable("SEQ_API_KEY", "<ingest-key>", "Machine")
 ```
 
-Filter in Seq with `Application = 'FEA.URVP.Backend'`.
+`GetEnvironmentVariable(..., Machine)` reads the registry, so a new `dotnet run` sees the value without inheriting it from the parent shell. `ASPNETCORE_ENVIRONMENT=Development` is already set in `Properties/launchSettings.json`.
+
+On each AUB Windows host, set the two variables at machine scope, then `iisreset`. The worker inherits its environment from Windows Process Activation Service, which read it at service start, so an app-pool recycle alone often keeps the old environment. Use a separate ingest key per environment, restricted to ingest. `ASPNETCORE_ENVIRONMENT` for Staging and Production is written to `applicationHost.config` by `scripts/iis/Set-AspNetCoreEnvironment.ps1`; it is not a machine variable.
+
+In the Seq UI, filter with `Application = 'FEA.URVP.Backend'` and `EnvironmentName = 'Development'` (or `Staging` / `Production`). `MachineName` separates hosts that share one Seq server.
 
 ## CI/CD and environments
 

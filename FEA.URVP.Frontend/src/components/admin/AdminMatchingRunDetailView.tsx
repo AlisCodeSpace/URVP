@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { BackLink } from "@/components/ui/BackLink";
 import {
@@ -17,11 +18,10 @@ import {
   getMatchingRun,
   matchRate,
   updatePlacementStatus,
-  type MatchingRunDetailDto,
   type PlacementDto,
 } from "@/lib/matching-api";
 import { rankLabel } from "@/lib/project-rankings-api";
-import { formatWindowDate, getActiveSemester, type SemesterDto } from "@/lib/semesters-api";
+import { formatWindowDate, getActiveSemester } from "@/lib/semesters-api";
 
 type PendingAction =
   | { kind: "confirm" }
@@ -29,36 +29,28 @@ type PendingAction =
   | { kind: "release"; placement: PlacementDto; status: "Declined" | "Cancelled" };
 
 export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
-  const [data, setData] = useState<MatchingRunDetailDto | null>(null);
-  const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState<PendingAction | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [semester, setSemester] = useState<SemesterDto | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [detail, active] = await Promise.all([
+  const {
+    data: loaded,
+    loading,
+    error,
+    setError,
+    setData,
+    reload: load,
+  } = useCancellableQuery(
+    async () => {
+      const [detail, semester] = await Promise.all([
         getMatchingRun(runId),
         getActiveSemester(),
       ]);
-      setData(detail);
-      setSemester(active);
-    } catch (err) {
-      setData(null);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load matching run.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [runId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+      return { detail, semester };
+    },
+    [runId],
+    { fallbackError: "Failed to load matching run." },
+  );
+  const data = loaded?.detail ?? null;
+  const semester = loaded?.semester ?? null;
 
   const choiceSplit = useMemo(() => {
     if (!data?.placements.length) return null;
@@ -77,7 +69,12 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
     setError(null);
     try {
       if (pending.kind === "confirm") {
-        setData(await confirmMatchingRun(data.run.id));
+        const confirmed = await confirmMatchingRun(data.run.id);
+        setData((current) =>
+          current
+            ? { ...current, detail: confirmed }
+            : { detail: confirmed, semester },
+        );
       } else if (pending.kind === "discard") {
         await discardMatchingRun(data.run.id);
         await load();

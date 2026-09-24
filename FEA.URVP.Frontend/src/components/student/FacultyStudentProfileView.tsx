@@ -1,28 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { FacultyCandidateRankModal } from "@/components/student/FacultyCandidateRankModal";
 import { StudentProfileReadonly } from "@/components/student/StudentProfileReadonly";
 import { Button } from "@/components/ui/Button";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { ApiError } from "@/lib/api";
 import { FACULTY_PORTAL_ROLES, viewProjectHref } from "@/lib/auth";
 import {
   getStudentProfile,
   toStudentProfileValues,
 } from "@/lib/student-profile-api";
-import type { StudentProfileValues } from "@/lib/student-profile";
 import { ProfileFormSkeleton } from "@/components/ui/SectionSkeletons";
-import {
-  getProjectRankings,
-  rankLabel,
-  type ProjectRankingStudentDto,
-} from "@/lib/project-rankings-api";
+import { getProjectRankings, rankLabel } from "@/lib/project-rankings-api";
 import { isFacultyCandidateRankingLocked } from "@/lib/project-form";
-import { getProject, type ProjectDto } from "@/lib/projects-api";
+import { getProject } from "@/lib/projects-api";
 
 export function FacultyStudentProfileView({
   userId,
@@ -33,94 +29,40 @@ export function FacultyStudentProfileView({
   projectId: string;
   studentUserId: string;
 }) {
-  const [values, setValues] = useState<StudentProfileValues | null>(null);
-  const [exists, setExists] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [project, setProject] = useState<ProjectDto | null>(null);
-  const [rankings, setRankings] = useState<ProjectRankingStudentDto[] | null>(
-    null,
-  );
-  const [rankingsError, setRankingsError] = useState<string | null>(null);
   const [rankOpen, setRankOpen] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const dto = await getStudentProfile(studentUserId);
-        if (cancelled) return;
-        setExists(dto.exists);
-        setValues(toStudentProfileValues(dto));
-      } catch (err) {
-        if (cancelled) return;
-        setError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load this student profile.",
-        );
+  const profileQuery = useCancellableQuery(
+    async () => {
+      const dto = await getStudentProfile(studentUserId);
+      return { exists: dto.exists, values: toStudentProfileValues(dto) };
+    },
+    [studentUserId],
+    { fallbackError: "Could not load this student profile." },
+  );
+  const projectQuery = useCancellableQuery(
+    async () => {
+      const next = await getProject(projectId);
+      if (next.createdByUserId.toLowerCase() !== userId.toLowerCase()) {
+        throw new Error("You can only rank candidates on your own projects.");
       }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [studentUserId]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const next = await getProject(projectId);
-        if (cancelled) return;
-        if (next.createdByUserId.toLowerCase() !== userId.toLowerCase()) {
-          setRankingsError("You can only rank candidates on your own projects.");
-          return;
-        }
-        setProject(next);
-      } catch (err) {
-        if (cancelled) return;
-        setRankingsError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load this project.",
-        );
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [projectId, userId]);
-
-  const loadRankings = useCallback(async () => {
-    const next = await getProjectRankings(projectId);
-    setRankings(next);
-    setRankingsError(null);
-  }, [projectId]);
-
-  useEffect(() => {
-    if (!project) return;
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        await loadRankings();
-      } catch (err) {
-        if (cancelled) return;
-        setRankingsError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load candidate rankings.",
-        );
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [project, loadRankings]);
+      return next;
+    },
+    [projectId, userId],
+    { fallbackError: "Could not load this project." },
+  );
+  const project = projectQuery.data;
+  const rankingsQuery = useCancellableQuery(
+    () => getProjectRankings(projectId),
+    [projectId, project?.id],
+    {
+      enabled: Boolean(project),
+      fallbackError: "Could not load candidate rankings.",
+    },
+  );
+  const values = profileQuery.data?.values ?? null;
+  const exists = profileQuery.data?.exists ?? true;
+  const error = profileQuery.error;
+  const rankings = rankingsQuery.data;
+  const rankingsError = projectQuery.error ?? rankingsQuery.error;
 
   const displayName = values
     ? `${values.firstName} ${values.lastName}`.trim() || "Student profile"
@@ -250,13 +192,18 @@ export function FacultyStudentProfileView({
             studentName={displayName}
             volunteersRequired={project.volunteersRequired}
             onChanged={() => {
-              void loadRankings().catch((err: unknown) => {
-                setRankingsError(
-                  err instanceof ApiError
-                    ? err.message
-                    : "Could not refresh candidate rankings.",
-                );
-              });
+              void getProjectRankings(projectId)
+                .then((next) => {
+                  rankingsQuery.setData(next);
+                  rankingsQuery.setError(null);
+                })
+                .catch((err: unknown) => {
+                  rankingsQuery.setError(
+                    err instanceof ApiError
+                      ? err.message
+                      : "Could not refresh candidate rankings.",
+                  );
+                });
             }}
           />
         ) : null}

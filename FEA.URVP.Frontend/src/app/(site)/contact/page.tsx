@@ -8,7 +8,7 @@ import {
   XIcon,
   YouTubeIcon,
 } from "@/components/ui/SocialIcons";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { contacts, socialLinks } from "@/lib/site";
 
 export const metadata: Metadata = {

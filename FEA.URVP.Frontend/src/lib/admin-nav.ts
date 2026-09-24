@@ -80,13 +80,3 @@ export const adminNav: AdminNavGroup[] = [
     ],
   },
 ];
-
-export function flattenAdminNav(): AdminNavItem[] {
-  return adminNav.flatMap((group) => group.items);
-}
-
-export function findAdminNavItem(pathname: string): AdminNavItem | undefined {
-  return flattenAdminNav().find(
-    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
-  );
-}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -14,7 +15,6 @@ import { formatTimeDisplay } from "@/lib/time";
 import {
   deleteWorkshop,
   listWorkshops,
-  type PaginatedWorkshops,
   type WorkshopDto,
 } from "@/lib/workshops-api";
 
@@ -25,36 +25,24 @@ export function AdminWorkshopsView() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
-  const [data, setData] = useState<PaginatedWorkshops | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<WorkshopDto | null>(null);
   const [deleting, setDeleting] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setData(
-        await listWorkshops({
-          search,
-          pageNumber,
-          pageSize: PAGE_SIZE,
-        }),
-      );
-    } catch (err) {
-      setData(null);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load workshops.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [search, pageNumber]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const {
+    data,
+    loading,
+    error,
+    setError,
+    reload: load,
+  } = useCancellableQuery(
+    () =>
+      listWorkshops({
+        search,
+        pageNumber,
+        pageSize: PAGE_SIZE,
+      }),
+    [search, pageNumber],
+    { fallbackError: "Failed to load workshops." },
+  );
 
   useEffect(() => {
     const handle = window.setTimeout(() => {

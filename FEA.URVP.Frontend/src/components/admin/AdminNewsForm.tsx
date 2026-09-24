@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { useRouter } from "next/navigation";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { AdminNewsImagesField, type NewsImageDraft } from "@/components/admin/AdminNewsImagesField";
@@ -90,11 +91,26 @@ function toPayload(values: NewsFormValues) {
 export function AdminNewsForm({ newsId }: { newsId?: string }) {
   const router = useRouter();
   const isEdit = Boolean(newsId);
+  const articleQuery = useCancellableQuery(
+    () => getNewsById(newsId!),
+    [newsId],
+    {
+      enabled: isEdit,
+      initialLoading: isEdit,
+      fallbackError: "Failed to load article.",
+    },
+  );
   const [values, setValues] = useState<NewsFormValues>(emptyValues);
   const [images, setImages] = useState<NewsImageDraft[]>([]);
-  const [loading, setLoading] = useState(isEdit);
+  const [seenArticle, setSeenArticle] = useState<NewsArticleDto | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { loading, error, setError } = articleQuery;
+
+  if (articleQuery.data && articleQuery.data !== seenArticle) {
+    setSeenArticle(articleQuery.data);
+    setValues(toValues(articleQuery.data));
+    setImages(draftsFromDto(articleQuery.data));
+  }
 
   const titleId = useId();
   const excerptId = useId();
@@ -103,25 +119,6 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
   const tickerId = useId();
   const bodyId = useId();
   const dateId = useId();
-
-  const load = useCallback(async () => {
-    if (!newsId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const item = await getNewsById(newsId);
-      setValues(toValues(item));
-      setImages(draftsFromDto(item));
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load article.");
-    } finally {
-      setLoading(false);
-    }
-  }, [newsId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   function setField<K extends keyof NewsFormValues>(
     key: K,

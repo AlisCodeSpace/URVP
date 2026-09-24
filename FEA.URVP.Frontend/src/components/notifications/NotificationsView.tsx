@@ -9,7 +9,6 @@ import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { useNotificationActions } from "@/hooks/useNotificationActions";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
-import { useRealTimeNotifications } from "@/hooks/useRealTimeNotifications";
 
 export function NotificationsView() {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -20,7 +19,6 @@ export function NotificationsView() {
     inAppNotifications: settings.settings?.inAppNotifications !== false,
   });
   const actions = useNotificationActions(list);
-  useRealTimeNotifications({ enabled: list.canAccess });
 
   return (
     <div className="notification-page">

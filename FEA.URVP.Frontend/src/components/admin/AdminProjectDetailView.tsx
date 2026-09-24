@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import Link from "next/link";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { BackLink } from "@/components/ui/BackLink";
@@ -11,7 +12,6 @@ import { AdminFormSkeleton, RankingsListSkeleton } from "@/components/ui/Section
 import { ApiError } from "@/lib/api";
 import {
   getAdminProject,
-  type AdminProjectDetailDto,
   type ProjectRankingStudentDto,
 } from "@/lib/admin-projects-api";
 import {
@@ -30,7 +30,7 @@ import {
 } from "@/lib/project-rankings-api";
 import { adminStudentProfileHref } from "@/lib/auth";
 import type { ProjectDto } from "@/lib/projects-api";
-import { getActiveSemester, type SemesterDto } from "@/lib/semesters-api";
+import { getActiveSemester } from "@/lib/semesters-api";
 
 const RANK_GROUPS = [
   { rank: 1, label: "1st choice" },
@@ -96,39 +96,29 @@ function rankingMatchesSearch(ranking: ProjectRankingStudentDto, query: string) 
 
 export function AdminProjectDetailView({ projectId }: { projectId: string }) {
   const searchId = useId();
-  const [data, setData] = useState<AdminProjectDetailDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyStudentId, setBusyStudentId] = useState<string | null>(null);
   const [removeTarget, setRemoveTarget] = useState<PlacementDto | null>(null);
   const [removing, setRemoving] = useState(false);
   const [searchInput, setSearchInput] = useState("");
-  const [activeSemester, setActiveSemester] = useState<SemesterDto | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
+  const {
+    data: loaded,
+    loading,
+    error,
+    reload: load,
+  } = useCancellableQuery(
+    async () => {
       const [project, semester] = await Promise.all([
         getAdminProject(projectId),
         getActiveSemester(),
       ]);
-      setData(project);
-      setActiveSemester(semester);
-    } catch (err) {
-      setData(null);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load project.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+      return { project, semester };
+    },
+    [projectId],
+    { fallbackError: "Failed to load project." },
+  );
+  const data = loaded?.project ?? null;
+  const activeSemester = loaded?.semester ?? null;
 
   const rankSummary = useMemo(() => {
     if (!data?.rankings.length) return null;

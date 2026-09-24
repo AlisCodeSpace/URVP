@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { useMemo, useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
+import { useValueListOptions } from "@/hooks/useValueListOptions";
+import { Heading, Text } from "@/components/ui/Typography";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ApplicationWindowClosedNotice } from "@/components/projects/ApplicationWindowClosedNotice";
 import { ProjectCard } from "@/components/projects/ProjectCard";
@@ -14,14 +16,10 @@ import {
   useStudentProjectsLocked,
 } from "@/hooks/useApplicationWindow";
 import { useStudentResearchTopics } from "@/hooks/useStudentResearchTopics";
-import { ApiError } from "@/lib/api";
 import { projectsHref } from "@/lib/auth";
-import {
-  openingsLeft,
-  researchActivityTypes,
-  researchAreas,
-  type CatalogProject,
-} from "@/lib/projects";
+import { RESEARCH_ACTIVITY_TYPES } from "@/lib/research-activity-types";
+import { RESEARCH_AREAS } from "@/lib/research-areas";
+import { openingsLeft, type CatalogProject } from "@/lib/projects";
 import type { MyProjectStatus } from "@/lib/project-form";
 import {
   getMyProjectRankings,
@@ -32,15 +30,10 @@ import {
 import { listProjects, toCatalogProject } from "@/lib/projects-api";
 
 const PAGE_SIZE = 6;
+const NO_RANKINGS: ProjectRankingDto[] = [];
 
 type SortKey = "newest" | "openings" | "title";
 type ProjectsBrowseVariant = "catalog" | "ranked";
-
-const areaFilterOptions = ["All areas", ...researchAreas] as const;
-const activityFilterOptions = [
-  "All activities",
-  ...researchActivityTypes,
-] as const;
 
 const sortOptions: { value: SortKey; label: string }[] = [
   { value: "newest", label: "Newest first" },
@@ -278,86 +271,62 @@ export function ProjectsBrowse({
   const catalogClosedForStudent = !ranked && studentProjects.locked;
   const catalogAccessPending = !ranked && studentProjects.pending;
 
-  const [projects, setProjects] = useState<CatalogProject[] | null>(null);
-  const [rankings, setRankings] = useState<ProjectRankingDto[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [rankingsError, setRankingsError] = useState<string | null>(null);
+  const catalogAreas = useValueListOptions("research-interests", RESEARCH_AREAS);
+  const catalogActivities = useValueListOptions(
+    "research-activity-types",
+    RESEARCH_ACTIVITY_TYPES,
+  );
+  const areaFilterOptions = useMemo(
+    () => ["All areas", ...catalogAreas],
+    [catalogAreas],
+  );
+  const activityFilterOptions = useMemo(
+    () => ["All activities", ...catalogActivities],
+    [catalogActivities],
+  );
+
   const [query, setQuery] = useState("");
   const [area, setArea] = useState("All areas");
   const [activity, setActivity] = useState("All activities");
   const [sort, setSort] = useState<SortKey>("newest");
-  const [pageNumber, setPageNumber] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  if (area !== "All areas" && !catalogAreas.includes(area)) {
+    setArea("All areas");
+  }
+  if (activity !== "All activities" && !catalogActivities.includes(activity)) {
+    setActivity("All activities");
+  }
+  const filterKey = `${query}\0${area}\0${activity}\0${sort}`;
+  const [pageSlot, setPageSlot] = useState({ filterKey, pageNumber: 1 });
+  if (pageSlot.filterKey !== filterKey) {
+    setPageSlot({ filterKey, pageNumber: 1 });
+  }
+  const pageNumber = pageSlot.filterKey === filterKey ? pageSlot.pageNumber : 1;
 
-  useEffect(() => {
-    if (studentProjects.pending || studentProjects.locked) {
-      setProjects(studentProjects.locked ? [] : null);
-      setLoadError(null);
-      return;
-    }
+  function setPageNumber(next: number) {
+    setPageSlot({ filterKey, pageNumber: next });
+  }
 
-    let cancelled = false;
+  const catalogQuery = useCancellableQuery(
+    () => listProjects().then((items) => items.map(toCatalogProject)),
+    [catalogAccessPending, catalogClosedForStudent],
+    {
+      enabled: !catalogAccessPending && !catalogClosedForStudent,
+      dataOnError: () => [],
+      fallbackError: "Could not load projects.",
+    },
+  );
+  const projects = catalogQuery.data;
+  const loadError = catalogQuery.error;
 
-    void (async () => {
-      try {
-        const items = await listProjects();
-        if (cancelled) return;
-        setProjects(items.map(toCatalogProject));
-        setLoadError(null);
-      } catch (err) {
-        if (cancelled) return;
-        setProjects([]);
-        setLoadError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load projects.",
-        );
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [studentProjects.pending, studentProjects.locked]);
-
-  useEffect(() => {
-    if (!ranked) {
-      setRankings([]);
-      setRankingsError(null);
-      return;
-    }
-
-    if (authLoading) return;
-
-    if (!isSignedIn) {
-      setRankings([]);
-      setRankingsError(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const mine = await getMyProjectRankings();
-        if (cancelled) return;
-        setRankings(mine);
-        setRankingsError(null);
-      } catch (err) {
-        if (cancelled) return;
-        setRankings([]);
-        setRankingsError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load your rankings.",
-        );
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoading, isSignedIn, ranked]);
+  const rankingsQuery = useCancellableQuery(() => getMyProjectRankings(), [ranked, authLoading, isSignedIn], {
+    enabled: ranked && !authLoading && isSignedIn,
+    dataOnError: () => [],
+    fallbackError: "Could not load your rankings.",
+  });
+  const rankings =
+    !ranked || (!authLoading && !isSignedIn) ? NO_RANKINGS : rankingsQuery.data;
+  const rankingsError = rankingsQuery.error;
 
   const filtered = useMemo(() => {
     if (!projects) return [];
@@ -409,10 +378,6 @@ export function ProjectsBrowse({
     const start = (currentPage - 1) * PAGE_SIZE;
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, currentPage]);
-
-  useEffect(() => {
-    setPageNumber(1);
-  }, [query, area, activity, sort]);
 
   function clearFilters() {
     setQuery("");

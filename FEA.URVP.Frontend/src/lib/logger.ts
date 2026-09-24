@@ -94,10 +94,3 @@ export const logger = {
     emit("error", message, context);
   },
 };
-
-/**
- * Whether the UI may display technical failure detail. Gated on `NODE_ENV` rather than a
- * `NEXT_PUBLIC_*` variable, so it cannot be switched on for a production deployment by editing an
- * environment variable.
- */
-export const canShowTechnicalErrors = isDevelopment;

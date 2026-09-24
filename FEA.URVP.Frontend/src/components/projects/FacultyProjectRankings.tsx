@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { FacultyCandidateRankModal } from "@/components/student/FacultyCandidateRankModal";
 import { Button } from "@/components/ui/Button";
 import { viewRankedStudentHref } from "@/lib/auth";

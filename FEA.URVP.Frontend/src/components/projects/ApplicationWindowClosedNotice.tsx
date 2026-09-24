@@ -1,6 +1,6 @@
 "use client";
 
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { studentProfileHref } from "@/lib/auth";
 

@@ -247,7 +247,7 @@ or a committed compose file.
 | `Security__TrustedProxies__KnownProxies__0` | Reverse-proxy IP allowed to set `X-Forwarded-*` |
 | `Security__TrustedProxies__KnownNetworks__0` | CIDR alternative to the above |
 | `Security__Health__MonitoringNetworks__0` | CIDR permitted to read detailed readiness |
-| `SEQ_SERVER_URL`, `SEQ_API_KEY` | Optional. Machine environment variables (process environment on Linux). When the URL is unset, logs stay on the console. When the URL is set, the API key is required. Do not put the API key in source control |
+| `SEQ_SERVER_URL`, `SEQ_API_KEY` | Optional. On Windows, machine scope only (not the user profile, the shell, or `launchSettings.json`). On Linux, the process environment. When the URL is unset, logs stay on the console. The API key is optional and must be an ingest key, not an admin key. Do not put either value in source control, `web.config`, or pipeline YAML. After changing them on an IIS host, `iisreset` (WAS reads the environment at service start) |
 | `DataProtection:Key` | Required on Linux (Render: `DataProtection__Key`) so key XML is encrypted before it is written to SQL. Any long secret is hashed to an AES key. Not needed on AUB IIS: Windows DPAPI wraps keys automatically |
 | `DataProtection:CertificateThumbprint` | Optional Linux alternative: a certificate thumbprint in the LocalMachine store |
 

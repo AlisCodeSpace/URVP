@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { useScrollLock } from "@/hooks/useScrollLock";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { ApiError } from "@/lib/api";
 import { studentRankingsHref } from "@/lib/auth";
 import {
@@ -12,7 +13,6 @@ import {
   rankLabel,
   removeProjectRanking,
   upsertProjectRanking,
-  type ProjectRankingDto,
   type RankOption,
 } from "@/lib/project-rankings-api";
 import { ModalRowsSkeleton } from "@/components/ui/SectionSkeletons";
@@ -37,50 +37,32 @@ export function ExpressInterestModal({
   onChanged,
 }: ExpressInterestModalProps) {
   const titleId = useId();
-  const [rankings, setRankings] = useState<ProjectRankingDto[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState<RankOption | null>(null);
-  const [removing, setRemoving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [savedRank, setSavedRank] = useState<RankOption | null>(null);
-
-  useScrollLock(open);
-
-  useEffect(() => {
-    if (!open) return;
-
-    let cancelled = false;
-    setError(null);
-    setSavedRank(null);
-    setLoading(true);
-
-    void (async () => {
-      try {
-        const mine = await getMyProjectRankings();
-        if (cancelled) return;
-        setRankings(mine);
-        const current = mine.find((r) => r.projectId === projectId);
-        setSavedRank(
+  const interestQuery = useCancellableQuery(
+    async () => {
+      const mine = await getMyProjectRankings();
+      const current = mine.find((ranking) => ranking.projectId === projectId);
+      return {
+        rankings: mine,
+        savedRank:
           current && RANK_OPTIONS.includes(current.rank as RankOption)
             ? (current.rank as RankOption)
             : null,
-        );
-      } catch (err) {
-        if (cancelled) return;
-        setError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load your current rankings.",
-        );
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+      };
+    },
+    [open, projectId],
+    {
+      enabled: open,
+      initialLoading: open,
+      fallbackError: "Could not load your current rankings.",
+    },
+  );
+  const [submitting, setSubmitting] = useState<RankOption | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const rankings = interestQuery.data?.rankings ?? [];
+  const savedRank = interestQuery.data?.savedRank ?? null;
+  const { loading, error, setError, setData } = interestQuery;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [open, projectId]);
+  useScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
@@ -98,9 +80,13 @@ export function ExpressInterestModal({
     setSubmitting(rank);
     try {
       const updated = await upsertProjectRanking(projectId, rank);
-      setSavedRank(updated.rank as RankOption);
       const mine = await getMyProjectRankings();
-      setRankings(mine);
+      setData({
+        rankings: mine,
+        savedRank: RANK_OPTIONS.includes(updated.rank as RankOption)
+          ? (updated.rank as RankOption)
+          : rank,
+      });
       onChanged?.();
     } catch (err) {
       setError(
@@ -118,9 +104,8 @@ export function ExpressInterestModal({
     setRemoving(true);
     try {
       await removeProjectRanking(projectId);
-      setSavedRank(null);
       const mine = await getMyProjectRankings();
-      setRankings(mine);
+      setData({ rankings: mine, savedRank: null });
       onChanged?.();
       onClose();
     } catch (err) {

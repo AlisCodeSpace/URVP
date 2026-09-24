@@ -1,26 +1,23 @@
-networks:
-  urvp-local:
-    driver: bridge
-
-volumes:
-  seq-data:
-
 services:
-  # Local structured-logging sink for the backend (Serilog -> Seq).
-  # UI:        http://localhost:5341
-  # Ingestion: http://localhost:5342
+  # Local Seq for development only. The backend is not a compose service, so this
+  # file does not inject SEQ_SERVER_URL. Start Seq, then set the machine variables.
+  # UI and ingestion: http://localhost:5341 (container port 80 serves both).
+  # Dedicated ingestion: http://localhost:5342 (container port 5341).
+  # First admin password applies only on an empty seq-data volume.
+  # Change it if this container is reachable beyond your machine.
+  # Do not reuse it on an AUB server.
   seq:
     image: datalust/seq:2024.1
     container_name: urvp-seq
-    restart: unless-stopped
-    environment:
-      ACCEPT_EULA: "Y"
-      SEQ_FIRSTRUN_ADMINUSERNAME: admin
-      SEQ_FIRSTRUN_ADMINPASSWORD: change-me-locally
     ports:
       - "5341:80"
       - "5342:5341"
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=DevPassword123
     volumes:
       - seq-data:/data
-    networks:
-      - urvp-local
+    restart: unless-stopped
+
+volumes:
+  seq-data:

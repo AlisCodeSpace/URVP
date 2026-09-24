@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { useRouter } from "next/navigation";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { RunStatusBadge } from "@/components/admin/MatchingStatusBadge";
@@ -14,41 +15,36 @@ import {
   listMatchingRuns,
   matchRate,
   runMatching,
-  type MatchingRunDto,
 } from "@/lib/matching-api";
-import { formatWindowDate, getActiveSemester, type SemesterDto } from "@/lib/semesters-api";
+import { formatWindowDate, getActiveSemester } from "@/lib/semesters-api";
 
 export function AdminMatchingView() {
   const router = useRouter();
-  const [runs, setRuns] = useState<MatchingRunDto[]>([]);
-  const [semester, setSemester] = useState<SemesterDto | null>(null);
-  const [loading, setLoading] = useState(true);
   const [testBusy, setTestBusy] = useState<"run" | "confirm" | null>(null);
   const [testSeed, setTestSeed] = useState("42");
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [nextRuns, active] = await Promise.all([
+  const {
+    data,
+    loading,
+    error,
+    setError,
+    reload: load,
+  } = useCancellableQuery(
+    async () => {
+      const [runs, semester] = await Promise.all([
         listMatchingRuns(),
         getActiveSemester(),
       ]);
-      setRuns(nextRuns);
-      setSemester(active);
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load matching runs.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+      return { runs, semester };
+    },
+    [],
+    {
+      fallbackError: "Failed to load matching runs.",
+      keepDataOnError: true,
+      initialData: { runs: [], semester: null },
+    },
+  );
+  const runs = data?.runs ?? [];
+  const semester = data?.semester ?? null;
 
   function parseTestSeed(): number | null {
     const trimmed = testSeed.trim();

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { isStudent } from "@/lib/auth";
 import {
   getMyStudentProfile,
@@ -32,37 +32,27 @@ function fetchMine(userId: string): Promise<StudentProfileDto | null> {
 /** Signed-in student's saved profile, or an empty shell when none exists yet. */
 export function useMyStudentProfile(): MyStudentProfileStatus {
   const { status, loading: authLoading } = useAuth();
-  const [state, setState] = useState<MyStudentProfileStatus>({
-    loading: true,
-    exists: false,
-    profile: null,
-  });
+  const userId = status?.userId ?? null;
+  const canLoad = Boolean(
+    !authLoading && status?.isAuthenticated && userId && isStudent(status.role),
+  );
+  const query = useCancellableQuery(
+    () => fetchMine(userId ?? ""),
+    [userId, canLoad],
+    { enabled: canLoad },
+  );
 
-  useEffect(() => {
-    if (authLoading) return;
+  if (authLoading || (canLoad && query.loading)) {
+    return { loading: true, exists: false, profile: null };
+  }
 
-    if (!status?.isAuthenticated || !status.userId || !isStudent(status.role)) {
-      setState({ loading: false, exists: false, profile: null });
-      return;
-    }
+  if (!canLoad) {
+    return { loading: false, exists: false, profile: null };
+  }
 
-    const userId = status.userId;
-    let cancelled = false;
-    setState({ loading: true, exists: false, profile: null });
-
-    void fetchMine(userId).then((profile) => {
-      if (cancelled) return;
-      setState({
-        loading: false,
-        exists: Boolean(profile?.exists),
-        profile,
-      });
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoading, status?.isAuthenticated, status?.userId, status?.role]);
-
-  return state;
+  return {
+    loading: false,
+    exists: Boolean(query.data?.exists),
+    profile: query.data,
+  };
 }

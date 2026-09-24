@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { NewsImageSlider } from "@/components/news/NewsImageSlider";
 import { newsArticleHref } from "@/lib/auth";

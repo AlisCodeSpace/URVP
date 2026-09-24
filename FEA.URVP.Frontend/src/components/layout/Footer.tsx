@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import { Logo } from "@/components/ui/Logo";
 import {

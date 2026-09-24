@@ -2,10 +2,7 @@ import { apiDownloadFile, apiFetch } from "@/lib/api";
 import {
   emptyStudentProfile,
   mergeAvailabilityFromApi,
-  type DayAvailability,
   type StudentProfileValues,
-  type TimeSlot,
-  type Weekday,
 } from "@/lib/student-profile";
 
 export type StudentProfileDto = {
@@ -172,6 +169,3 @@ export async function uploadStudentDocument(
     body,
   });
 }
-
-/** Unused helpers kept for typed availability editing. */
-export type { DayAvailability, TimeSlot, Weekday };

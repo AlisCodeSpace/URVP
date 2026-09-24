@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { useScrollLock } from "@/hooks/useScrollLock";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { ApiError } from "@/lib/api";
 import {
   removeFacultyCandidateRanking,
@@ -13,7 +14,6 @@ import {
   getProjectRankings,
   RANK_OPTIONS,
   rankLabel,
-  type ProjectRankingStudentDto,
   type RankOption,
 } from "@/lib/project-rankings-api";
 import { ModalRowsSkeleton } from "@/components/ui/SectionSkeletons";
@@ -38,50 +38,32 @@ export function FacultyCandidateRankModal({
   onChanged,
 }: FacultyCandidateRankModalProps) {
   const titleId = useId();
-  const [rankings, setRankings] = useState<ProjectRankingStudentDto[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState<RankOption | null>(null);
-  const [removing, setRemoving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [savedRank, setSavedRank] = useState<RankOption | null>(null);
-
-  useScrollLock(open);
-
-  useEffect(() => {
-    if (!open) return;
-
-    let cancelled = false;
-    setError(null);
-    setSavedRank(null);
-    setLoading(true);
-
-    void (async () => {
-      try {
-        const next = await getProjectRankings(projectId);
-        if (cancelled) return;
-        setRankings(next);
-        const current = next.find((r) => r.studentUserId === studentUserId);
-        setSavedRank(
+  const rankQuery = useCancellableQuery(
+    async () => {
+      const next = await getProjectRankings(projectId);
+      const current = next.find((ranking) => ranking.studentUserId === studentUserId);
+      return {
+        rankings: next,
+        savedRank:
           current && RANK_OPTIONS.includes(current.facultyRank as RankOption)
             ? (current.facultyRank as RankOption)
             : null,
-        );
-      } catch (err) {
-        if (cancelled) return;
-        setError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load candidate rankings.",
-        );
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+      };
+    },
+    [open, projectId, studentUserId],
+    {
+      enabled: open,
+      initialLoading: open,
+      fallbackError: "Could not load candidate rankings.",
+    },
+  );
+  const [submitting, setSubmitting] = useState<RankOption | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const rankings = rankQuery.data?.rankings ?? [];
+  const savedRank = rankQuery.data?.savedRank ?? null;
+  const { loading, error, setError, setData } = rankQuery;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [open, projectId, studentUserId]);
+  useScrollLock(open);
 
   useEffect(() => {
     if (!open) return;
@@ -100,13 +82,14 @@ export function FacultyCandidateRankModal({
 
   async function refresh() {
     const next = await getProjectRankings(projectId);
-    setRankings(next);
-    const current = next.find((r) => r.studentUserId === studentUserId);
-    setSavedRank(
-      current && RANK_OPTIONS.includes(current.facultyRank as RankOption)
-        ? (current.facultyRank as RankOption)
-        : null,
-    );
+    const current = next.find((ranking) => ranking.studentUserId === studentUserId);
+    setData({
+      rankings: next,
+      savedRank:
+        current && RANK_OPTIONS.includes(current.facultyRank as RankOption)
+          ? (current.facultyRank as RankOption)
+          : null,
+    });
     onChanged?.();
   }
 
@@ -132,7 +115,10 @@ export function FacultyCandidateRankModal({
     setRemoving(true);
     try {
       await removeFacultyCandidateRanking(projectId, studentUserId);
-      setSavedRank(null);
+      setData((current) => ({
+        rankings: current?.rankings ?? [],
+        savedRank: null,
+      }));
       await refresh();
       onClose();
     } catch (err) {

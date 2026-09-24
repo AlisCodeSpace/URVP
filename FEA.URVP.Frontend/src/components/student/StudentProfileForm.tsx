@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  useEffect,
   useRef,
   useState,
   type ChangeEvent,
   type FormEvent,
   type ReactNode,
 } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
+import { Heading, Text } from "@/components/ui/Typography";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -168,59 +168,45 @@ function FileUploadField({
 
 export function StudentProfileForm() {
   const { status } = useAuth();
+  const authed = Boolean(status?.isAuthenticated && status.userId);
+  const profileQuery = useCancellableQuery(
+    async () => {
+      const dto = await getMyStudentProfile();
+      return { values: toStudentProfileValues(dto), exists: dto.exists };
+    },
+    [status?.userId, authed],
+    {
+      enabled: authed,
+      fallbackError: "Could not load your profile.",
+    },
+  );
   const [values, setValues] = useState<StudentProfileValues>(() =>
     emptyStudentProfile(status?.name, status?.email),
   );
   const [baseline, setBaseline] = useState<StudentProfileValues>(() =>
     emptyStudentProfile(status?.name, status?.email),
   );
+  const [seenProfile, setSeenProfile] = useState(profileQuery.data);
   const [pendingTranscript, setPendingTranscript] = useState<File | null>(null);
   const [pendingCv, setPendingCv] = useState<File | null>(null);
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [profileExists, setProfileExists] = useState(false);
+  const loading = !authed || profileQuery.loading;
+  const { error, setError } = profileQuery;
+
+  if (profileQuery.data && profileQuery.data !== seenProfile) {
+    setSeenProfile(profileQuery.data);
+    setValues(profileQuery.data.values);
+    setBaseline(cloneStudentProfile(profileQuery.data.values));
+    setProfileExists(profileQuery.data.exists);
+    if (!profileQuery.data.exists) setEditing(true);
+  }
   const researchTopicOptions = useValueListOptions(
     "research-interests",
     RESEARCH_AREAS,
   );
-
-  useEffect(() => {
-    if (!status?.isAuthenticated || !status.userId) return;
-
-    let cancelled = false;
-
-    void (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const dto = await getMyStudentProfile();
-        if (cancelled) return;
-        const next = toStudentProfileValues(dto);
-        setValues(next);
-        setBaseline(cloneStudentProfile(next));
-        setProfileExists(dto.exists);
-        if (!dto.exists) {
-          setEditing(true);
-        }
-      } catch (err) {
-        if (cancelled) return;
-        setError(
-          err instanceof ApiError
-            ? err.message
-            : "Could not load your profile.",
-        );
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [status?.isAuthenticated, status?.userId]);
 
   const readOnly = !editing;
   const transcriptDisplayName =

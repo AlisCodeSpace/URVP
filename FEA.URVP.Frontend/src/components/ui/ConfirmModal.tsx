@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, type ReactNode } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { Button, type ButtonVariant } from "@/components/ui/Button";
 import { useScrollLock } from "@/hooks/useScrollLock";
 

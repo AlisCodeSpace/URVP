@@ -1,16 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { Tag } from "@/components/ui/Tag";
-import { ApiError } from "@/lib/api";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { formatAppDateTime } from "@/lib/datetime";
 import {
   listEmailLogs,
   type EmailLogDto,
-  type PaginatedEmailLogs,
 } from "@/lib/email-settings-api";
 
 const PAGE_SIZE = 50;
@@ -22,28 +21,16 @@ function dash(value: string | null | undefined) {
 
 export function AdminEmailLogs() {
   const [pageNumber, setPageNumber] = useState(1);
-  const [data, setData] = useState<PaginatedEmailLogs | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setData(await listEmailLogs({ pageNumber, pageSize: PAGE_SIZE }));
-    } catch (err) {
-      setData(null);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load email logs.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [pageNumber]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const {
+    data,
+    loading,
+    error,
+    reload: load,
+  } = useCancellableQuery(
+    () => listEmailLogs({ pageNumber, pageSize: PAGE_SIZE }),
+    [pageNumber],
+    { fallbackError: "Failed to load email logs." },
+  );
 
   const totalPages = data
     ? Math.max(1, Math.ceil(data.totalCount / data.pageSize))

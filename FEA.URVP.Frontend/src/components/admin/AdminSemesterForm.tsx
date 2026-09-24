@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { useRouter } from "next/navigation";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
@@ -92,14 +93,41 @@ function ScheduleFieldset({
 export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
   const router = useRouter();
   const isEdit = Boolean(semesterId);
+  const cycleQuery = useCancellableQuery(
+    async () => {
+      if (semesterId) {
+        const dto = await getSemester(semesterId);
+        return { mode: "edit" as const, dto, blockedBy: null };
+      }
+      const active = await getActiveSemester();
+      return {
+        mode: "create" as const,
+        dto: null,
+        blockedBy: active?.name ?? null,
+      };
+    },
+    [semesterId],
+    { fallbackError: "Failed to load URVP cycle." },
+  );
   const [values, setValues] = useState<FormValues>(emptyValues);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [currentDto, setCurrentDto] = useState<SemesterDto | null>(null);
   const [createBlockedByActive, setCreateBlockedByActive] = useState<string | null>(
     null,
   );
+  const [seenCycle, setSeenCycle] = useState(cycleQuery.data);
+  const { loading, error, setError } = cycleQuery;
+
+  if (cycleQuery.data !== seenCycle) {
+    setSeenCycle(cycleQuery.data);
+    setCreateBlockedByActive(
+      cycleQuery.data?.mode === "create" ? cycleQuery.data.blockedBy : null,
+    );
+    if (cycleQuery.data?.mode === "edit" && cycleQuery.data.dto) {
+      setCurrentDto(cycleQuery.data.dto);
+      setValues(toValues(cycleQuery.data.dto));
+    }
+  }
 
   const nameId = useId();
   const descId = useId();
@@ -108,35 +136,6 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
   const windowStartId = useId();
   const windowEndId = useId();
   const readOnly = Boolean(isEdit && currentDto?.hasEnded);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setCreateBlockedByActive(null);
-    try {
-      if (semesterId) {
-        const dto = await getSemester(semesterId);
-        setCurrentDto(dto);
-        setValues(toValues(dto));
-        return;
-      }
-
-      const active = await getActiveSemester();
-      if (active) {
-        setCreateBlockedByActive(active.name);
-      }
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load URVP cycle.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [semesterId]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   function setField<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));

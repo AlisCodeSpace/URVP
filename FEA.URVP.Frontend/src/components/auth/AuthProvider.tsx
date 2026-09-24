@@ -6,9 +6,9 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
   type ReactNode,
 } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { onUnauthorized } from "@/lib/api";
 import {
   fetchAuthStatus,
@@ -26,23 +26,18 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<AuthStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    try {
-      const next = await fetchAuthStatus();
-      setStatus(next);
-    } catch {
-      setStatus({ isAuthenticated: false });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  const session = useCancellableQuery(
+    async () => {
+      try {
+        return await fetchAuthStatus();
+      } catch {
+        return { isAuthenticated: false } satisfies AuthStatus;
+      }
+    },
+    [],
+    { fallbackError: "Could not read the session." },
+  );
+  const { setData, reload } = session;
 
   // The backend rejected a call as unauthenticated, so the cached status is stale. Dropping it to
   // signed-out clears the session metadata this provider holds and lets the route guards move the
@@ -50,19 +45,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(
     () =>
       onUnauthorized(() => {
-        setStatus({ isAuthenticated: false });
-        setLoading(false);
+        setData({ isAuthenticated: false });
       }),
-    [],
+    [setData],
   );
 
   const signOut = useCallback(() => {
     window.location.href = getAzureAdSignOutUrl();
   }, []);
 
+  const refresh = useCallback(() => reload({ silent: true }), [reload]);
+
   const value = useMemo(
-    () => ({ status, loading, refresh, signOut }),
-    [status, loading, refresh, signOut],
+    () => ({
+      status: session.data,
+      loading: session.loading,
+      refresh,
+      signOut,
+    }),
+    [refresh, session.data, session.loading, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

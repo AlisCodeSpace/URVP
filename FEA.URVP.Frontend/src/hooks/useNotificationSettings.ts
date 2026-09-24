@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import {
   getNotificationSettings,
   updateNotificationSettings,
@@ -18,37 +19,25 @@ export function useNotificationSettings(
   const { status } = useAuth();
   const enabled =
     Boolean(status?.isAuthenticated) && (options.enabled ?? true);
-  const [settings, setSettings] = useState<NotificationSettings | null>(null);
-  const [loading, setLoading] = useState(enabled);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    if (!enabled) {
-      setSettings(null);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      setSettings(await getNotificationSettings());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load settings.");
-    } finally {
-      setLoading(false);
-    }
-  }, [enabled]);
-
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  const query = useCancellableQuery(() => getNotificationSettings(), [enabled], {
+    enabled,
+    clearDataWhenDisabled: true,
+    fallbackError: "Failed to load settings.",
+  });
+  const { setData } = query;
 
   const save = useCallback(async (next: NotificationSettings) => {
     const updated = await updateNotificationSettings(next);
-    setSettings(updated);
+    setData(updated);
     return updated;
-  }, []);
+  }, [setData]);
 
-  return { settings, loading, error, refresh, save, enabled };
+  return {
+    settings: query.data,
+    loading: query.loading,
+    error: query.error,
+    refresh: query.reload,
+    save,
+    enabled,
+  };
 }

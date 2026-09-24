@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { Heading } from "@radix-ui/themes";
+import { Heading } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { useScrollLock } from "@/hooks/useScrollLock";
@@ -26,14 +26,20 @@ export function NotificationSettingsDialog({
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [inAppNotifications, setInAppNotifications] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [seed, setSeed] = useState<{
+    open: boolean;
+    settings: NotificationSettings | null;
+  }>({ open: false, settings: null });
 
   useScrollLock(open);
 
-  useEffect(() => {
-    if (!open || !settings) return;
+  if (open && settings && (!seed.open || seed.settings !== settings)) {
+    setSeed({ open: true, settings });
     setEmailNotifications(settings.emailNotifications);
     setInAppNotifications(settings.inAppNotifications);
-  }, [open, settings]);
+  } else if (!open && seed.open) {
+    setSeed((current) => ({ ...current, open: false }));
+  }
 
   useEffect(() => {
     if (!open) return;

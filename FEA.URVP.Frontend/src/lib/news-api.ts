@@ -103,10 +103,6 @@ export async function getNewsById(id: string): Promise<NewsArticleDto> {
   return apiFetch<NewsArticleDto>(`/api/news/${id}`);
 }
 
-export async function getNewsBySlug(slug: string): Promise<NewsArticleDto> {
-  return apiFetch<NewsArticleDto>(`/api/news/slug/${encodeURIComponent(slug)}`);
-}
-
 export async function createNews(
   payload: NewsWritePayload,
 ): Promise<NewsArticleDto> {

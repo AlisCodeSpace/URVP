@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
@@ -64,45 +65,40 @@ export function AdminUsersView() {
   const [sortBy, setSortBy] = useState<UserSortField>("Name");
   const [sortDir, setSortDir] = useState<SortDirection>("Asc");
   const [pageNumber, setPageNumber] = useState(1);
-
-  const [data, setData] = useState<PaginatedUsers | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [rowError, setRowError] = useState<string | null>(null);
   const [draftRoles, setDraftRoles] = useState<Record<string, UserRoleName>>({});
+  const [draftSource, setDraftSource] = useState<PaginatedUsers | null>(null);
   const [exporting, setExporting] = useState<UserExportFormat | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const page = await listUsers({
+  const {
+    data,
+    loading,
+    error,
+    setData,
+    reload: load,
+  } = useCancellableQuery(
+    () =>
+      listUsers({
         search,
         ...usersFilter(roleFilter),
         sortBy,
         sortDir,
         pageNumber,
         pageSize: PAGE_SIZE,
-      });
-      setData(page);
-      setDraftRoles(
-        Object.fromEntries(page.items.map((u) => [u.id, u.role])),
-      );
-      setRowError(null);
-    } catch (err) {
-      setData(null);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load users.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [search, roleFilter, sortBy, sortDir, pageNumber]);
+      }),
+    [search, roleFilter, sortBy, sortDir, pageNumber],
+    { fallbackError: "Failed to load users." },
+  );
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  if (data !== draftSource) {
+    setDraftSource(data);
+    setDraftRoles(
+      data
+        ? Object.fromEntries(data.items.map((user) => [user.id, user.role]))
+        : {},
+    );
+    setRowError(null);
+  }
 
   useEffect(() => {
     const handle = window.setTimeout(() => {

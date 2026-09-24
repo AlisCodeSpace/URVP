@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
@@ -21,38 +22,26 @@ export function AdminHomeIntroView() {
   const headlineId = useId();
   const descriptionId = useId();
 
+  const introQuery = useCancellableQuery(() => getHomeIntro(), [], {
+    fallbackError: "Failed to load home intro.",
+  });
   const [headline, setHeadline] = useState("");
   const [description, setDescription] = useState("");
   const [keyPoints, setKeyPoints] = useState<string[]>([""]);
-  const [loading, setLoading] = useState(true);
+  const [seenIntro, setSeenIntro] = useState<HomeIntroDto | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const { loading, error, setError } = introQuery;
 
-  const apply = useCallback((dto: HomeIntroDto) => {
-    setHeadline(dto.headline);
-    setDescription(dto.description);
-    setKeyPoints(dto.keyPoints.length > 0 ? dto.keyPoints : [""]);
-  }, []);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  if (introQuery.data && introQuery.data !== seenIntro) {
+    setSeenIntro(introQuery.data);
+    setHeadline(introQuery.data.headline);
+    setDescription(introQuery.data.description);
+    setKeyPoints(
+      introQuery.data.keyPoints.length > 0 ? introQuery.data.keyPoints : [""],
+    );
     setSaved(false);
-    try {
-      apply(await getHomeIntro());
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load home intro.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [apply]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  }
 
   function setKeyPoint(index: number, value: string) {
     setKeyPoints((prev) => prev.map((point, i) => (i === index ? value : point)));
@@ -88,7 +77,9 @@ export function AdminHomeIntroView() {
         description: description.trim(),
         keyPoints: trimmedPoints,
       });
-      apply(next);
+      setHeadline(next.headline);
+      setDescription(next.description);
+      setKeyPoints(next.keyPoints.length > 0 ? next.keyPoints : [""]);
       setSaved(true);
     } catch (err) {
       setError(

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { Container } from "@/components/layout/Container";
 
 type PageHeaderProps = {

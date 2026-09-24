@@ -46,6 +46,8 @@ export function FieldSelect({
 
   const displayLabel = selected ? labelByValue.get(selected) : undefined;
 
+  if (disabled && open) setOpen(false);
+
   useEffect(() => {
     function onPointerDown(event: MouseEvent) {
       if (!rootRef.current?.contains(event.target as Node)) {
@@ -55,10 +57,6 @@ export function FieldSelect({
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, []);
-
-  useEffect(() => {
-    if (disabled) setOpen(false);
-  }, [disabled]);
 
   function select(next: string) {
     onValueChange?.(next);

@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useNotificationSettings } from "@/hooks/useNotificationSettings";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import {
   getUnreadCount,
   listNotifications,
@@ -14,6 +15,18 @@ type UseNotificationsOptions = {
   pageSize?: number;
   unreadOnly?: boolean;
   inAppNotifications?: boolean;
+};
+
+type NotificationPage = {
+  items: Notification[];
+  unreadCount: number;
+  totalCount: number;
+};
+
+const emptyPage: NotificationPage = {
+  items: [],
+  unreadCount: 0,
+  totalCount: 0,
 };
 
 export function useNotifications(filters: UseNotificationsOptions = {}) {
@@ -28,68 +41,77 @@ export function useNotifications(filters: UseNotificationsOptions = {}) {
       ? explicitInApp
       : ownSettings.settings?.inAppNotifications !== false;
   const settingsLoading = explicitInApp === undefined && ownSettings.loading;
-
-  const [items, setItems] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? 20;
   const unreadOnly = filters.unreadOnly ?? false;
-  const requestIdRef = useRef(0);
+  const enabled = canAccess && !settingsLoading && inAppEnabled;
 
-  const refresh = useCallback(async () => {
-    if (!canAccess) {
-      setItems([]);
-      setUnreadCount(0);
-      setTotalCount(0);
-      return;
-    }
-
-    if (!inAppEnabled) {
-      setItems([]);
-      setUnreadCount(0);
-      setTotalCount(0);
-      return;
-    }
-
-    const requestId = ++requestIdRef.current;
-    setLoading(true);
-    setError(null);
-    try {
+  const query = useCancellableQuery(
+    async () => {
       const [pageResult, unread] = await Promise.all([
         listNotifications({ page, pageSize, unreadOnly }),
         getUnreadCount(),
       ]);
-      if (requestId !== requestIdRef.current) return;
-      setItems(pageResult.items);
-      setTotalCount(pageResult.totalCount);
-      setUnreadCount(unread.count);
-    } catch (err) {
-      if (requestId !== requestIdRef.current) return;
-      setError(
-        err instanceof Error ? err.message : "Failed to load notifications.",
-      );
-    } finally {
-      if (requestId === requestIdRef.current) setLoading(false);
-    }
-  }, [canAccess, inAppEnabled, page, pageSize, unreadOnly]);
+      return {
+        items: pageResult.items,
+        totalCount: pageResult.totalCount,
+        unreadCount: unread.count,
+      };
+    },
+    [page, pageSize, unreadOnly, enabled],
+    {
+      enabled,
+      initialData: emptyPage,
+      initialLoading: false,
+      fallbackError: "Failed to load notifications.",
+    },
+  );
+  const { setData } = query;
+  const pageData = query.data ?? emptyPage;
 
-  useEffect(() => {
-    if (!canAccess || settingsLoading) return;
-    void refresh();
-  }, [canAccess, refresh, settingsLoading]);
+  const setItems = useCallback(
+    (next: Notification[] | ((prev: Notification[]) => Notification[])) => {
+      setData((current) => {
+        const base = current ?? emptyPage;
+        const items = typeof next === "function" ? next(base.items) : next;
+        return { ...base, items };
+      });
+    },
+    [setData],
+  );
+
+  const setUnreadCount = useCallback(
+    (next: number | ((prev: number) => number)) => {
+      setData((current) => {
+        const base = current ?? emptyPage;
+        const unreadCount = typeof next === "function" ? next(base.unreadCount) : next;
+        return { ...base, unreadCount };
+      });
+    },
+    [setData],
+  );
+
+  const setTotalCount = useCallback(
+    (next: number | ((prev: number) => number)) => {
+      setData((current) => {
+        const base = current ?? emptyPage;
+        const totalCount = typeof next === "function" ? next(base.totalCount) : next;
+        return { ...base, totalCount };
+      });
+    },
+    [setData],
+  );
+
+  const visible = canAccess && inAppEnabled;
 
   return useMemo(
     () => ({
-      items: !inAppEnabled ? [] : items,
-      unreadCount: !inAppEnabled ? 0 : unreadCount,
-      totalCount: !inAppEnabled ? 0 : totalCount,
-      loading: settingsLoading || loading,
-      error,
-      refresh,
+      items: visible ? pageData.items : [],
+      unreadCount: visible ? pageData.unreadCount : 0,
+      totalCount: visible ? pageData.totalCount : 0,
+      loading: settingsLoading || (visible && query.loading),
+      error: query.error,
+      refresh: query.reload,
       canAccess,
       inAppEnabled,
       setItems,
@@ -98,14 +120,18 @@ export function useNotifications(filters: UseNotificationsOptions = {}) {
     }),
     [
       canAccess,
-      error,
       inAppEnabled,
-      items,
-      loading,
-      refresh,
+      pageData.items,
+      pageData.totalCount,
+      pageData.unreadCount,
+      query.error,
+      query.loading,
+      query.reload,
+      setItems,
+      setTotalCount,
+      setUnreadCount,
       settingsLoading,
-      totalCount,
-      unreadCount,
+      visible,
     ],
   );
 }

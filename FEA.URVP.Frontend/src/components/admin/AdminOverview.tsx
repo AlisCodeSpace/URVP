@@ -1,14 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
 import { AdminBarChart, AdminDonutChart } from "@/components/admin/AdminCharts";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
-import {
-  getAdminOverview,
-  type AdminOverviewDto,
-} from "@/lib/admin-overview-api";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
+import { getAdminOverview } from "@/lib/admin-overview-api";
 import {
   buildAdminKpis,
   buildPipelineChart,
@@ -26,28 +22,14 @@ import {
 } from "@/lib/admin-overview-stats";
 
 export function AdminOverview() {
-  const [data, setData] = useState<AdminOverviewDto | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setData(await getAdminOverview());
-    } catch (err) {
-      setData(null);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load overview.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const {
+    data,
+    loading,
+    error,
+    reload: load,
+  } = useCancellableQuery(() => getAdminOverview(), [], {
+    fallbackError: "Failed to load overview.",
+  });
 
   const semester = data?.semester ?? null;
   const pipeline = data ? buildPipelineChart(data) : [];

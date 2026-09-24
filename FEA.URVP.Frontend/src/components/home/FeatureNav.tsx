@@ -1,4 +1,4 @@
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import Link from "next/link";
 import { portalLinks } from "@/lib/site";
 

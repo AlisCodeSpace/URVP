@@ -1,17 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
 import { adminProjectHref } from "@/lib/auth";
 import {
   listAdminProjects,
   type AdminProjectListItemDto,
-  type PaginatedAdminProjects,
 } from "@/lib/admin-projects-api";
 import {
   formatProjectDate,
@@ -37,34 +36,22 @@ export function AdminProjectsView() {
   const [statusFilter, setStatusFilter] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
 
-  const [data, setData] = useState<PaginatedAdminProjects | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const page = await listAdminProjects({
+  const {
+    data,
+    loading,
+    error,
+    reload: load,
+  } = useCancellableQuery(
+    () =>
+      listAdminProjects({
         search,
         status: (statusFilter as MyProjectStatus | "") || undefined,
         pageNumber,
         pageSize: PAGE_SIZE,
-      });
-      setData(page);
-    } catch (err) {
-      setData(null);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load projects.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [search, statusFilter, pageNumber]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+      }),
+    [search, statusFilter, pageNumber],
+    { fallbackError: "Failed to load projects." },
+  );
 
   useEffect(() => {
     const handle = window.setTimeout(() => {

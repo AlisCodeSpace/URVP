@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Text } from "@radix-ui/themes";
+import { Text } from "@/components/ui/Typography";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PostProjectForm } from "@/components/projects/PostProjectForm";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { ApiError } from "@/lib/api";
 import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
 import {
   facultyProjectEditLockMessage,
   isFacultyProjectEditable,
-  type ProjectFormValues,
 } from "@/lib/project-form";
 import { getProject, toFormValues } from "@/lib/projects-api";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
@@ -23,39 +22,28 @@ export function EditProjectView({
   userId: string;
   projectId: string;
 }) {
-  const [initialValues, setInitialValues] = useState<ProjectFormValues | null>(
-    null,
-  );
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
+  const projectQuery = useCancellableQuery(
+    async () => {
       try {
         const project = await getProject(projectId);
-        if (cancelled) return;
         if (project.createdByUserId.toLowerCase() !== userId.toLowerCase()) {
-          setError("You can only edit your own projects.");
-          return;
+          return { values: null, message: "You can only edit your own projects." };
         }
         if (!isFacultyProjectEditable(project)) {
-          setError(facultyProjectEditLockMessage(project));
-          return;
+          return { values: null, message: facultyProjectEditLockMessage(project) };
         }
-        setInitialValues(toFormValues(project));
+        return { values: toFormValues(project), message: null };
       } catch (err) {
-        if (cancelled) return;
-        setError(
-          err instanceof ApiError ? err.message : "Could not load project.",
-        );
+        return {
+          values: null,
+          message: err instanceof ApiError ? err.message : "Could not load project.",
+        };
       }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [projectId, userId]);
+    },
+    [projectId, userId],
+  );
+  const initialValues = projectQuery.data?.values ?? null;
+  const error = projectQuery.data?.message ?? null;
 
   return (
     <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>

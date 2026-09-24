@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ExpressInterestModal } from "@/components/projects/ExpressInterestModal";
 import { PageHeader } from "@/components/layout/PageHeader";

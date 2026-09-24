@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { BackLink } from "@/components/ui/BackLink";
 import { LOGO_SRC } from "@/components/ui/Logo";
 import {

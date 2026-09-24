@@ -51,12 +51,4 @@ export const RESEARCH_ACTIVITY_TYPES = [
   "website development",
 ] as const;
 
-export type ResearchActivityTypeLabel = (typeof RESEARCH_ACTIVITY_TYPES)[number];
-
 export const MAX_RESEARCH_ACTIVITY_TYPES = 6;
-
-const allowSet = new Set<string>(RESEARCH_ACTIVITY_TYPES);
-
-export function isAllowedResearchActivityType(value: string): boolean {
-  return allowSet.has(value);
-}

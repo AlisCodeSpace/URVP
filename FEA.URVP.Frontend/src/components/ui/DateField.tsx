@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Popover } from "@radix-ui/themes";
+import { useMemo, useState } from "react";
+import { Popover } from "@/components/ui/Popover";
 import { DayPicker } from "@daypicker/react";
 import { IconCalendar } from "@/components/ui/Icons";
 
@@ -79,11 +79,12 @@ export function DateField({
   const selected = parseValue(value);
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState<Date>(() => parseValue(value) ?? new Date());
-
-  useEffect(() => {
+  const [monthValue, setMonthValue] = useState(value);
+  if (value !== monthValue) {
+    setMonthValue(value);
     const next = parseValue(value);
     if (next) setMonth(next);
-  }, [value]);
+  }
 
   const startMonth = useMemo(() => {
     const year = new Date().getFullYear();
@@ -131,9 +132,6 @@ export function DateField({
         </button>
       </Popover.Trigger>
       <Popover.Content
-        size="1"
-        width="auto"
-        minWidth="0"
         align="start"
         sideOffset={8}
         collisionPadding={16}

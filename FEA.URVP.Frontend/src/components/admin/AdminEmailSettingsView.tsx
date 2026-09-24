@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminEmailLogs } from "@/components/admin/AdminEmailLogs";
 import { AdminFormField } from "@/components/admin/AdminFormField";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
@@ -18,39 +19,29 @@ import {
 export function AdminEmailSettingsView() {
   const passwordId = useId();
 
+  const settingsQuery = useCancellableQuery(() => getEmailSettings(), [], {
+    fallbackError: "Failed to load email settings.",
+  });
   const [settings, setSettings] = useState<EmailSettingsDto | null>(null);
+  const [seenSettings, setSeenSettings] = useState<EmailSettingsDto | null>(null);
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const { loading, error, setError } = settingsQuery;
 
-  const applySettings = useCallback((dto: EmailSettingsDto) => {
+  if (settingsQuery.data && settingsQuery.data !== seenSettings) {
+    setSeenSettings(settingsQuery.data);
+    setSettings(settingsQuery.data);
+    setPassword("");
+    setSaved(false);
+  }
+
+  function applySettings(dto: EmailSettingsDto) {
     setSettings(dto);
     setPassword("");
-  }, []);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setSaved(false);
-    try {
-      applySettings(await getEmailSettings());
-    } catch (err) {
-      setSettings(null);
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load email settings.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [applySettings]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  }
 
   const passwordIsSet = settings?.passwordIsSet === true;
   const canSave = password.trim().length > 0 && !passwordIsSet;

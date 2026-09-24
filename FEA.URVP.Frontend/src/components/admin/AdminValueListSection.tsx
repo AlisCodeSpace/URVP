@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { FieldSelect } from "@/components/ui/FieldSelect";
@@ -14,7 +15,6 @@ import {
   deleteValueListItem,
   listValueListItems,
   updateValueListItem,
-  type PaginatedValueListItems,
   type ValueListItemDto,
   type ValueListKindSlug,
 } from "@/lib/value-lists-api";
@@ -49,10 +49,26 @@ export function AdminValueListSection({
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
-  const [data, setData] = useState<PaginatedValueListItems | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const {
+    data,
+    loading,
+    error,
+    setError,
+    reload: load,
+  } = useCancellableQuery(
+    () =>
+      listValueListItems(kind, {
+        search,
+        pageNumber,
+        pageSize: PAGE_SIZE,
+      }),
+    [kind, search, pageNumber, title],
+    {
+      fallbackError: `Failed to load ${title}.`,
+      onSuccess: (page) => onTotalCountChange?.(page.totalCount),
+    },
+  );
 
   const [draftOpen, setDraftOpen] = useState(false);
   const [draftName, setDraftName] = useState("");
@@ -66,31 +82,6 @@ export function AdminValueListSection({
   const [pendingDelete, setPendingDelete] = useState<ValueListItemDto | null>(
     null,
   );
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const page = await listValueListItems(kind, {
-        search,
-        pageNumber,
-        pageSize: PAGE_SIZE,
-      });
-      setData(page);
-      onTotalCountChange?.(page.totalCount);
-    } catch (err) {
-      setData(null);
-      setError(
-        err instanceof ApiError ? err.message : `Failed to load ${title}.`,
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [kind, search, pageNumber, title, onTotalCountChange]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   useEffect(() => {
     const handle = window.setTimeout(() => {

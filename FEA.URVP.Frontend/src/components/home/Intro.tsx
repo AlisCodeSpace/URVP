@@ -1,33 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import {
   defaultHomeIntro,
   loadPublicHomeIntro,
   splitIntroDescription,
-  type HomeIntroDto,
 } from "@/lib/home-intro-api";
 
 export function Intro() {
   const { loading, semesterName } = useApplicationWindow();
-  const [intro, setIntro] = useState<HomeIntroDto>(defaultHomeIntro);
+  const introQuery = useCancellableQuery(() => loadPublicHomeIntro(), [], {
+    initialData: defaultHomeIntro,
+    initialLoading: false,
+  });
+  const intro = introQuery.data ?? defaultHomeIntro;
   const eyebrow = loading
     ? "Welcome"
     : semesterName
       ? `Welcome · ${semesterName}`
       : "Welcome";
-
-  useEffect(() => {
-    let cancelled = false;
-    void loadPublicHomeIntro().then((next) => {
-      if (!cancelled) setIntro(next);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const paragraphs = splitIntroDescription(intro.description);
   const keyPoints = intro.keyPoints.filter((point) => point.trim());

@@ -94,6 +94,6 @@ services:
       - key: AdminEmails__0
         sync: false
 
-      # SEQ_SERVER_URL and SEQ_API_KEY are optional. When unset, Serilog writes to the
-      # console (Render's log stream). Set both in the dashboard only if a Seq server
-      # should receive logs. If the URL is set, the API key is required.
+      # SEQ_SERVER_URL and SEQ_API_KEY are optional process environment variables.
+      # When the URL is unset, Serilog writes to the console (Render's log stream).
+      # The API key is optional when Seq ingestion is open. Do not commit either value.

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Heading, Text } from "@radix-ui/themes";
+import { Heading, Text } from "@/components/ui/Typography";
+import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import {
   NEWS_PAGE_SIZE,
   pickFeaturedNews,
@@ -210,24 +210,12 @@ function usePageParam(): number {
 
 export function NewsList() {
   const page = usePageParam();
-  const [articles, setArticles] = useState<NewsArticle[] | null>(null);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    void loadPublicNews()
-      .then((items) => {
-        if (!cancelled) setArticles(items);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setFailed(true);
-        setArticles([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const articlesQuery = useCancellableQuery(() => loadPublicNews(), [], {
+    dataOnError: () => [],
+    fallbackError: "Updates could not be loaded right now. Please refresh to try again.",
+  });
+  const articles = articlesQuery.data;
+  const failed = Boolean(articlesQuery.error);
 
   if (!articles) {
     return <NewsListSkeleton />;

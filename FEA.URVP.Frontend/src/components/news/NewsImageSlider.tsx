@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { IconChevronLeft, IconChevronRight } from "@/components/ui/Icons";
 
 export function NewsImageSlider({
@@ -10,20 +10,26 @@ export function NewsImageSlider({
   images: string[];
   alt: string;
 }) {
-  const [index, setIndex] = useState(0);
+  const [frame, setFrame] = useState({ images, index: 0 });
+  if (frame.images !== images) {
+    setFrame({ images, index: 0 });
+  }
+  const index = frame.images === images ? frame.index : 0;
   const count = images.length;
 
   const go = useCallback(
     (direction: -1 | 1) => {
       if (count <= 1) return;
-      setIndex((current) => (current + direction + count) % count);
+      setFrame((current) => {
+        const currentIndex = current.images === images ? current.index : 0;
+        return {
+          images,
+          index: (currentIndex + direction + count) % count,
+        };
+      });
     },
-    [count],
+    [count, images],
   );
-
-  useEffect(() => {
-    setIndex(0);
-  }, [images]);
 
   if (count === 0) return null;
 
@@ -66,7 +72,12 @@ export function NewsImageSlider({
               aria-selected={i === index}
               aria-label={`Show image ${i + 1}`}
               className={i === index ? "is-active" : undefined}
-              onClick={() => setIndex(i)}
+              onClick={() =>
+                setFrame({
+                  images,
+                  index: i,
+                })
+              }
             />
           ))}
         </div>

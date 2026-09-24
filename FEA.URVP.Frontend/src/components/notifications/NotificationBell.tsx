@@ -5,7 +5,6 @@ import { useEffect, useId, useRef, useState } from "react";
 import { NotificationItem } from "@/components/notifications/NotificationItem";
 import { useNotificationActions } from "@/hooks/useNotificationActions";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useRealTimeNotifications } from "@/hooks/useRealTimeNotifications";
 import { notificationsHref } from "@/lib/auth";
 
 const PREVIEW_SIZE = 3;
@@ -16,7 +15,6 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const list = useNotifications({ page: 1, pageSize: PREVIEW_SIZE });
   const actions = useNotificationActions(list);
-  useRealTimeNotifications({ enabled: list.canAccess });
 
   useEffect(() => {
     if (!open) return;

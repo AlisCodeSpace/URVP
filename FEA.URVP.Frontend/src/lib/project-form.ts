@@ -1,6 +1,4 @@
 import { formatAppDate } from "@/lib/datetime";
-import { RESEARCH_ACTIVITY_TYPES } from "@/lib/research-activity-types";
-import { RESEARCH_AREAS } from "@/lib/research-areas";
 
 export const programDescription =
   "University Research Volunteer Program provides research opportunities from across AUB faculties, fields, and disciplines. Students will be matched with projects based on their areas of interest. Students will also be provided research opportunities that are multi-disciplinary, hosted within faculties, centers, and institutes.";
@@ -22,11 +20,6 @@ export const projectStatusOptions: readonly SelectOption[] = [
   { value: "Matching", label: "Matching" },
   { value: "Closed", label: "Closed" },
 ] as const;
-
-/** Labels for catalog filters. */
-export const researchAreas = [...RESEARCH_AREAS];
-export const irbStages = irbStageOptions.map((o) => o.label);
-export const researchActivityTypes = [...RESEARCH_ACTIVITY_TYPES];
 
 export type MyProjectStatus = "Open" | "Matching" | "Closed";
 
