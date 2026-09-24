@@ -3,7 +3,6 @@ using FEA.URVP.Application.Commands.News.Create;
 using FEA.URVP.Application.Commands.News.Delete;
 using FEA.URVP.Application.Commands.News.Update;
 using FEA.URVP.Application.Queries.News.GetById;
-using FEA.URVP.Application.Queries.News.GetBySlug;
 using FEA.URVP.Application.Queries.News.List;
 using FEA.URVP.Domain.Enums;
 using MediatR;
@@ -41,14 +40,6 @@ public sealed class NewsController : ApiControllerBase
             cancellationToken);
 
         return PaginatedResponse(items, pageNumber, pageSize, totalCount);
-    }
-
-    [AllowAnonymous]
-    [HttpGet("slug/{slug}")]
-    public async Task<IActionResult> GetBySlug(string slug, CancellationToken cancellationToken)
-    {
-        var item = await _mediator.Send(new GetNewsArticleBySlugQuery(slug), cancellationToken);
-        return SuccessResponse(item);
     }
 
     [Authorize]

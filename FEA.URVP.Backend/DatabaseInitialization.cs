@@ -1,11 +1,9 @@
 using FEA.URVP.Api.Configuration.Auth;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.HomeIntro;
-using FEA.URVP.Domain.Entities.News;
 using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Entities.ValueLists;
-using FEA.URVP.Domain.Entities.Workshops;
 using FEA.URVP.Domain.Enums;
 using FEA.URVP.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +65,6 @@ public static class DatabaseInitialization
         try
         {
             await SeedValueListsAsync(dbContext, logger);
-            await SeedNewsAndWorkshopsAsync(dbContext, logger);
             await SeedHomeIntroAsync(dbContext, logger);
             await SeedDefaultSemesterAsync(dbContext, logger);
         }
@@ -264,77 +261,6 @@ public static class DatabaseInitialization
         }
 
         return added;
-    }
-
-    private static async Task SeedNewsAndWorkshopsAsync(AppDbContext dbContext, ILogger logger)
-    {
-        var newsCount = await dbContext.NewsArticles.CountAsync();
-        var workshopCount = await dbContext.Workshops.CountAsync();
-        if (newsCount > 0 && workshopCount > 0)
-        {
-            logger.LogInformation("News and workshops already seeded.");
-            return;
-        }
-
-        var now = DateTime.UtcNow;
-        var addedNews = 0;
-        var addedWorkshops = 0;
-
-        if (newsCount == 0)
-        {
-            foreach (var article in NewsSeedCatalog.Articles)
-            {
-                dbContext.NewsArticles.Add(new NewsArticle
-                {
-                    Slug = article.Slug,
-                    Title = article.Title,
-                    Excerpt = article.Excerpt,
-                    Category = article.Category,
-                    Author = article.Author,
-                    Ticker = article.Ticker,
-                    Body = [.. article.Body],
-                    PublishedAt = article.PublishedAt,
-                    Featured = article.Featured,
-                    Published = true,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                });
-                addedNews++;
-            }
-        }
-
-        if (workshopCount == 0)
-        {
-            var sort = 0;
-            foreach (var workshop in WorkshopSeedCatalog.Items)
-            {
-                dbContext.Workshops.Add(new Workshop
-                {
-                    Title = workshop.Title,
-                    Date = workshop.Date,
-                    Time = workshop.Time,
-                    Location = workshop.Location,
-                    Description = workshop.Description,
-                    RegistrationUrl = workshop.RegistrationUrl,
-                    Published = true,
-                    SortOrder = sort++,
-                    CreatedAt = now,
-                    UpdatedAt = now,
-                });
-                addedWorkshops++;
-            }
-        }
-
-        if (addedNews + addedWorkshops == 0)
-        {
-            return;
-        }
-
-        await dbContext.SaveChangesAsync();
-        logger.LogInformation(
-            "Seeded content: {NewsCount} news article(s), {WorkshopCount} workshop(s).",
-            addedNews,
-            addedWorkshops);
     }
 
     private static async Task SeedHomeIntroAsync(AppDbContext dbContext, ILogger logger)

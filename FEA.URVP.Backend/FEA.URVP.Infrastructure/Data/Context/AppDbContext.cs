@@ -1,5 +1,4 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Domain.Entities.Divisions;
 using FEA.URVP.Domain.Entities.Email;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FEA.URVP.Domain.Entities.Files;
@@ -47,8 +46,6 @@ public class AppDbContext : DbContext, IUnitOfWork, IDataProtectionKeyContext
     public DbSet<FileStorage> FileStorage => Set<FileStorage>();
 
     public DbSet<ValueListItem> ValueListItems => Set<ValueListItem>();
-
-    public DbSet<Division> Divisions => Set<Division>();
 
     public DbSet<NewsArticle> NewsArticles => Set<NewsArticle>();
 

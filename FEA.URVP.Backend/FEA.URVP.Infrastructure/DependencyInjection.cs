@@ -41,7 +41,6 @@ public static class DependencyInjection
         services.AddScoped<IMatchingRunRepository, MatchingRunRepository>();
         services.AddScoped<IFileStorageRepository, FileStorageRepository>();
         services.AddScoped<IValueListRepository, ValueListRepository>();
-        services.AddScoped<IDivisionRepository, DivisionRepository>();
         services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
         services.AddScoped<IWorkshopRepository, WorkshopRepository>();
         services.AddScoped<ISemesterRepository, SemesterRepository>();

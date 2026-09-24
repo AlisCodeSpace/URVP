@@ -13,9 +13,9 @@
 
   <!--
     AUB.MimeDetective is copied under the host web project. Compiling those sources
-    into this assembly lets MimeTypeValidator use stream.GetFileType() without a
-    NuGet package or ProjectReference. The host excludes the same files so types
-    are not duplicated.
+    into this assembly lets MimeTypeValidator call it without a NuGet package or
+    ProjectReference. The host excludes the same files so types are not duplicated.
+    Leave the library sources as AUB provided them.
   -->
   <ItemGroup>
     <Compile Include="..\AUB.MimeDetective\**\*.cs" Link="AUB.MimeDetective\%(RecursiveDir)%(Filename)%(Extension)" Exclude="..\AUB.MimeDetective\bin\**\*.cs;..\AUB.MimeDetective\obj\**\*.cs" />

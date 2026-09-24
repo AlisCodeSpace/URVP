@@ -66,7 +66,7 @@ This is the complete list. Everything else requires a session.
 | `GET /api/auth/azuread-sso/signin`, `signout` | Sign-in and sign-out cannot require a session |
 | `GET /api/auth/dev/signin` | **Development only.** Not registered outside Development |
 | `POST /api/security/csp-report` | Browsers post violation reports without credentials |
-| `GET /api/news`, `GET /api/news/slug/{slug}` | Public marketing content |
+| `GET /api/news` | Public marketing content |
 | `GET /api/workshops`, `GET /api/workshops/{id}` | Public marketing content |
 | `GET /api/semesters`, `active`, `{id}` | Public cycle dates; contains no personal data |
 | `GET /api/files/{id}` | Authorizes per file — see below |
