@@ -3,6 +3,7 @@ using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.Notifications;
 using FEA.URVP.Application.Projects;
+using FEA.URVP.Domain.Enums;
 using FEA.URVP.Domain.Events.Projects;
 using Microsoft.Extensions.Logging;
 
@@ -13,24 +14,29 @@ public sealed class DeleteProjectCommandHandler : BaseCommandHandler<DeleteProje
     private readonly IProjectRepository _projects;
     private readonly IEventBus _eventBus;
     private readonly FacultyProjectMutationAccess _mutationAccess;
+    private readonly ProjectCycleClosure _cycleClosure;
 
     public DeleteProjectCommandHandler(
         ILogger<DeleteProjectCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IProjectRepository projects,
         IEventBus eventBus,
-        FacultyProjectMutationAccess mutationAccess)
+        FacultyProjectMutationAccess mutationAccess,
+        ProjectCycleClosure cycleClosure)
         : base(logger, unitOfWork)
     {
         _projects = projects;
         _eventBus = eventBus;
         _mutationAccess = mutationAccess;
+        _cycleClosure = cycleClosure;
     }
 
     protected override async Task HandleCommandAsync(
         DeleteProjectCommand request,
         CancellationToken cancellationToken)
     {
+        await _cycleClosure.DeactivateEndedCyclesAsync(cancellationToken);
+
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Project {request.ProjectId} was not found.");
 
@@ -39,10 +45,13 @@ public sealed class DeleteProjectCommandHandler : BaseCommandHandler<DeleteProje
             throw new UnauthorizedAccessException("You can only delete your own projects.");
         }
 
-        await _mutationAccess.EnsureCanEditProjectAsync(
-            project,
-            request.IsAdmin,
-            cancellationToken);
+        if (project.Status != ProjectStatus.Inactive)
+        {
+            await _mutationAccess.EnsureCanEditProjectAsync(
+                project,
+                request.IsAdmin,
+                cancellationToken);
+        }
 
         var deletedEvent = request.IsAdmin && project.CreatedByUserId != request.CurrentUserId
             ? new ProjectDeletedEvent(project.Id, project.CreatedByUserId, project.Title)

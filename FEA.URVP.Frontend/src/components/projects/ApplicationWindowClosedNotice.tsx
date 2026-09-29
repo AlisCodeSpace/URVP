@@ -13,8 +13,10 @@ const otherPages = [
 
 export function ApplicationWindowClosedNotice({
   semesterName,
+  registrationOpen = false,
 }: {
   semesterName?: string | null;
+  registrationOpen?: boolean;
 }) {
   return (
     <div
@@ -28,7 +30,7 @@ export function ApplicationWindowClosedNotice({
           weight="medium"
           className="!font-[family-name:var(--font-display)] !text-primary"
         >
-          Application window closed
+          {registrationOpen ? "Projects are not open yet" : "Application window closed"}
         </Heading>
         <Text
           as="p"
@@ -36,9 +38,13 @@ export function ApplicationWindowClosedNotice({
           mt="3"
           className="mx-auto max-w-lg !leading-relaxed !text-muted"
         >
-          {semesterName
-            ? `Applications for the URVP ${semesterName} are closed. Please wait until it opens to browse research projects and express interest.`
-            : "The student application window is currently closed. Please wait until it opens to browse research projects and express interest."}{" "}
+          {registrationOpen
+            ? semesterName
+              ? `Registration for the URVP ${semesterName} is open. Update your profile now. Project listings and ranking open when the application window starts.`
+              : "Registration is open. Update your profile now. Project listings and ranking open when the application window starts."
+            : semesterName
+              ? `Applications for the URVP ${semesterName} are closed. Please wait until it opens to browse research projects and express interest.`
+              : "The student application window is currently closed. Please wait until it opens to browse research projects and express interest."}{" "}
           In the meantime, you can visit other pages on the website.
         </Text>
         <div className="mt-8 flex flex-wrap justify-center gap-3">

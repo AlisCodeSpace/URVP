@@ -25,17 +25,21 @@ public interface IMatchingRunRepository
 
     Task<Placement?> FindPlacementByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    /// <summary>Confirmed placements per project across all semesters (drives seat accounting).</summary>
+    /// <summary>
+    /// Confirmed placements that belong to the project's current academic cycle.
+    /// Placements from an earlier cycle do not occupy a seat.
+    /// </summary>
     Task<int> CountConfirmedByProjectAsync(Guid projectId, CancellationToken cancellationToken = default);
 
-    /// <summary>Confirmed volunteers currently participating on a project.</summary>
+    /// <summary>Confirmed volunteers on the project's current academic cycle.</summary>
     Task<IReadOnlyList<Placement>> ListConfirmedByProjectAsync(
         Guid projectId,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Project ids the student currently occupies via a confirmed placement.</summary>
+    /// <summary>Project ids the student occupies via a confirmed placement in the given cycle.</summary>
     Task<IReadOnlyList<Guid>> ListConfirmedProjectIdsByStudentAsync(
         Guid studentUserId,
+        Guid semesterId,
         CancellationToken cancellationToken = default);
 
     /// <summary>Tracked per-semester run that stores admin-made assignments.</summary>
@@ -46,6 +50,11 @@ public interface IMatchingRunRepository
     /// <summary>Confirmed placements for the given students (at most one each in normal use).</summary>
     Task<IReadOnlyList<Placement>> ListConfirmedByStudentIdsAsync(
         IReadOnlyCollection<Guid> studentUserIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Confirmed placements on the given projects, with the student loaded.</summary>
+    Task<IReadOnlyList<Placement>> ListConfirmedByProjectIdsAsync(
+        IReadOnlyCollection<Guid> projectIds,
         CancellationToken cancellationToken = default);
 
     void Add(MatchingRun run);

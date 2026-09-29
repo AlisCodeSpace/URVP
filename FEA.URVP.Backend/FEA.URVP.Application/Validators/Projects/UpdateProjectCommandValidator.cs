@@ -70,6 +70,8 @@ public sealed class UpdateProjectCommandValidator : AbstractValidator<UpdateProj
             .When(x => x.UserName is not null);
 
         RuleFor(x => x.Status)
-            .IsInEnum();
+            .IsInEnum()
+            .Must(status => status != ProjectStatus.Inactive)
+            .WithMessage("Reactivate the project to bring it into the current cycle.");
     }
 }

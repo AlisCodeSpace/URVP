@@ -42,4 +42,6 @@ public interface IProjectRankingRepository
     void Add(ProjectRanking ranking);
 
     void Remove(ProjectRanking ranking);
+
+    Task<int> RemoveAllForProjectAsync(Guid projectId, CancellationToken cancellationToken = default);
 }

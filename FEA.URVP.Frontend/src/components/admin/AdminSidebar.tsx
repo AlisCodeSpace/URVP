@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AdminAccountMenu } from "@/components/admin/AdminAccountMenu";
-import { Logo } from "@/components/ui/Logo";
+import { FOOTER_LOGO_SRC, Logo } from "@/components/ui/Logo";
 import { adminNav, type AdminNavGroup } from "@/lib/admin-nav";
 
 type AdminSidebarProps = {
@@ -79,8 +79,13 @@ export function AdminSidebar({ open, onNavigate }: AdminSidebarProps) {
       <div className="admin-sidebar-brand">
         <Logo
           href="/"
-          size={36}
-          className="admin-sidebar-logo text-white"
+          src={FOOTER_LOGO_SRC}
+          alt="American University of Beirut, Institute for Academic Innovation and Development"
+          size={40}
+          width={198}
+          showWordmark={false}
+          imageClassName="h-10 w-auto max-w-full"
+          className="admin-sidebar-logo"
           onClick={onNavigate}
         />
         <p className="admin-sidebar-tag">Administration</p>

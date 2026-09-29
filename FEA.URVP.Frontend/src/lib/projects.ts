@@ -8,6 +8,7 @@ export type CatalogProject = {
   volunteersRequired: number;
   volunteersFilled: number;
   status: MyProjectStatus;
+  semesterName?: string;
   postedAt: string;
   postedAtISO: string;
   facultyName: string;

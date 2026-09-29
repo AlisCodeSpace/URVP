@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.FacultyCandidateRankings;
 using FEA.URVP.Application.Projects;
 using Microsoft.Extensions.Logging;
@@ -12,18 +13,21 @@ public sealed class RemoveFacultyCandidateRankingCommandHandler
     private readonly IFacultyCandidateRankingRepository _candidateRankings;
     private readonly IProjectRepository _projects;
     private readonly IUserRepository _users;
+    private readonly ISemesterRepository _semesters;
 
     public RemoveFacultyCandidateRankingCommandHandler(
         ILogger<RemoveFacultyCandidateRankingCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IFacultyCandidateRankingRepository candidateRankings,
         IProjectRepository projects,
-        IUserRepository users)
+        IUserRepository users,
+        ISemesterRepository semesters)
         : base(logger, unitOfWork)
     {
         _candidateRankings = candidateRankings;
         _projects = projects;
         _users = users;
+        _semesters = semesters;
     }
 
     protected override async Task HandleCommandAsync(
@@ -39,6 +43,9 @@ public sealed class RemoveFacultyCandidateRankingCommandHandler
             ?? throw new UnauthorizedAccessException("User not found.");
 
         FacultyCandidateRankingAccess.EnsureCanRank(user.Role);
+
+        var semester = await _semesters.FindActiveAsync(cancellationToken);
+        ApplicationWindowRules.EnsureOpenForRanking(semester, DateTime.UtcNow);
 
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new ArgumentException("Project was not found.");

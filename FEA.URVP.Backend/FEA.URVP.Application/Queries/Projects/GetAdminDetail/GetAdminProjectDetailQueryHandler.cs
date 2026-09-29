@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.DTOs.Projects;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Projects;
 using MediatR;
 
 namespace FEA.URVP.Application.Queries.Projects.GetAdminDetail;
@@ -12,23 +13,28 @@ public sealed class GetAdminProjectDetailQueryHandler
     private readonly IProjectRankingRepository _rankings;
     private readonly IFacultyCandidateRankingRepository _candidateRankings;
     private readonly IMatchingRunRepository _runs;
+    private readonly ProjectCycleClosure _cycleClosure;
 
     public GetAdminProjectDetailQueryHandler(
         IProjectRepository projects,
         IProjectRankingRepository rankings,
         IFacultyCandidateRankingRepository candidateRankings,
-        IMatchingRunRepository runs)
+        IMatchingRunRepository runs,
+        ProjectCycleClosure cycleClosure)
     {
         _projects = projects;
         _rankings = rankings;
         _candidateRankings = candidateRankings;
         _runs = runs;
+        _cycleClosure = cycleClosure;
     }
 
     public async Task<AdminProjectDetailDto> Handle(
         GetAdminProjectDetailQuery request,
         CancellationToken cancellationToken)
     {
+        await _cycleClosure.DeactivateEndedCyclesAsync(cancellationToken);
+
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Project {request.ProjectId} was not found.");
 

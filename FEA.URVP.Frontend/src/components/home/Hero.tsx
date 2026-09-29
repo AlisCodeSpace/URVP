@@ -35,7 +35,10 @@ export function Hero() {
       announcement={
         appWindow.loading ? undefined : (
           <>
-            {formatApplicationAnnouncement(appWindow.semesterName)}
+            {formatApplicationAnnouncement(appWindow.semesterName, {
+              registrationOpen: appWindow.registrationOpen,
+              applicationOpen: appWindow.isOpen,
+            })}
             {showApplyLink ? (
               <>
                 {" "}

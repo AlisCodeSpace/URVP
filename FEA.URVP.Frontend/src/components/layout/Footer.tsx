@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Heading, Text } from "@/components/ui/Typography";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
-import { Logo } from "@/components/ui/Logo";
+import { FOOTER_LOGO_SRC, Logo, SSU_LOGO_SRC } from "@/components/ui/Logo";
 import {
   FacebookIcon,
   InstagramIcon,
@@ -35,7 +36,14 @@ export function Footer() {
     <footer className="site-footer mt-auto border-t border-secondary/30 bg-primary-deep text-white">
       <div className="site-container grid gap-12 py-14 sm:py-16 lg:grid-cols-[1.2fr_1fr_1fr] xl:gap-16">
         <div>
-          <Logo href="/" className="text-white" size={72} />
+          <Logo
+            href="/"
+            src={FOOTER_LOGO_SRC}
+            alt="American University of Beirut, Institute for Academic Innovation and Development"
+            size={56}
+            width={277}
+            showWordmark={false}
+          />
           <Text as="p" size="2" mt="2" className="!text-white/65">
             Undergraduate Research Volunteer Program
           </Text>
@@ -122,6 +130,14 @@ export function Footer() {
               </li>
             ))}
           </ul>
+          <Image
+            src={SSU_LOGO_SRC}
+            alt="Student Success Unit"
+            width={2060}
+            height={1200}
+            className="mt-6 h-8 w-auto object-contain"
+            unoptimized
+          />
         </div>
       </div>
 

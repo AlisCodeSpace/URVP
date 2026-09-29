@@ -11,4 +11,6 @@ public sealed class CreateSemesterCommand : IRequest<SemesterDto>
     public DateTime? CycleEnd { get; init; }
     public DateTime? ApplicationWindowStart { get; init; }
     public DateTime? ApplicationWindowEnd { get; init; }
+    public DateTime? RegistrationWindowStart { get; init; }
+    public DateTime? RegistrationWindowEnd { get; init; }
 }

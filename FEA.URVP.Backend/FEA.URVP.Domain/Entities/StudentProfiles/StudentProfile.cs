@@ -22,6 +22,12 @@ public class StudentProfile
     [Required, MaxLength(32)]
     public string Degree { get; set; } = null!;
 
+    [Required, MaxLength(128)]
+    public string Faculty { get; set; } = null!;
+
+    [Required, MaxLength(128)]
+    public string Major { get; set; } = null!;
+
     [Required]
     public int ExpectedGraduationYear { get; set; }
 

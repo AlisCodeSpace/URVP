@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.Projects;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Notifications;
@@ -16,6 +17,7 @@ public sealed class CreateProjectCommandHandler
 {
     private readonly IProjectRepository _projects;
     private readonly IUserRepository _users;
+    private readonly ISemesterRepository _semesters;
     private readonly IEventBus _eventBus;
 
     public CreateProjectCommandHandler(
@@ -23,11 +25,13 @@ public sealed class CreateProjectCommandHandler
         IUnitOfWork unitOfWork,
         IProjectRepository projects,
         IUserRepository users,
+        ISemesterRepository semesters,
         IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _projects = projects;
         _users = users;
+        _semesters = semesters;
         _eventBus = eventBus;
     }
 
@@ -49,9 +53,14 @@ public sealed class CreateProjectCommandHandler
         }
 
         var now = DateTime.UtcNow;
+        var semester = await _semesters.FindActiveAsync(cancellationToken);
+        ApplicationWindowRules.EnsureRegistrationOpen(
+            semester, now, ApplicationWindowRules.ProjectsClosedMessage);
         var project = new Project
         {
             CreatedByUserId = user.Id,
+            SemesterId = semester!.Id,
+            Semester = semester,
             Title = request.Title.Trim(),
             ResearchAreas = request.ResearchAreas.ToList(),
             IrbStage = request.IrbStage,

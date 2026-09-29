@@ -44,6 +44,8 @@ public sealed class CreateSemesterCommandHandler
             request.CycleEnd,
             request.ApplicationWindowStart,
             request.ApplicationWindowEnd,
+            request.RegistrationWindowStart,
+            request.RegistrationWindowEnd,
             now,
             cancellationToken);
 

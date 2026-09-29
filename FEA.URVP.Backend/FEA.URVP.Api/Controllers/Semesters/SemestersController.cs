@@ -3,6 +3,7 @@ using FEA.URVP.Application.Commands.Semesters.Create;
 using FEA.URVP.Application.Commands.Semesters.Delete;
 using FEA.URVP.Application.Commands.Semesters.SetActive;
 using FEA.URVP.Application.Commands.Semesters.SetApplicationWindow;
+using FEA.URVP.Application.Commands.Semesters.SetRegistrationWindow;
 using FEA.URVP.Application.Commands.Semesters.Update;
 using FEA.URVP.Application.Queries.Semesters.GetActive;
 using FEA.URVP.Application.Queries.Semesters.GetById;
@@ -93,8 +94,8 @@ public sealed class SemestersController : ApiControllerBase
     /// <summary>
     /// Starts or ends the academic cycle for this semester immediately.
     /// Starting is refused while another cycle is still active. Ending a
-    /// cycle also closes an open application window. Ended cycles stay in
-    /// the list as read-only history.
+    /// cycle also closes open registration and application windows. Ended
+    /// cycles stay in the list as read-only history.
     /// </summary>
     [Authorize]
     [HttpPost("{id:guid}/set-active")]
@@ -131,6 +132,26 @@ public sealed class SemestersController : ApiControllerBase
         command.Id = id;
         var item = await _mediator.Send(command, cancellationToken);
         return SuccessResponse(item, "Application window updated");
+    }
+
+    /// <summary>
+    /// Opens or closes the registration window immediately, or sets scheduled
+    /// start/end dates. The cycle must be active to open it, and it cannot
+    /// overlap the application window.
+    /// </summary>
+    [Authorize]
+    [HttpPost("{id:guid}/set-registration-window")]
+    public async Task<IActionResult> SetRegistrationWindow(
+        Guid id,
+        [FromBody] SetRegistrationWindowCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (!UserHasRole(nameof(UserRole.Admin)))
+            return ForbiddenResponse();
+
+        command.Id = id;
+        var item = await _mediator.Send(command, cancellationToken);
+        return SuccessResponse(item, "Registration window updated");
     }
 }
 

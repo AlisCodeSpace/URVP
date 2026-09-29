@@ -43,6 +43,12 @@ public class Semester
     /// <summary>UTC moment when the student application window closes. Null if not yet set.</summary>
     public DateTime? ApplicationWindowEnd { get; set; }
 
+    /// <summary>UTC moment when the registration window opens. Null if not yet set.</summary>
+    public DateTime? RegistrationWindowStart { get; set; }
+
+    /// <summary>UTC moment when the registration window closes. Null if not yet set.</summary>
+    public DateTime? RegistrationWindowEnd { get; set; }
+
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -81,12 +87,29 @@ public class Semester
         && utcNow >= ApplicationWindowEnd.Value;
 
     /// <summary>
+    /// True when the registration window has closed (scheduled end reached
+    /// or an admin closed it). Does not treat a future window as ended.
+    /// </summary>
+    public bool HasRegistrationWindowEnded(DateTime utcNow) =>
+        RegistrationWindowEnd.HasValue
+        && utcNow >= RegistrationWindowEnd.Value;
+
+    /// <summary>
     /// True when students may submit applications: the cycle is running and
     /// the current UTC time falls within the application window.
     /// </summary>
     public bool IsApplicationWindowOpen(DateTime utcNow) =>
         IsCycleActive(utcNow)
         && IsWithin(ApplicationWindowStart, ApplicationWindowEnd, utcNow);
+
+    /// <summary>
+    /// True when faculty may post projects and students may update profiles:
+    /// the cycle is running and the current UTC time falls within the
+    /// registration window.
+    /// </summary>
+    public bool IsRegistrationWindowOpen(DateTime utcNow) =>
+        IsCycleActive(utcNow)
+        && IsWithin(RegistrationWindowStart, RegistrationWindowEnd, utcNow);
 
     /// <summary>True when two half-open intervals overlap.</summary>
     public static bool RangesOverlap(
@@ -118,6 +141,13 @@ public class Semester
         UpdatedAt = utcNow;
     }
 
+    public void ApplyRegistrationWindow(DateTime? start, DateTime? end, DateTime utcNow)
+    {
+        RegistrationWindowStart = start;
+        RegistrationWindowEnd = end;
+        UpdatedAt = utcNow;
+    }
+
     /// <summary>Start the cycle immediately, keeping a future end date if one is set.</summary>
     public void StartCycleNow(DateTime utcNow)
     {
@@ -128,7 +158,7 @@ public class Semester
         UpdatedAt = utcNow;
     }
 
-    /// <summary>End the cycle immediately and close an open application window.</summary>
+    /// <summary>End the cycle immediately and close open registration and application windows.</summary>
     public void EndCycleNow(DateTime utcNow)
     {
         if (!CycleStart.HasValue || CycleStart.Value > utcNow)
@@ -137,6 +167,7 @@ public class Semester
         }
 
         CycleEnd = utcNow;
+        CloseRegistrationWindowNow(utcNow);
         CloseApplicationWindowNow(utcNow);
         IsActive = false;
         UpdatedAt = utcNow;
@@ -156,6 +187,7 @@ public class Semester
         else if (!CycleEnd.HasValue || CycleEnd.Value > utcNow)
         {
             CycleEnd = utcNow;
+            CloseRegistrationWindowNow(utcNow);
             CloseApplicationWindowNow(utcNow);
         }
 
@@ -178,6 +210,25 @@ public class Semester
 
         if (!ApplicationWindowEnd.HasValue || ApplicationWindowEnd.Value > utcNow)
             ApplicationWindowEnd = utcNow;
+
+        UpdatedAt = utcNow;
+    }
+
+    public void OpenRegistrationWindowNow(DateTime utcNow)
+    {
+        RegistrationWindowStart = utcNow;
+        if (RegistrationWindowEnd.HasValue && RegistrationWindowEnd.Value <= utcNow)
+            RegistrationWindowEnd = null;
+        UpdatedAt = utcNow;
+    }
+
+    public void CloseRegistrationWindowNow(DateTime utcNow)
+    {
+        if (!RegistrationWindowStart.HasValue)
+            RegistrationWindowStart = utcNow;
+
+        if (!RegistrationWindowEnd.HasValue || RegistrationWindowEnd.Value > utcNow)
+            RegistrationWindowEnd = utcNow;
 
         UpdatedAt = utcNow;
     }

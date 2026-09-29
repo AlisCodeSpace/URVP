@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import {
   useMemo,
   useState,
@@ -70,6 +71,8 @@ export function PostProjectForm({
 }: PostProjectFormProps) {
   const router = useRouter();
   const { status } = useAuth();
+  const phase = useApplicationWindow();
+  const registrationClosed = !phase.loading && !phase.registrationOpen;
   const [values, setValues] = useState<ProjectFormValues>(
     initialValues ?? emptyProjectFormValues,
   );
@@ -124,6 +127,7 @@ export function PostProjectForm({
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (registrationClosed) return;
     setError(null);
 
     if (
@@ -186,6 +190,17 @@ export function PostProjectForm({
 
   return (
     <form className="flex flex-col gap-10" onSubmit={onSubmit} noValidate>
+      {registrationClosed ? (
+        <Text
+          as="p"
+          size="3"
+          role="status"
+          className="rounded-md border border-primary/15 bg-primary/5 px-4 py-3 !leading-relaxed !text-primary"
+        >
+          Projects can be posted or edited only while the registration window
+          is open.
+        </Text>
+      ) : null}
       <section className="form-section">
         <Text
           as="p"
@@ -439,7 +454,12 @@ export function PostProjectForm({
       ) : null}
 
       <div className="flex flex-wrap items-center gap-3 border-t border-primary/10 pt-8">
-        <Button type="submit" variant="primary" size="lg" disabled={submitting}>
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          disabled={submitting || registrationClosed}
+        >
           {submitting
             ? isEdit
               ? "Saving…"

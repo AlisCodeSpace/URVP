@@ -51,4 +51,13 @@ public sealed class FacultyCandidateRankingRepository : IFacultyCandidateRanking
     public void Add(FacultyCandidateRanking ranking) => _db.FacultyCandidateRankings.Add(ranking);
 
     public void Remove(FacultyCandidateRanking ranking) => _db.FacultyCandidateRankings.Remove(ranking);
+
+    public async Task<int> RemoveAllForProjectAsync(Guid projectId, CancellationToken cancellationToken = default)
+    {
+        var rankings = await _db.FacultyCandidateRankings
+            .Where(r => r.ProjectId == projectId)
+            .ToListAsync(cancellationToken);
+        _db.FacultyCandidateRankings.RemoveRange(rankings);
+        return rankings.Count;
+    }
 }

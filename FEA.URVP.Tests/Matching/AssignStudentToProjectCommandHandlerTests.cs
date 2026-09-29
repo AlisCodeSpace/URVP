@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Matching.Assign;
+using FEA.URVP.Application.Projects;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;
@@ -88,7 +89,10 @@ public sealed class AssignStudentToProjectCommandHandlerTests
             },
             configureRuns: runs =>
             {
-                runs.ListConfirmedProjectIdsByStudentAsync(student.Id, Arg.Any<CancellationToken>())
+                runs.ListConfirmedProjectIdsByStudentAsync(
+                        student.Id,
+                        Arg.Any<Guid>(),
+                        Arg.Any<CancellationToken>())
                     .Returns([other.Id]);
             });
 
@@ -134,7 +138,10 @@ public sealed class AssignStudentToProjectCommandHandlerTests
             {
                 runs.FindManualBySemesterAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
                     .Returns(run);
-                runs.ListConfirmedProjectIdsByStudentAsync(student.Id, Arg.Any<CancellationToken>())
+                runs.ListConfirmedProjectIdsByStudentAsync(
+                        student.Id,
+                        Arg.Any<Guid>(),
+                        Arg.Any<CancellationToken>())
                     .Returns(Array.Empty<Guid>());
                 runs.CountConfirmedByProjectAsync(project.Id, Arg.Any<CancellationToken>())
                     .Returns(0, 1);
@@ -240,8 +247,15 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         semesters.FindActiveAsync(Arg.Any<CancellationToken>()).Returns(semester);
 
         var runs = Substitute.For<IMatchingRunRepository>();
-        runs.ListConfirmedProjectIdsByStudentAsync(student.Id, Arg.Any<CancellationToken>())
+        runs.ListConfirmedProjectIdsByStudentAsync(
+                student.Id,
+                Arg.Any<Guid>(),
+                Arg.Any<CancellationToken>())
             .Returns(Array.Empty<Guid>());
+        if (project.SemesterId == Guid.Empty)
+        {
+            project.SemesterId = semester.Id;
+        }
         runs.CountConfirmedByProjectAsync(project.Id, Arg.Any<CancellationToken>()).Returns(0, 1);
         runs.FindManualBySemesterAsync(semester.Id, Arg.Any<CancellationToken>())
             .Returns((MatchingRun?)null);
@@ -259,7 +273,8 @@ public sealed class AssignStudentToProjectCommandHandlerTests
             runs,
             studentRankings,
             facultyRankings,
-            bus);
+            bus,
+            NoopCycleClosure());
 
         return (handler, bus, runs, project, student);
     }
@@ -283,6 +298,20 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         VolunteersRequired = 2,
         Status = ProjectStatus.Open,
     };
+
+    private static ProjectCycleClosure NoopCycleClosure()
+    {
+        var projects = Substitute.For<IProjectRepository>();
+        projects.ListTrackedOnEndedCyclesAsync(Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        return new ProjectCycleClosure(
+            projects,
+            Substitute.For<IProjectRankingRepository>(),
+            Substitute.For<IFacultyCandidateRankingRepository>(),
+            Substitute.For<IMatchingRunRepository>(),
+            Substitute.For<IProjectAlumniRepository>(),
+            new ImmediateUnitOfWork());
+    }
 
     private sealed class CapturingEventBus : IEventBus
     {

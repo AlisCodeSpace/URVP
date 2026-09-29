@@ -1,14 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Exo } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import "./globals.css";
-
-const exo = Exo({
-  variable: "--font-exo",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "URVP | Undergraduate Research Volunteer Program",
@@ -33,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${exo.variable} h-full antialiased`}>
-      <body className={`${exo.className} min-h-full flex flex-col`}>
+    <html lang="en" className="h-full antialiased">
+      <body className="min-h-full flex flex-col">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -134,6 +134,12 @@ export function StudentProfileReadonly({
           <ReadOnlyField label="Degree">
             <DisplayText value={values.degree} />
           </ReadOnlyField>
+          <ReadOnlyField label="Faculty">
+            <DisplayText value={values.faculty} />
+          </ReadOnlyField>
+          <ReadOnlyField label="Major">
+            <DisplayText value={values.major} />
+          </ReadOnlyField>
           <ReadOnlyField label="Expected graduation year">
             <DisplayText value={values.expectedGraduationYear} />
           </ReadOnlyField>

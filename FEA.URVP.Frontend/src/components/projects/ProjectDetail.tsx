@@ -138,7 +138,7 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
       <PageHeader
         eyebrow={project.status}
         title={project.title}
-        description={`${project.facultyName} · ${project.affiliation}. Posted ${project.postedAt}.`}
+        description={`${project.semesterName ? `${project.semesterName} · ` : ""}${project.facultyName} · ${project.affiliation}. Posted ${project.postedAt}.`}
       >
         <Link
           href={projectsHref()}

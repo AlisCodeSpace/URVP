@@ -10,6 +10,8 @@ public static class ProjectMappings
     {
         Id = project.Id,
         CreatedByUserId = project.CreatedByUserId,
+        SemesterId = project.SemesterId,
+        SemesterName = project.Semester?.Name ?? "",
         Title = project.Title,
         ResearchAreas = project.ResearchAreas.ToList(),
         IrbStage = project.IrbStage,
@@ -38,6 +40,7 @@ public static class ProjectMappings
         FacultyName = project.FacultyNameSnapshot,
         Affiliation = project.AffiliationSnapshot,
         Email = project.EmailSnapshot,
+        SemesterName = project.Semester?.Name ?? "",
         Status = project.Status,
         VolunteersRequired = project.VolunteersRequired,
         VolunteersFilled = project.VolunteersFilled,

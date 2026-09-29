@@ -6,7 +6,7 @@ import { useStudentProjectsLocked } from "@/hooks/useApplicationWindow";
 import { projectsIntro } from "@/lib/projects";
 
 export function ProjectsCatalogView() {
-  const { locked } = useStudentProjectsLocked();
+  const { locked, registrationOpen } = useStudentProjectsLocked();
 
   return (
     <>
@@ -14,7 +14,9 @@ export function ProjectsCatalogView() {
         title="Projects"
         description={
           locked
-            ? "The student application window is currently closed. Project listings will appear here when it opens."
+            ? registrationOpen
+              ? "Registration is open. Project listings appear when the application window opens."
+              : "The student application window is currently closed. Project listings will appear here when it opens."
             : projectsIntro
         }
       />

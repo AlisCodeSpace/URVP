@@ -7,7 +7,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Button } from "@/components/ui/Button";
-import { Logo } from "@/components/ui/Logo";
+import { Logo, NAV_LOGO_SRC } from "@/components/ui/Logo";
 import { navLinks } from "@/lib/site";
 
 export function Navbar() {
@@ -22,8 +22,13 @@ export function Navbar() {
       <div className="site-container flex items-center justify-between gap-3 py-4 sm:gap-4">
         <Logo
           href="/"
-          size={48}
-          className="text-white"
+          src={NAV_LOGO_SRC}
+          alt="Institute for Academic Innovation and Development"
+          size={64}
+          width={263}
+          showWordmark={false}
+          imageClassName="h-11 w-auto sm:h-14 lg:h-16"
+          className="shrink-0"
           onClick={() => setOpen(false)}
         />
 

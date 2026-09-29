@@ -24,6 +24,8 @@ public sealed class SemesterConfiguration : IEntityTypeConfiguration<Semester>
         builder.Property(x => x.CycleEnd);
         builder.Property(x => x.ApplicationWindowStart);
         builder.Property(x => x.ApplicationWindowEnd);
+        builder.Property(x => x.RegistrationWindowStart);
+        builder.Property(x => x.RegistrationWindowEnd);
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.UpdatedAt).IsRequired();
 

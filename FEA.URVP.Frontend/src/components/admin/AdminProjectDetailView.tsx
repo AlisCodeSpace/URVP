@@ -196,12 +196,18 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
       ? Math.round((assigned.length / project.volunteersRequired) * 100)
       : 0;
   const applicationsOpen = Boolean(activeSemester?.isApplicationWindowOpen);
-  const seatsOpen = project.status !== "Closed" && remaining > 0;
+  const registrationOpen = Boolean(activeSemester?.isRegistrationWindowOpen);
+  const onCurrentCycle =
+    Boolean(activeSemester) &&
+    activeSemester?.id === project.semesterId &&
+    project.status !== "Inactive";
+  const seatsOpen = onCurrentCycle && project.status !== "Closed" && remaining > 0;
   const canAssign =
     seatsOpen &&
     busyStudentId === null &&
     Boolean(activeSemester) &&
-    !applicationsOpen;
+    !applicationsOpen &&
+    !registrationOpen;
   const rankGroups = groupedRankings(rankings, project.id);
   const rankingQuery = searchInput.trim();
   const filteredRankGroups = rankingQuery
@@ -245,6 +251,12 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
               </>
             ) : null}
             <span aria-hidden> · </span>
+            {project.semesterName ? (
+              <>
+                <span>{project.semesterName}</span>
+                <span aria-hidden> · </span>
+              </>
+            ) : null}
             Posted {formatProjectDate(project.createdAt)}
           </p>
         </div>
@@ -278,6 +290,8 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
           <p className="admin-kpi-hint">
             {project.status === "Closed"
               ? "Listing is closed"
+              : project.status === "Inactive"
+                ? "Previous academic cycle"
               : remaining === 0
                 ? "At capacity"
                 : applicationsOpen
@@ -433,7 +447,9 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
                       assignBlockedReason={
                         applicationsOpen
                           ? "Close the student application window before assigning students."
-                          : undefined
+                          : registrationOpen
+                            ? "Close the registration window before assigning students."
+                            : undefined
                       }
                       busy={busyStudentId === ranking.studentUserId}
                       onAssign={() => void assign(ranking.studentUserId)}

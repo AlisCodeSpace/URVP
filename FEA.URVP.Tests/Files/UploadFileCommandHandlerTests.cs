@@ -5,6 +5,7 @@ using FEA.URVP.Application.Files;
 using FEA.URVP.Application.Options;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.Files;
+using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Entities.Workshops;
 using FEA.URVP.Domain.Enums;
@@ -197,11 +198,21 @@ public sealed class UploadFileCommandHandlerTests
         var unitOfWork = Substitute.For<IUnitOfWork>();
         unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
 
+        var now = DateTime.UtcNow;
+        var semesters = Substitute.For<ISemesterRepository>();
+        semesters.FindActiveAsync(Arg.Any<CancellationToken>()).Returns(new Semester
+        {
+            IsActive = true,
+            CycleStart = now.AddDays(-1),
+            RegistrationWindowStart = now.AddHours(-1),
+        });
+
         return new UploadFileCommandHandler(
             NullLogger<UploadFileCommandHandler>.Instance,
             unitOfWork,
             files,
             users,
+            semesters,
             workshops,
             news,
             mime,

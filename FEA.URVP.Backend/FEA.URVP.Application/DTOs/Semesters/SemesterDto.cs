@@ -12,6 +12,9 @@ public sealed class SemesterDto
     public DateTime? ApplicationWindowStart { get; init; }
     public DateTime? ApplicationWindowEnd { get; init; }
     public bool IsApplicationWindowOpen { get; init; }
+    public DateTime? RegistrationWindowStart { get; init; }
+    public DateTime? RegistrationWindowEnd { get; init; }
+    public bool IsRegistrationWindowOpen { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 }

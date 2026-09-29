@@ -3,12 +3,16 @@
 import { useEffect, useId, useState } from "react";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
+import { ExportChoiceModal } from "@/components/admin/ExportChoiceModal";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
+import { IconDownload } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
+import { ApiError } from "@/lib/api";
 import { adminProjectHref } from "@/lib/auth";
 import {
+  exportAdminProjects,
   listAdminProjects,
   type AdminProjectListItemDto,
 } from "@/lib/admin-projects-api";
@@ -20,11 +24,21 @@ import {
 
 const PAGE_SIZE = 20;
 
+const PROJECT_EXPORT_OPTIONS = [
+  {
+    id: "full",
+    title: "Export Full Details",
+    description:
+      "Project title, description, research areas, activity types, volunteer seats, IRB stage, and qualifications, plus the faculty member who posted it. Students listed are those matched to the project, not students who only ranked it. A project with several matched students appears once per student.",
+  },
+] as const;
+
 const STATUS_FILTER_OPTIONS = [
   { value: "", label: "All statuses" },
   { value: "Open", label: "Open" },
   { value: "Matching", label: "Matching" },
   { value: "Closed", label: "Closed" },
+  { value: "Inactive", label: "Inactive" },
 ] as const;
 
 export function AdminProjectsView() {
@@ -35,6 +49,9 @@ export function AdminProjectsView() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   const {
     data,
@@ -61,6 +78,30 @@ export function AdminProjectsView() {
     return () => window.clearTimeout(handle);
   }, [searchInput]);
 
+  function closeExport() {
+    if (exporting) return;
+    setExportOpen(false);
+    setExportError(null);
+  }
+
+  async function onExport() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await exportAdminProjects({
+        search,
+        status: (statusFilter as MyProjectStatus | "") || undefined,
+      });
+      setExportOpen(false);
+    } catch (err) {
+      setExportError(
+        err instanceof ApiError ? err.message : "Failed to export projects.",
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
+
   const totalPages = data
     ? Math.max(1, Math.ceil(data.totalCount / data.pageSize))
     : 1;
@@ -69,7 +110,7 @@ export function AdminProjectsView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Projects"
-        description="Open a listing to review details, seats, and ranking interest."
+        description="Open a listing to review details, seats, and ranking interest. Excel export includes each project's details, the faculty who posted it, and the students matched to it."
         tag={
           data
             ? `${data.totalCount} project${data.totalCount === 1 ? "" : "s"}`
@@ -107,13 +148,28 @@ export function AdminProjectsView() {
             }}
           />
         </div>
+        <div className="admin-users-export">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            disabled={exporting}
+            onClick={() => {
+              setExportError(null);
+              setExportOpen(true);
+            }}
+          >
+            <IconDownload />
+            {exporting ? "Exporting…" : "Export Excel"}
+          </Button>
+        </div>
         <div className="admin-users-refresh">
           <RefreshIconButton loading={loading} onClick={() => void load()} />
         </div>
       </div>
 
       {loading && !data ? (
-        <AdminTableSkeleton columns={5} />
+        <AdminTableSkeleton columns={6} />
       ) : error ? (
         <div className="admin-users-status">
           <p className="admin-users-banner is-error" role="alert">
@@ -133,6 +189,7 @@ export function AdminProjectsView() {
                 <tr>
                   <th scope="col">Project</th>
                   <th scope="col">Faculty</th>
+                  <th scope="col">Cycle</th>
                   <th scope="col">Status</th>
                   <th scope="col">Volunteers</th>
                   <th scope="col">Students ranked</th>
@@ -180,6 +237,17 @@ export function AdminProjectsView() {
           </div>
         </>
       )}
+
+      <ExportChoiceModal
+        open={exportOpen}
+        title="Export projects"
+        description="The workbook follows the current search and status filters."
+        options={PROJECT_EXPORT_OPTIONS}
+        busyId={exporting ? "full" : null}
+        error={exportError}
+        onClose={closeExport}
+        onSelect={() => void onExport()}
+      />
     </div>
   );
 }
@@ -199,6 +267,7 @@ function ProjectRow({ project }: { project: AdminProjectListItemDto }) {
         <div className="admin-users-name">{project.facultyName}</div>
         <div className="admin-users-meta">{project.affiliation}</div>
       </td>
+      <td>{project.semesterName || "—"}</td>
       <td>
         <span
           className={`admin-value-status ${projectStatusClass(project.status)}`}

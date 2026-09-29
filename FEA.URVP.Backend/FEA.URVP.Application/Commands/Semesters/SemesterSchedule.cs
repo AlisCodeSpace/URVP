@@ -14,6 +14,7 @@ internal static class SemesterSchedule
     }
 
     public static void EnsureWindowWithinCycle(
+        string label,
         DateTime? cycleStart,
         DateTime? cycleEnd,
         DateTime? windowStart,
@@ -25,13 +26,41 @@ internal static class SemesterSchedule
         if (cycleStart.HasValue && windowStart.Value < cycleStart.Value)
         {
             throw new ArgumentException(
-                "The application window cannot open before the academic cycle starts.");
+                $"{label} cannot open before the academic cycle starts.");
         }
 
         if (cycleEnd.HasValue && windowEnd.HasValue && windowEnd.Value > cycleEnd.Value)
         {
             throw new ArgumentException(
-                "The application window cannot close after the academic cycle ends.");
+                $"{label} cannot close after the academic cycle ends.");
+        }
+    }
+
+    public static void EnsureWindowsDoNotOverlap(
+        DateTime? applicationStart,
+        DateTime? applicationEnd,
+        DateTime? registrationStart,
+        DateTime? registrationEnd)
+    {
+        if (Semester.RangesOverlap(
+                applicationStart,
+                applicationEnd,
+                registrationStart,
+                registrationEnd))
+        {
+            throw new ArgumentException(
+                "The registration window and the application window cannot overlap.");
+        }
+    }
+
+    public static void EnsureCycleActiveToOpen(Semester semester, DateTime? start, DateTime? end, DateTime utcNow, string windowName)
+    {
+        if (!semester.IsCycleActive(utcNow)
+            && start.HasValue
+            && Semester.IsWithin(start, end, utcNow))
+        {
+            throw new InvalidOperationException(
+                $"Start the academic cycle before opening {windowName}.");
         }
     }
 
@@ -85,17 +114,27 @@ internal static class SemesterSchedule
         DateTime? cycleEnd,
         DateTime? windowStart,
         DateTime? windowEnd,
+        DateTime? registrationStart,
+        DateTime? registrationEnd,
         DateTime utcNow,
         CancellationToken cancellationToken)
     {
         EnsureRange("Academic cycle", cycleStart, cycleEnd);
+        EnsureRange("Registration window", registrationStart, registrationEnd);
         EnsureRange("Application window", windowStart, windowEnd);
-        EnsureWindowWithinCycle(cycleStart, cycleEnd, windowStart, windowEnd);
+        EnsureWindowWithinCycle(
+            "The registration window", cycleStart, cycleEnd, registrationStart, registrationEnd);
+        EnsureWindowWithinCycle(
+            "The application window", cycleStart, cycleEnd, windowStart, windowEnd);
+        EnsureWindowsDoNotOverlap(windowStart, windowEnd, registrationStart, registrationEnd);
         await EnsureNoCycleOverlapAsync(
             semesters, semester.Id, cycleStart, cycleEnd, cancellationToken);
 
         semester.ApplyCycleDates(cycleStart, cycleEnd, utcNow);
+        semester.ApplyRegistrationWindow(registrationStart, registrationEnd, utcNow);
         semester.ApplyApplicationWindow(windowStart, windowEnd, utcNow);
+        EnsureCycleActiveToOpen(semester, registrationStart, registrationEnd, utcNow, "registration");
+        EnsureCycleActiveToOpen(semester, windowStart, windowEnd, utcNow, "applications");
 
         if (semester.IsCycleActive(utcNow))
             await semesters.RelinquishAllExceptAsync(semester.Id, utcNow, cancellationToken);

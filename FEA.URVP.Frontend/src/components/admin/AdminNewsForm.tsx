@@ -128,18 +128,14 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
   }
 
   function addImageFiles(files: File[]) {
-    setImages((prev) => {
-      const room = MAX_NEWS_IMAGES - prev.length;
-      const accepted = files.slice(0, Math.max(0, room));
-      return [
-        ...prev,
-        ...accepted.map((file) => ({
-          key: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
-          file,
-          previewUrl: URL.createObjectURL(file),
-        })),
-      ];
-    });
+    const room = Math.max(0, MAX_NEWS_IMAGES - images.length);
+    const drafts = files.slice(0, room).map((file) => ({
+      key: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    if (drafts.length === 0) return;
+    setImages((prev) => [...prev, ...drafts]);
   }
 
   function removeImage(key: string) {

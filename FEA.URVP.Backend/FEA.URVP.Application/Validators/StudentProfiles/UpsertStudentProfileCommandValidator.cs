@@ -25,6 +25,15 @@ public sealed class UpsertStudentProfileCommandValidator
             .Must(StudentProfileCatalog.Degrees.Contains)
             .WithMessage("Degree is not allowed.");
 
+        RuleFor(x => x.Faculty)
+            .NotEmpty().WithMessage("Faculty is required.")
+            .Must(StudentProfileCatalog.Faculties.Contains)
+            .WithMessage("Faculty is not allowed.");
+
+        RuleFor(x => x.Major)
+            .NotEmpty().WithMessage("Major is required.")
+            .MaximumLength(128);
+
         var year = DateTime.UtcNow.Year;
         RuleFor(x => x.ExpectedGraduationYear)
             .InclusiveBetween(year, year + 10)

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 
@@ -13,6 +14,12 @@ public class Project
     public Guid CreatedByUserId { get; set; }
 
     public User CreatedByUser { get; set; } = null!;
+
+    /// <summary>Academic cycle this listing currently belongs to. Replaced when the project is reactivated.</summary>
+    [Required]
+    public Guid SemesterId { get; set; }
+
+    public Semester Semester { get; set; } = null!;
 
     [Required, MaxLength(200)]
     public string Title { get; set; } = null!;

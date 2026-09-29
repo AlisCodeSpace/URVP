@@ -14,6 +14,9 @@ export type SemesterDto = {
   applicationWindowStart?: string | null;
   applicationWindowEnd?: string | null;
   isApplicationWindowOpen: boolean;
+  registrationWindowStart?: string | null;
+  registrationWindowEnd?: string | null;
+  isRegistrationWindowOpen: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -25,11 +28,18 @@ export type SemesterWritePayload = {
   cycleEnd?: string | null;
   applicationWindowStart?: string | null;
   applicationWindowEnd?: string | null;
+  registrationWindowStart?: string | null;
+  registrationWindowEnd?: string | null;
 };
 
 export type SetApplicationWindowPayload = {
   applicationWindowStart?: string | null;
   applicationWindowEnd?: string | null;
+};
+
+export type SetRegistrationWindowPayload = {
+  registrationWindowStart?: string | null;
+  registrationWindowEnd?: string | null;
 };
 
 export async function listSemesters(): Promise<SemesterDto[]> {
@@ -74,6 +84,16 @@ export async function setSemesterActive(
   return apiFetch<SemesterDto>(`/api/semesters/${id}/set-active`, {
     method: "POST",
     body: JSON.stringify({ isActive }),
+  });
+}
+
+export async function setRegistrationWindow(
+  id: string,
+  payload: SetRegistrationWindowPayload,
+): Promise<SemesterDto> {
+  return apiFetch<SemesterDto>(`/api/semesters/${id}/set-registration-window`, {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
 

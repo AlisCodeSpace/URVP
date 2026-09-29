@@ -5,7 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { Heading, Text } from "@/components/ui/Typography";
 import { BackLink } from "@/components/ui/BackLink";
-import { LOGO_SRC } from "@/components/ui/Logo";
+import { AUB_STAMP_SRC } from "@/components/ui/Logo";
 import {
   authErrorMessage,
   DEV_AUTH_ACCOUNTS,
@@ -137,11 +137,11 @@ export function SignInView() {
                 aria-label="Sign in with AUB"
               >
                 <Image
-                  src={LOGO_SRC}
+                  src={AUB_STAMP_SRC}
                   alt=""
-                  width={26}
-                  height={26}
-                  className="h-[26px] w-[26px] object-contain"
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 object-contain"
                   unoptimized
                 />
                 Continue with AUB

@@ -1,18 +1,23 @@
+using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Contracts;
 using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.Projects.Create;
 using FEA.URVP.Application.Commands.Projects.Delete;
+using FEA.URVP.Application.Commands.Projects.Reactivate;
 using FEA.URVP.Application.Commands.Projects.Update;
 using FEA.URVP.Application.Queries.ProjectRankings.ListByProject;
+using FEA.URVP.Application.Queries.Projects.Export;
 using FEA.URVP.Application.Queries.Projects.GetAdminDetail;
 using FEA.URVP.Application.Queries.Projects.ListParticipants;
 using FEA.URVP.Application.Queries.Projects.GetById;
 using FEA.URVP.Application.Queries.Projects.List;
+using FEA.URVP.Application.Queries.Projects.ListAlumni;
 using FEA.URVP.Application.Queries.Projects.ListAdmin;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace FEA.URVP.Api.Controllers.Projects;
 
@@ -58,7 +63,12 @@ public sealed class ProjectsController : ApiControllerBase
         }
 
         var (items, totalCount) = await _mediator.Send(
-            new ListProjectsQuery(createdBy, status, pageNumber, pageSize),
+            new ListProjectsQuery(
+                createdBy,
+                status,
+                pageNumber,
+                pageSize,
+                viewerIsStudent: UserHasRole(nameof(UserRole.Student)) && createdBy is null),
             cancellationToken);
 
         return PaginatedResponse(items, pageNumber, pageSize, totalCount);
@@ -86,6 +96,31 @@ public sealed class ProjectsController : ApiControllerBase
             cancellationToken);
 
         return PaginatedResponse(items, pageNumber, pageSize, totalCount);
+    }
+
+    /// <summary>
+    /// Download projects matching the admin list filters as Excel. Admin only.
+    /// Each project includes the faculty who posted it and one row per student
+    /// confirmed onto it. Rankings are not included. A project with no confirmed
+    /// placement is still listed, with the student columns blank.
+    /// </summary>
+    [HttpGet("admin/export")]
+    [EnableRateLimiting(RateLimitingConfiguration.DownloadPolicy)]
+    public async Task<IActionResult> ExportAdmin(
+        [FromQuery] string? search = null,
+        [FromQuery] ProjectStatus? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!UserHasRole(nameof(UserRole.Admin)))
+        {
+            return ForbiddenResponse();
+        }
+
+        var file = await _mediator.Send(
+            new ExportAdminProjectsQuery(search, status),
+            cancellationToken);
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        return File(file.Content, file.MimeType, file.FileName);
     }
 
     /// <summary>Project details plus students who ranked it. Admin only.</summary>
@@ -137,8 +172,52 @@ public sealed class ProjectsController : ApiControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var project = await _mediator.Send(new GetProjectByIdQuery(id), cancellationToken);
+        var userId = GetCurrentUserId();
+        var project = await _mediator.Send(
+            new GetProjectByIdQuery(
+                id,
+                userId,
+                UserHasRole(nameof(UserRole.Admin)),
+                UserHasRole(nameof(UserRole.Student))),
+            cancellationToken);
         return SuccessResponse(project);
+    }
+
+    /// <summary>
+    /// Students stored from earlier academic cycles. Project owner or admin only.
+    /// </summary>
+    [HttpGet("{id:guid}/alumni")]
+    public async Task<IActionResult> ListAlumni(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        var alumni = await _mediator.Send(
+            new ListProjectAlumniQuery(id, userId, UserHasRole(nameof(UserRole.Admin))),
+            cancellationToken);
+        return SuccessResponse(alumni);
+    }
+
+    /// <summary>
+    /// Move an inactive project onto the current academic cycle.
+    /// Live applicants are cleared; earlier students stay in the alumni list.
+    /// </summary>
+    [HttpPost("{id:guid}/reactivate")]
+    public async Task<IActionResult> Reactivate(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        var project = await _mediator.Send(
+            new ReactivateProjectCommand(id, userId, UserHasRole(nameof(UserRole.Admin))),
+            cancellationToken);
+        return SuccessResponse(project, "Project reactivated");
     }
 
     [HttpPost]

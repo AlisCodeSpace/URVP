@@ -6,8 +6,13 @@ import { isStudent } from "@/lib/auth";
 import { getActiveSemester } from "@/lib/semesters-api";
 
 export type WindowStatus =
-  | { loading: true; isOpen: false; semesterName: null }
-  | { loading: false; isOpen: boolean; semesterName: string | null };
+  | { loading: true; isOpen: false; registrationOpen: false; semesterName: null }
+  | {
+      loading: false;
+      isOpen: boolean;
+      registrationOpen: boolean;
+      semesterName: string | null;
+    };
 
 let inflight: Promise<WindowStatus> | null = null;
 
@@ -19,6 +24,7 @@ function fetchWindowStatus(): Promise<WindowStatus> {
       const next: WindowStatus = {
         loading: false,
         isOpen: sem?.isApplicationWindowOpen ?? false,
+        registrationOpen: sem?.isRegistrationWindowOpen ?? false,
         semesterName: sem?.name?.trim() || null,
       };
       return next;
@@ -28,6 +34,7 @@ function fetchWindowStatus(): Promise<WindowStatus> {
       const next: WindowStatus = {
         loading: false,
         isOpen: false,
+        registrationOpen: false,
         semesterName: null,
       };
       return next;
@@ -40,14 +47,21 @@ function fetchWindowStatus(): Promise<WindowStatus> {
   return request;
 }
 
-/** Home/hero copy for the active cycle’s student application window. */
+/** Home/hero copy for the active cycle and whichever window is open. */
 export function formatApplicationAnnouncement(
   semesterName: string | null,
+  phase?: { registrationOpen?: boolean; applicationOpen?: boolean },
 ): string {
   if (!semesterName) {
     return "URVP is not currently active.";
   }
-  return `Applications for the URVP ${semesterName} are open.`;
+  if (phase?.registrationOpen) {
+    return `Registration for the URVP ${semesterName} is open.`;
+  }
+  if (phase?.applicationOpen) {
+    return `Applications for the URVP ${semesterName} are open.`;
+  }
+  return `The URVP ${semesterName} cycle is active.`;
 }
 
 /**
@@ -57,11 +71,23 @@ export function formatApplicationAnnouncement(
  */
 export function useApplicationWindow(): WindowStatus {
   const query = useCancellableQuery(() => fetchWindowStatus(), [], {
-    initialData: { loading: true, isOpen: false, semesterName: null },
+    initialData: {
+      loading: true,
+      isOpen: false,
+      registrationOpen: false,
+      semesterName: null,
+    },
     initialLoading: true,
   });
 
-  return query.data ?? { loading: query.loading, isOpen: false, semesterName: null };
+  return (
+    query.data ?? {
+      loading: query.loading,
+      isOpen: false,
+      registrationOpen: false,
+      semesterName: null,
+    }
+  );
 }
 
 /**
@@ -72,6 +98,7 @@ export function useApplicationWindow(): WindowStatus {
 export function useStudentProjectsLocked(): {
   pending: boolean;
   locked: boolean;
+  registrationOpen: boolean;
   semesterName: string | null;
 } {
   const { status, loading: authLoading } = useAuth();
@@ -82,6 +109,7 @@ export function useStudentProjectsLocked(): {
     pending: authLoading || (studentUser && appWindow.loading),
     locked:
       !authLoading && studentUser && !appWindow.loading && !appWindow.isOpen,
+    registrationOpen: appWindow.registrationOpen,
     semesterName: appWindow.semesterName,
   };
 }

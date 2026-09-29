@@ -65,7 +65,9 @@ public sealed class MatchingRunRepository : IMatchingRunRepository
 
     public Task<int> CountConfirmedByProjectAsync(Guid projectId, CancellationToken cancellationToken = default) =>
         _db.Placements.CountAsync(
-            p => p.ProjectId == projectId && p.Status == PlacementStatus.Confirmed,
+            p => p.ProjectId == projectId
+                 && p.Status == PlacementStatus.Confirmed
+                 && p.MatchingRun.SemesterId == p.Project.SemesterId,
             cancellationToken);
 
     public async Task<IReadOnlyList<Placement>> ListConfirmedByProjectAsync(
@@ -75,17 +77,22 @@ public sealed class MatchingRunRepository : IMatchingRunRepository
             .AsNoTracking()
             .Include(p => p.StudentUser)
             .Include(p => p.Project)
-            .Where(p => p.ProjectId == projectId && p.Status == PlacementStatus.Confirmed)
+            .Where(p => p.ProjectId == projectId
+                        && p.Status == PlacementStatus.Confirmed
+                        && p.MatchingRun.SemesterId == p.Project.SemesterId)
             .OrderBy(p => p.FacultyRank)
             .ThenBy(p => p.StudentUser.Name)
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<Guid>> ListConfirmedProjectIdsByStudentAsync(
         Guid studentUserId,
+        Guid semesterId,
         CancellationToken cancellationToken = default) =>
         await _db.Placements
             .AsNoTracking()
-            .Where(p => p.StudentUserId == studentUserId && p.Status == PlacementStatus.Confirmed)
+            .Where(p => p.StudentUserId == studentUserId
+                        && p.Status == PlacementStatus.Confirmed
+                        && p.MatchingRun.SemesterId == semesterId)
             .Select(p => p.ProjectId)
             .ToListAsync(cancellationToken);
 
@@ -111,7 +118,28 @@ public sealed class MatchingRunRepository : IMatchingRunRepository
         return await _db.Placements
             .AsNoTracking()
             .Include(p => p.Project)
-            .Where(p => studentUserIds.Contains(p.StudentUserId) && p.Status == PlacementStatus.Confirmed)
+            .Where(p => studentUserIds.Contains(p.StudentUserId)
+                        && p.Status == PlacementStatus.Confirmed
+                        && p.MatchingRun.SemesterId == p.Project.SemesterId
+                        && p.Project.Status != ProjectStatus.Inactive)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Placement>> ListConfirmedByProjectIdsAsync(
+        IReadOnlyCollection<Guid> projectIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (projectIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await _db.Placements
+            .AsNoTracking()
+            .Include(p => p.StudentUser)
+            .Where(p => projectIds.Contains(p.ProjectId)
+                        && p.Status == PlacementStatus.Confirmed
+                        && p.MatchingRun.SemesterId == p.Project.SemesterId)
             .ToListAsync(cancellationToken);
     }
 

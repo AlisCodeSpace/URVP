@@ -3,6 +3,7 @@ using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.Matching;
 using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Projects;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.ProjectRankings;
@@ -23,6 +24,7 @@ public sealed class RunMatchingCommandHandler
     private readonly IProjectRankingRepository _studentRankings;
     private readonly IFacultyCandidateRankingRepository _facultyRankings;
     private readonly IMatchingRunRepository _runs;
+    private readonly ProjectCycleClosure _cycleClosure;
 
     public RunMatchingCommandHandler(
         ILogger<RunMatchingCommandHandler> logger,
@@ -31,7 +33,8 @@ public sealed class RunMatchingCommandHandler
         IProjectRepository projects,
         IProjectRankingRepository studentRankings,
         IFacultyCandidateRankingRepository facultyRankings,
-        IMatchingRunRepository runs)
+        IMatchingRunRepository runs,
+        ProjectCycleClosure cycleClosure)
         : base(logger, unitOfWork)
     {
         _semesters = semesters;
@@ -39,6 +42,7 @@ public sealed class RunMatchingCommandHandler
         _studentRankings = studentRankings;
         _facultyRankings = facultyRankings;
         _runs = runs;
+        _cycleClosure = cycleClosure;
     }
 
     protected override bool UseTransaction => true;
@@ -48,6 +52,7 @@ public sealed class RunMatchingCommandHandler
         CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
+        await _cycleClosure.DeactivateEndedCyclesAsync(cancellationToken);
 
         var semester = request.SemesterId is Guid semesterId
             ? await _semesters.FindByIdAsync(semesterId, cancellationToken)
@@ -57,7 +62,9 @@ public sealed class RunMatchingCommandHandler
 
         ApplicationWindowRules.EnsureClosedForMatching(semester, now);
 
-        var projects = await _projects.ListByStatusAsync(ProjectStatus.Open, cancellationToken);
+        var projects = (await _projects.ListByStatusAsync(ProjectStatus.Open, cancellationToken))
+            .Where(project => project.SemesterId == semester.Id)
+            .ToList();
         var projectIds = projects.Select(p => p.Id).ToList();
 
         var confirmed = await _runs.ListConfirmedPlacementsAsync(semester.Id, cancellationToken);

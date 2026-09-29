@@ -6,6 +6,8 @@ public sealed class ProjectDto
 {
     public Guid Id { get; init; }
     public Guid CreatedByUserId { get; init; }
+    public Guid SemesterId { get; init; }
+    public string SemesterName { get; init; } = null!;
     public string Title { get; init; } = null!;
     public IReadOnlyList<string> ResearchAreas { get; init; } = [];
     public IrbStage? IrbStage { get; init; }

@@ -17,6 +17,9 @@ public static class SemesterMappings
         ApplicationWindowStart = AsUtc(semester.ApplicationWindowStart),
         ApplicationWindowEnd = AsUtc(semester.ApplicationWindowEnd),
         IsApplicationWindowOpen = semester.IsApplicationWindowOpen(DateTime.UtcNow),
+        RegistrationWindowStart = AsUtc(semester.RegistrationWindowStart),
+        RegistrationWindowEnd = AsUtc(semester.RegistrationWindowEnd),
+        IsRegistrationWindowOpen = semester.IsRegistrationWindowOpen(DateTime.UtcNow),
         CreatedAt = AsUtc(semester.CreatedAt),
         UpdatedAt = AsUtc(semester.UpdatedAt),
     };

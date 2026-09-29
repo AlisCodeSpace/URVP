@@ -81,8 +81,10 @@ export function AdminMatchingView() {
   }
 
   const applicationsOpen = Boolean(semester?.isApplicationWindowOpen);
+  const registrationOpen = Boolean(semester?.isRegistrationWindowOpen);
+  const matchingBlocked = applicationsOpen || registrationOpen;
   const testDisabled =
-    loading || testBusy !== null || !semester || applicationsOpen;
+    loading || testBusy !== null || !semester || matchingBlocked;
 
   return (
     <div className="admin-panel admin-panel--wide">
@@ -110,7 +112,9 @@ export function AdminMatchingView() {
             ? `Active cycle: ${semester.name}${
                 applicationsOpen
                   ? " · applications still open — close the window before matching"
-                  : " · applications closed"
+                  : registrationOpen
+                    ? " · registration still open — close it before matching"
+                    : " · applications closed"
               }`
             : loading
               ? "Loading cycle…"

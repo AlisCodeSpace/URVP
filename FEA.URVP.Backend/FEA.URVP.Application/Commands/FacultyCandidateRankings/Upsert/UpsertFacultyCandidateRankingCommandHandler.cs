@@ -1,10 +1,12 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.FacultyCandidateRankings;
 using FEA.URVP.Application.FacultyCandidateRankings;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Projects;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
+using FEA.URVP.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace FEA.URVP.Application.Commands.FacultyCandidateRankings.Upsert;
@@ -16,6 +18,7 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
     private readonly IProjectRankingRepository _projectRankings;
     private readonly IProjectRepository _projects;
     private readonly IUserRepository _users;
+    private readonly ISemesterRepository _semesters;
 
     public UpsertFacultyCandidateRankingCommandHandler(
         ILogger<UpsertFacultyCandidateRankingCommandHandler> logger,
@@ -23,13 +26,15 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
         IFacultyCandidateRankingRepository candidateRankings,
         IProjectRankingRepository projectRankings,
         IProjectRepository projects,
-        IUserRepository users)
+        IUserRepository users,
+        ISemesterRepository semesters)
         : base(logger, unitOfWork)
     {
         _candidateRankings = candidateRankings;
         _projectRankings = projectRankings;
         _projects = projects;
         _users = users;
+        _semesters = semesters;
     }
 
     protected override bool UseTransaction => true;
@@ -48,12 +53,21 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
 
         FacultyCandidateRankingAccess.EnsureCanRank(user.Role);
 
+        var semester = await _semesters.FindActiveAsync(cancellationToken);
+        ApplicationWindowRules.EnsureOpenForRanking(semester, DateTime.UtcNow);
+
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new ArgumentException("Project was not found.");
 
         if (!request.IsAdmin && project.CreatedByUserId != user.Id)
         {
             throw new UnauthorizedAccessException("You can only rank candidates for your own projects.");
+        }
+
+        if (semester is null || project.SemesterId != semester.Id || project.Status != ProjectStatus.Open)
+        {
+            throw new InvalidOperationException(
+                "Candidates can only be ranked on an open project in the current academic cycle.");
         }
 
         FacultyProjectMutationAccess.EnsureCanRankCandidates(project, request.IsAdmin);

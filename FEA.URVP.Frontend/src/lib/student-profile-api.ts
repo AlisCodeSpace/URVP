@@ -15,6 +15,8 @@ export type StudentProfileDto = {
   gender?: string | null;
   mobileNumber?: string | null;
   degree?: string | null;
+  faculty?: string | null;
+  major?: string | null;
   expectedGraduationYear?: number | null;
   languages: string[];
   otherLanguages?: string | null;
@@ -46,6 +48,8 @@ export type StudentProfileUpsertPayload = {
   gender: string;
   mobileNumber: string;
   degree: string;
+  faculty: string;
+  major: string;
   expectedGraduationYear: number;
   languages: string[];
   otherLanguages?: string | null;
@@ -82,6 +86,8 @@ export function toStudentProfileValues(
     gender: dto.gender ?? "",
     mobileNumber: dto.mobileNumber ?? "",
     degree: dto.degree ?? "",
+    faculty: dto.faculty ?? "",
+    major: dto.major ?? "",
     expectedGraduationYear: dto.expectedGraduationYear
       ? String(dto.expectedGraduationYear)
       : "",
@@ -112,6 +118,8 @@ export function toUpsertPayload(
     gender: values.gender,
     mobileNumber: values.mobileNumber.trim(),
     degree: values.degree,
+    faculty: values.faculty,
+    major: values.major.trim(),
     expectedGraduationYear: Number(values.expectedGraduationYear),
     languages: values.languages,
     otherLanguages: values.otherLanguages.trim() || null,

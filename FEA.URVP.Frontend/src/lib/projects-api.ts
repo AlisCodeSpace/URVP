@@ -10,6 +10,8 @@ import type { CatalogProject } from "@/lib/projects";
 export type ProjectDto = {
   id: string;
   createdByUserId: string;
+  semesterId: string;
+  semesterName: string;
   title: string;
   researchAreas: string[];
   irbStage: string | null;
@@ -80,6 +82,7 @@ export function toMyProject(dto: ProjectDto): MyProject {
     volunteersRequired: dto.volunteersRequired,
     volunteersFilled: dto.volunteersFilled,
     status: dto.status,
+    semesterName: dto.semesterName,
     updatedAt: formatProjectDate(dto.updatedAt),
     isEditableByFaculty: dto.isEditableByFaculty,
     facultyEditLockReason: dto.facultyEditLockReason,
@@ -95,6 +98,7 @@ export function toCatalogProject(dto: ProjectDto): CatalogProject {
     volunteersRequired: dto.volunteersRequired,
     volunteersFilled: dto.volunteersFilled,
     status: dto.status,
+    semesterName: dto.semesterName,
     postedAt: formatProjectDate(dto.createdAt),
     postedAtISO: dto.createdAt.slice(0, 10),
     facultyName: dto.facultyName,
@@ -163,6 +167,30 @@ export async function getProjectParticipants(
   return apiFetch<ProjectParticipantDto[]>(
     `/api/projects/${projectId}/participants`,
   );
+}
+
+export type ProjectAlumniDto = {
+  semesterId: string;
+  semesterName: string;
+  studentUserId: string;
+  studentName: string;
+  studentEmail: string;
+  studentRank: number | null;
+  facultyRank: number | null;
+  wasConfirmed: boolean;
+  archivedAt: string;
+};
+
+export async function getProjectAlumni(
+  projectId: string,
+): Promise<ProjectAlumniDto[]> {
+  return apiFetch<ProjectAlumniDto[]>(`/api/projects/${projectId}/alumni`);
+}
+
+export async function reactivateProject(projectId: string): Promise<ProjectDto> {
+  return apiFetch<ProjectDto>(`/api/projects/${projectId}/reactivate`, {
+    method: "POST",
+  });
 }
 
 export async function createProject(

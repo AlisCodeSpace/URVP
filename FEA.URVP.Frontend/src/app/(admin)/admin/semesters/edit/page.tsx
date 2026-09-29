@@ -5,7 +5,7 @@ import { PageLoader } from "@/components/ui/PageLoader";
 
 export const metadata: Metadata = {
   title: "Edit URVP cycle | Admin",
-  description: "Update a URVP cycle's details and application window.",
+  description: "Update a URVP cycle's details, registration window, and application window.",
 };
 
 export default function AdminEditSemesterPage() {

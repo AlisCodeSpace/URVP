@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Commands.Semesters.Create;
 using FEA.URVP.Application.Commands.Semesters.SetApplicationWindow;
+using FEA.URVP.Application.Commands.Semesters.SetRegistrationWindow;
 using FEA.URVP.Application.Commands.Semesters.Update;
 using FluentValidation;
 
@@ -27,6 +28,11 @@ public sealed class CreateSemesterCommandValidator
             .GreaterThan(x => x.ApplicationWindowStart)
             .WithMessage("Application window end must be after the start date.")
             .When(x => x.ApplicationWindowStart.HasValue && x.ApplicationWindowEnd.HasValue);
+
+        RuleFor(x => x.RegistrationWindowEnd)
+            .GreaterThan(x => x.RegistrationWindowStart)
+            .WithMessage("Registration window end must be after the start date.")
+            .When(x => x.RegistrationWindowStart.HasValue && x.RegistrationWindowEnd.HasValue);
     }
 }
 
@@ -52,6 +58,11 @@ public sealed class UpdateSemesterCommandValidator
             .GreaterThan(x => x.ApplicationWindowStart)
             .WithMessage("Application window end must be after the start date.")
             .When(x => x.ApplicationWindowStart.HasValue && x.ApplicationWindowEnd.HasValue);
+
+        RuleFor(x => x.RegistrationWindowEnd)
+            .GreaterThan(x => x.RegistrationWindowStart)
+            .WithMessage("Registration window end must be after the start date.")
+            .When(x => x.RegistrationWindowStart.HasValue && x.RegistrationWindowEnd.HasValue);
     }
 }
 
@@ -64,5 +75,17 @@ public sealed class SetApplicationWindowCommandValidator
             .GreaterThan(x => x.ApplicationWindowStart)
             .WithMessage("Application window end must be after the start date.")
             .When(x => x.ApplicationWindowStart.HasValue && x.ApplicationWindowEnd.HasValue);
+    }
+}
+
+public sealed class SetRegistrationWindowCommandValidator
+    : AbstractValidator<SetRegistrationWindowCommand>
+{
+    public SetRegistrationWindowCommandValidator()
+    {
+        RuleFor(x => x.RegistrationWindowEnd)
+            .GreaterThan(x => x.RegistrationWindowStart)
+            .WithMessage("Registration window end must be after the start date.")
+            .When(x => x.RegistrationWindowStart.HasValue && x.RegistrationWindowEnd.HasValue);
     }
 }

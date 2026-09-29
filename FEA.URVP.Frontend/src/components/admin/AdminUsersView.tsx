@@ -3,6 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
+import { ExportChoiceModal } from "@/components/admin/ExportChoiceModal";
 import { Button } from "@/components/ui/Button";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { IconDownload } from "@/components/ui/Icons";
@@ -17,7 +18,7 @@ import {
   type PaginatedUsers,
   type SortDirection,
   type UserDto,
-  type UserExportFormat,
+  type UserExportDetail,
   type UserRoleName,
   type UserSortField,
 } from "@/lib/users-api";
@@ -49,6 +50,20 @@ function usersFilter(roleFilter: string): {
   return {};
 }
 
+const USER_EXPORT_OPTIONS = [
+  {
+    id: "basic",
+    title: "Export Basic Details",
+    description: "Name, email, and role.",
+  },
+  {
+    id: "full",
+    title: "Export Full Details",
+    description:
+      "Name, email, role, the projects each student was matched to, and profile details: username, affiliation, contact, degree, faculty, major, languages, credits, cumulative average, research topics, publications, availability, and whether a transcript and CV were uploaded.",
+  },
+] as const;
+
 const SORTABLE: { field: UserSortField; label: string }[] = [
   { field: "Name", label: "Name" },
   { field: "Email", label: "Email" },
@@ -69,7 +84,9 @@ export function AdminUsersView() {
   const [rowError, setRowError] = useState<string | null>(null);
   const [draftRoles, setDraftRoles] = useState<Record<string, UserRoleName>>({});
   const [draftSource, setDraftSource] = useState<PaginatedUsers | null>(null);
-  const [exporting, setExporting] = useState<UserExportFormat | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState<UserExportDetail | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
   const {
     data,
     loading,
@@ -148,18 +165,25 @@ export function AdminUsersView() {
     }
   }
 
-  async function onExport(format: UserExportFormat) {
-    setExporting(format);
-    setRowError(null);
+  function closeExport() {
+    if (exporting) return;
+    setExportOpen(false);
+    setExportError(null);
+  }
+
+  async function onExport(detail: UserExportDetail) {
+    setExporting(detail);
+    setExportError(null);
     try {
-      await exportUsers(format, {
+      await exportUsers(detail, {
         search,
         ...usersFilter(roleFilter),
         sortBy,
         sortDir,
       });
+      setExportOpen(false);
     } catch (err) {
-      setRowError(
+      setExportError(
         err instanceof ApiError
           ? err.message
           : "Failed to export users.",
@@ -177,7 +201,7 @@ export function AdminUsersView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Users"
-        description="View accounts and assign Student, Faculty, or Admin roles. Exports follow the current search and role filters. Student exports include only students who have completed their profile. Faculty with projects includes only faculty who have posted a project. Each row includes the user's name."
+        description="View accounts and assign Student, Faculty, or Admin roles. Excel export follows the current search and role filters. Student exports include only students who have completed their profile. Faculty with projects includes only faculty who have posted a project."
       />
 
       <div className="admin-users-filters">
@@ -216,20 +240,13 @@ export function AdminUsersView() {
             variant="outline"
             size="md"
             disabled={exporting !== null}
-            onClick={() => void onExport("pdf")}
+            onClick={() => {
+              setExportError(null);
+              setExportOpen(true);
+            }}
           >
             <IconDownload />
-            {exporting === "pdf" ? "Exporting…" : "Export PDF"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            disabled={exporting !== null}
-            onClick={() => void onExport("xlsx")}
-          >
-            <IconDownload />
-            {exporting === "xlsx" ? "Exporting…" : "Export Excel"}
+            {exporting ? "Exporting…" : "Export Excel"}
           </Button>
         </div>
         <div className="admin-users-refresh">
@@ -371,6 +388,17 @@ export function AdminUsersView() {
           </div>
         </>
       )}
+
+      <ExportChoiceModal
+        open={exportOpen}
+        title="Export users"
+        description="The workbook follows the current search, role, and sort. Student rows include only students who have completed their profile."
+        options={USER_EXPORT_OPTIONS}
+        busyId={exporting}
+        error={exportError}
+        onClose={closeExport}
+        onSelect={(id) => void onExport(id as UserExportDetail)}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import { AdminMatchingRunDetailView } from "@/components/admin/AdminMatchingRunDetailView";
 import { AdminNewsForm } from "@/components/admin/AdminNewsForm";
 import { AdminProjectDetailView } from "@/components/admin/AdminProjectDetailView";
@@ -65,6 +66,8 @@ export function MyProjectsRoute() {
   const router = useRouter();
   const userId = useRouteParam(RouteParam.User);
   const { status, loading } = useAuth();
+  const phase = useApplicationWindow();
+  const canPost = !phase.loading && phase.registrationOpen;
 
   useEffect(() => {
     if (userId || loading) return;
@@ -89,15 +92,28 @@ export function MyProjectsRoute() {
           title="My projects"
           description="Review projects you have posted and open new opportunities for undergraduate volunteers."
           actions={
-            <Button
-              href={newProjectHref(userId)}
-              variant="secondary"
-              size="lg"
-              data-tour="faculty-new-project"
-            >
-              <IconPlus />
-              New project
-            </Button>
+            canPost ? (
+              <Button
+                href={newProjectHref(userId)}
+                variant="secondary"
+                size="lg"
+                data-tour="faculty-new-project"
+              >
+                <IconPlus />
+                New project
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="secondary"
+                size="lg"
+                disabled
+                title="Projects can be posted only while the registration window is open."
+              >
+                <IconPlus />
+                New project
+              </Button>
+            )
           }
         />
 

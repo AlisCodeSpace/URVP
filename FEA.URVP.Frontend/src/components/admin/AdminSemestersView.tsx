@@ -16,6 +16,7 @@ import {
   listSemesters,
   parseApiDate,
   setApplicationWindow,
+  setRegistrationWindow,
   setSemesterActive,
   type SemesterDto,
 } from "@/lib/semesters-api";
@@ -64,6 +65,7 @@ function ActiveSemesterPanel({
 }) {
   const [busyCycle, setBusyCycle] = useState(false);
   const [busyWindow, setBusyWindow] = useState(false);
+  const [busyRegistration, setBusyRegistration] = useState(false);
 
   async function handleEndCycle() {
     setBusyCycle(true);
@@ -74,6 +76,41 @@ function ActiveSemesterPanel({
       onError(err instanceof ApiError ? err.message : "Failed to end cycle.");
     } finally {
       setBusyCycle(false);
+    }
+  }
+
+  async function handleOpenRegistration() {
+    setBusyRegistration(true);
+    try {
+      await setRegistrationWindow(semester.id, {
+        registrationWindowStart: new Date().toISOString(),
+        registrationWindowEnd: futureOrNull(semester.registrationWindowEnd),
+      });
+      await onReload();
+    } catch (err) {
+      onError(
+        err instanceof ApiError ? err.message : "Failed to open registration.",
+      );
+    } finally {
+      setBusyRegistration(false);
+    }
+  }
+
+  async function handleCloseRegistration() {
+    setBusyRegistration(true);
+    try {
+      await setRegistrationWindow(semester.id, {
+        registrationWindowStart:
+          semester.registrationWindowStart ?? new Date().toISOString(),
+        registrationWindowEnd: new Date().toISOString(),
+      });
+      await onReload();
+    } catch (err) {
+      onError(
+        err instanceof ApiError ? err.message : "Failed to close registration.",
+      );
+    } finally {
+      setBusyRegistration(false);
     }
   }
 
@@ -158,6 +195,69 @@ function ActiveSemesterPanel({
             {formatScheduleRange(semester.cycleStart, semester.cycleEnd)}
             <br />
             Ends automatically at the end date, or instantly with the button.
+            Open registration or applications only while this cycle is active.
+          </p>
+        </div>
+
+        <div>
+          <p
+            style={{
+              margin: "0 0 0.45rem",
+              fontSize: "0.8rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "var(--muted)",
+              fontWeight: 600,
+            }}
+          >
+            Registration Window
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
+            <StatusBadge
+              active={semester.isRegistrationWindowOpen}
+              label={semester.isRegistrationWindowOpen ? "Open" : "Closed"}
+              size="control"
+            />
+            {!semester.isRegistrationWindowOpen ? (
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                disabled={busyRegistration || semester.isApplicationWindowOpen}
+                title={
+                  semester.isApplicationWindowOpen
+                    ? "Close applications before opening registration."
+                    : undefined
+                }
+                onClick={handleOpenRegistration}
+              >
+                {busyRegistration ? "Updating…" : "Open Registration"}
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="danger"
+                size="sm"
+                disabled={busyRegistration}
+                onClick={handleCloseRegistration}
+              >
+                {busyRegistration ? "Updating…" : "Close Registration"}
+              </Button>
+            )}
+          </div>
+          <p
+            style={{
+              margin: "0.55rem 0 0",
+              fontSize: "0.82rem",
+              color: "var(--muted)",
+            }}
+          >
+            {formatScheduleRange(
+              semester.registrationWindowStart,
+              semester.registrationWindowEnd,
+            )}
+            <br />
+            Faculty post projects and students update profiles. No ranking.
           </p>
         </div>
 
@@ -185,7 +285,12 @@ function ActiveSemesterPanel({
                 type="button"
                 variant="primary"
                 size="sm"
-                disabled={busyWindow}
+                disabled={busyWindow || semester.isRegistrationWindowOpen}
+                title={
+                  semester.isRegistrationWindowOpen
+                    ? "Close registration before opening applications."
+                    : undefined
+                }
                 onClick={handleOpenApplications}
               >
                 {busyWindow ? "Updating…" : "Open Applications"}
@@ -214,7 +319,7 @@ function ActiveSemesterPanel({
               semester.applicationWindowEnd,
             )}
             <br />
-            Closes automatically at the end date, or instantly with the button.
+            Students and faculty rank only. Profiles and projects stay locked.
           </p>
         </div>
       </div>
@@ -274,7 +379,7 @@ export function AdminSemestersView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="URVP Cycles"
-        description="Schedule URVP cycles and application windows with start and end dates. Only one cycle can be active at a time. Ended cycles remain in this list as history and cannot be edited."
+        description="Schedule the cycle, then open registration and the application window while it is active. Ended cycles remain in this list as history and cannot be edited."
         tag={
           semesters.length > 0
             ? `${semesters.length} cycle${semesters.length === 1 ? "" : "s"}`
@@ -346,6 +451,7 @@ export function AdminSemestersView() {
               <tr>
                 <th>Name</th>
                 <th>Cycle</th>
+                <th>Registration</th>
                 <th>Applications</th>
                 <th>Actions</th>
               </tr>
@@ -374,6 +480,21 @@ export function AdminSemestersView() {
                       style={{ fontSize: "0.8rem", margin: "0.35rem 0 0" }}
                     >
                       {formatScheduleRange(s.cycleStart, s.cycleEnd)}
+                    </p>
+                  </td>
+                  <td>
+                    <StatusBadge
+                      active={s.isRegistrationWindowOpen}
+                      label={s.isRegistrationWindowOpen ? "Open" : "Closed"}
+                    />
+                    <p
+                      className="admin-users-meta"
+                      style={{ fontSize: "0.8rem", margin: "0.35rem 0 0" }}
+                    >
+                      {formatScheduleRange(
+                        s.registrationWindowStart,
+                        s.registrationWindowEnd,
+                      )}
                     </p>
                   </td>
                   <td>

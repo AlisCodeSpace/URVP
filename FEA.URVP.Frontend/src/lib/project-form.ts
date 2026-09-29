@@ -21,7 +21,7 @@ export const projectStatusOptions: readonly SelectOption[] = [
   { value: "Closed", label: "Closed" },
 ] as const;
 
-export type MyProjectStatus = "Open" | "Matching" | "Closed";
+export type MyProjectStatus = "Open" | "Matching" | "Closed" | "Inactive";
 
 export function projectStatusClass(status: MyProjectStatus): string {
   if (status === "Open") return "is-active";
@@ -69,6 +69,7 @@ export type MyProject = {
   volunteersRequired: number;
   volunteersFilled: number;
   status: MyProjectStatus;
+  semesterName: string;
   updatedAt: string;
   isEditableByFaculty: boolean;
   facultyEditLockReason?: string | null;

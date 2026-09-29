@@ -20,4 +20,6 @@ public interface IFacultyCandidateRankingRepository
     void Add(FacultyCandidateRanking ranking);
 
     void Remove(FacultyCandidateRanking ranking);
+
+    Task<int> RemoveAllForProjectAsync(Guid projectId, CancellationToken cancellationToken = default);
 }

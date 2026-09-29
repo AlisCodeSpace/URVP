@@ -54,17 +54,18 @@ export async function listUsers(
   return apiFetch<PaginatedUsers>(`/api/users?${query.toString()}`);
 }
 
-export type UserExportFormat = "pdf" | "xlsx";
+export type UserExportDetail = "basic" | "full";
 
 export async function exportUsers(
-  format: UserExportFormat,
+  detail: UserExportDetail,
   params: Pick<
     ListUsersParams,
     "search" | "role" | "facultyWithProjects" | "sortBy" | "sortDir"
   > = {},
 ): Promise<void> {
   const query = new URLSearchParams();
-  query.set("format", format);
+  query.set("format", "xlsx");
+  query.set("detail", detail);
   if (params.search?.trim()) query.set("search", params.search.trim());
   if (params.role) query.set("role", params.role);
   if (params.facultyWithProjects) query.set("facultyWithProjects", "true");
@@ -73,7 +74,7 @@ export async function exportUsers(
 
   await apiDownloadFile(
     `/api/users/export?${query.toString()}`,
-    format === "pdf" ? "urvp-users.pdf" : "urvp-users.xlsx",
+    detail === "full" ? "urvp-users-full.xlsx" : "urvp-users-basic.xlsx",
   );
 }
 

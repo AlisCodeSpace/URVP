@@ -66,6 +66,9 @@ export function FacultyProjectReadonly({
           <ReadOnlyField label="Email">
             <ReadOnlyValue>{project.email}</ReadOnlyValue>
           </ReadOnlyField>
+          <ReadOnlyField label="Academic cycle">
+            <ReadOnlyValue>{project.semesterName || "—"}</ReadOnlyValue>
+          </ReadOnlyField>
         </div>
       </section>
 

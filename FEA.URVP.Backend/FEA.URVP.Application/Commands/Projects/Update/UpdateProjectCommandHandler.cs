@@ -18,6 +18,7 @@ public sealed class UpdateProjectCommandHandler
     private readonly IUserRepository _users;
     private readonly IEventBus _eventBus;
     private readonly FacultyProjectMutationAccess _mutationAccess;
+    private readonly ProjectCycleClosure _cycleClosure;
 
     public UpdateProjectCommandHandler(
         ILogger<UpdateProjectCommandHandler> logger,
@@ -25,21 +26,30 @@ public sealed class UpdateProjectCommandHandler
         IProjectRepository projects,
         IUserRepository users,
         IEventBus eventBus,
-        FacultyProjectMutationAccess mutationAccess)
+        FacultyProjectMutationAccess mutationAccess,
+        ProjectCycleClosure cycleClosure)
         : base(logger, unitOfWork)
     {
         _projects = projects;
         _users = users;
         _eventBus = eventBus;
         _mutationAccess = mutationAccess;
+        _cycleClosure = cycleClosure;
     }
 
     protected override async Task<ProjectDto> HandleInternal(
         UpdateProjectCommand request,
         CancellationToken cancellationToken)
     {
+        await _cycleClosure.DeactivateEndedCyclesAsync(cancellationToken);
+
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Project {request.ProjectId} was not found.");
+
+        if (request.Status == ProjectStatus.Inactive)
+        {
+            throw new InvalidOperationException(FacultyProjectMutationAccess.InactiveProjectMessage);
+        }
 
         if (!request.IsAdmin && project.CreatedByUserId != request.CurrentUserId)
         {

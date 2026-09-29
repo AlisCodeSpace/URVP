@@ -4,7 +4,6 @@ using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.Semesters;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Notifications;
-using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Events;
 using FEA.URVP.Domain.Events.Semesters;
 using Microsoft.Extensions.Logging;
@@ -44,15 +43,10 @@ public sealed class SetApplicationWindowCommandHandler
 
         SemesterSchedule.EnsureRange("Application window", start, end);
         SemesterSchedule.EnsureWindowWithinCycle(
-            semester.CycleStart, semester.CycleEnd, start, end);
-
-        if (!semester.IsCycleActive(now)
-            && start.HasValue
-            && Semester.IsWithin(start, end, now))
-        {
-            throw new InvalidOperationException(
-                "Start the academic cycle before opening applications.");
-        }
+            "The application window", semester.CycleStart, semester.CycleEnd, start, end);
+        SemesterSchedule.EnsureWindowsDoNotOverlap(
+            start, end, semester.RegistrationWindowStart, semester.RegistrationWindowEnd);
+        SemesterSchedule.EnsureCycleActiveToOpen(semester, start, end, now, "applications");
 
         semester.ApplyApplicationWindow(start, end, now);
 

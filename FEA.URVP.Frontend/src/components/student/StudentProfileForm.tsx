@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
+import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import { Heading, Text } from "@/components/ui/Typography";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
@@ -29,6 +30,7 @@ import {
 import {
   cloneStudentProfile,
   DEGREE_OPTIONS,
+  FACULTY_OPTIONS,
   emptyStudentProfile,
   GENDER_OPTIONS,
   GRADUATION_YEAR_OPTIONS,
@@ -168,6 +170,8 @@ function FileUploadField({
 
 export function StudentProfileForm() {
   const { status } = useAuth();
+  const phase = useApplicationWindow();
+  const registrationClosed = !phase.loading && !phase.registrationOpen;
   const authed = Boolean(status?.isAuthenticated && status.userId);
   const profileQuery = useCancellableQuery(
     async () => {
@@ -201,7 +205,10 @@ export function StudentProfileForm() {
     setValues(profileQuery.data.values);
     setBaseline(cloneStudentProfile(profileQuery.data.values));
     setProfileExists(profileQuery.data.exists);
-    if (!profileQuery.data.exists) setEditing(true);
+    if (!profileQuery.data.exists && !registrationClosed) setEditing(true);
+  }
+  if (registrationClosed && editing) {
+    setEditing(false);
   }
   const researchTopicOptions = useValueListOptions(
     "research-interests",
@@ -276,7 +283,7 @@ export function StudentProfileForm() {
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!editing || !status?.userId) return;
+    if (registrationClosed || !editing || !status?.userId) return;
 
     setError(null);
     setSuccess(null);
@@ -288,6 +295,8 @@ export function StudentProfileForm() {
       !values.gender ||
       !values.mobileNumber.trim() ||
       !values.degree ||
+      !values.faculty ||
+      !values.major.trim() ||
       !values.expectedGraduationYear ||
       !values.completedCredits ||
       !values.cumulativeAverage.trim() ||
@@ -383,7 +392,14 @@ export function StudentProfileForm() {
       noValidate
       data-tour="student-profile"
     >
-      {!profileExists ? (
+      {registrationClosed ? (
+        <p className="rounded-md border border-primary/15 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-primary">
+          Profiles can be created or updated only while the registration window
+          is open.
+        </p>
+      ) : null}
+
+      {!profileExists && !registrationClosed ? (
         <p className="rounded-md border border-secondary-deep/20 bg-secondary-deep/5 px-4 py-3 text-sm leading-relaxed text-primary">
           You must complete and save this profile before you can express
           interest in projects. Ranking stays locked until a profile is on
@@ -405,7 +421,12 @@ export function StudentProfileForm() {
           type="button"
           variant={editing ? "outline" : "primary"}
           size="md"
-          disabled={submitting}
+          disabled={submitting || registrationClosed}
+          title={
+            registrationClosed
+              ? "Profiles can be updated only while the registration window is open."
+              : undefined
+          }
           onClick={editing ? cancelEditing : startEditing}
         >
           {editing ? (
@@ -506,6 +527,30 @@ export function StudentProfileForm() {
               value={values.degree || undefined}
               onValueChange={(v) => setField("degree", v)}
               disabled={readOnly}
+            />
+          </Field>
+          <div className="sm:col-span-2">
+            <Field id="faculty" label="Faculty" required={showRequired}>
+              <FieldSelect
+                id="faculty"
+                name="faculty"
+                placeholder="Select faculty"
+                options={FACULTY_OPTIONS}
+                value={values.faculty || undefined}
+                onValueChange={(v) => setField("faculty", v)}
+                disabled={readOnly}
+              />
+            </Field>
+          </div>
+          <Field id="major" label="Major" required={showRequired}>
+            <input
+              id="major"
+              className="field-input"
+              placeholder="Major"
+              value={values.major}
+              onChange={(e) => setField("major", e.target.value)}
+              disabled={readOnly}
+              maxLength={128}
             />
           </Field>
           <Field

@@ -9,6 +9,7 @@ import { IconPencil, IconPlus } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { ApiError } from "@/lib/api";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
+import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import { editProjectHref, newProjectHref, viewProjectHref } from "@/lib/auth";
 import {
   isFacultyProjectEditable,
@@ -18,6 +19,7 @@ import {
 import {
   deleteProject,
   listMyProjects,
+  reactivateProject,
   toMyProject,
 } from "@/lib/projects-api";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
@@ -32,14 +34,19 @@ function ProjectRow({
   userId,
   project,
   busyId,
+  canReactivate,
   onDelete,
+  onReactivate,
 }: {
   userId: string;
   project: MyProject;
   busyId: string | null;
+  canReactivate: boolean;
   onDelete: (id: string) => void;
+  onReactivate: (id: string) => void;
 }) {
   const deleting = busyId === project.id;
+  const inactive = project.status === "Inactive";
   const locked = !isFacultyProjectEditable(project);
   const areas = project.researchAreas.slice(0, 2).join(" · ");
   const extraAreas = project.researchAreas.length - 2;
@@ -60,6 +67,7 @@ function ProjectRow({
           {project.status}
         </span>
       </td>
+      <td>{project.semesterName || "—"}</td>
       <td>
         {project.volunteersFilled}/{project.volunteersRequired}
       </td>
@@ -73,25 +81,36 @@ function ProjectRow({
           >
             View
           </Button>
-          {locked ? null : (
-            <>
-              <Button
-                href={editProjectHref(userId, project.id)}
-                variant="ghost"
-                size="sm"
-              >
-                <IconPencil />
-                Edit
-              </Button>
-              <DeleteIconButton
-                variant="ghost"
-                disabled={deleting || busyId !== null}
-                loading={deleting}
-                onClick={() => onDelete(project.id)}
-                className="!text-red-800 hover:!text-red-900"
-              />
-            </>
-          )}
+          {inactive && canReactivate ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              disabled={busyId !== null}
+              onClick={() => onReactivate(project.id)}
+            >
+              Reactivate
+            </Button>
+          ) : null}
+          {inactive || !locked ? (
+            <DeleteIconButton
+              variant="ghost"
+              disabled={deleting || busyId !== null}
+              loading={deleting}
+              onClick={() => onDelete(project.id)}
+              className="!text-red-800 hover:!text-red-900"
+            />
+          ) : null}
+          {!inactive && !locked ? (
+            <Button
+              href={editProjectHref(userId, project.id)}
+              variant="ghost"
+              size="sm"
+            >
+              <IconPencil />
+              Edit
+            </Button>
+          ) : null}
         </div>
       </td>
     </tr>
@@ -101,6 +120,7 @@ function ProjectRow({
 export function MyProjectsList({ userId }: { userId: string }) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<MyProject | null>(null);
+  const [pendingReactivate, setPendingReactivate] = useState<MyProject | null>(null);
   const {
     data,
     loading,
@@ -113,6 +133,8 @@ export function MyProjectsList({ userId }: { userId: string }) {
     dataOnError: () => [],
   });
   const projects = data;
+  const phase = useApplicationWindow();
+  const canPost = !phase.loading && phase.registrationOpen;
 
   async function handleConfirmDelete() {
     if (!pendingDelete) return;
@@ -133,8 +155,29 @@ export function MyProjectsList({ userId }: { userId: string }) {
     }
   }
 
+  async function handleConfirmReactivate() {
+    if (!pendingReactivate) return;
+
+    const id = pendingReactivate.id;
+    setBusyId(id);
+    setError(null);
+    try {
+      const next = toMyProject(await reactivateProject(id));
+      setPendingReactivate(null);
+      setData((prev) =>
+        (prev ?? []).map((project) => (project.id === id ? next : project)),
+      );
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Could not reactivate project.",
+      );
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   if (projects === null) {
-    return <AdminTableSkeleton columns={5} rows={4} />;
+    return <AdminTableSkeleton columns={6} rows={4} />;
   }
 
   if (error && projects.length === 0) {
@@ -168,15 +211,28 @@ export function MyProjectsList({ userId }: { userId: string }) {
           match with your work.
         </Text>
         <div className="mt-6 flex justify-center">
-          <Button
-            href={newProjectHref(userId)}
-            variant="secondary"
-            size="md"
-            data-tour="faculty-new-project"
-          >
-            <IconPlus />
-            New project
-          </Button>
+          {canPost ? (
+            <Button
+              href={newProjectHref(userId)}
+              variant="secondary"
+              size="md"
+              data-tour="faculty-new-project"
+            >
+              <IconPlus />
+              New project
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              disabled
+              title="Projects can be posted only while the registration window is open."
+            >
+              <IconPlus />
+              New project
+            </Button>
+          )}
         </div>
       </div>
     );
@@ -206,6 +262,7 @@ export function MyProjectsList({ userId }: { userId: string }) {
             <tr>
               <th>Project</th>
               <th>Status</th>
+              <th>Cycle</th>
               <th>Seats</th>
               <th>Updated</th>
               <th>Actions</th>
@@ -218,6 +275,11 @@ export function MyProjectsList({ userId }: { userId: string }) {
                 userId={userId}
                 project={project}
                 busyId={busyId}
+                canReactivate={canPost}
+                onReactivate={(id) => {
+                  const next = projects.find((p) => p.id === id) ?? null;
+                  setPendingReactivate(next);
+                }}
                 onDelete={(id) => {
                   const next = projects.find((p) => p.id === id) ?? null;
                   setPendingDelete(next);
@@ -243,6 +305,22 @@ export function MyProjectsList({ userId }: { userId: string }) {
         confirmLabel="Delete"
         busyLabel="Deleting…"
         busy={pendingDelete !== null && busyId === pendingDelete.id}
+      />
+      <ConfirmModal
+        open={pendingReactivate !== null}
+        onClose={() => {
+          if (busyId === null) setPendingReactivate(null);
+        }}
+        onConfirm={handleConfirmReactivate}
+        title="Reactivate project?"
+        description={
+          pendingReactivate
+            ? `Reactivate “${pendingReactivate.title}” for ${phase.semesterName ?? "the current cycle"}? Students from ${pendingReactivate.semesterName || "the previous cycle"} stay on record, and the live roster starts empty.`
+            : "Reactivate this project for the current cycle?"
+        }
+        confirmLabel="Reactivate"
+        busyLabel="Reactivating…"
+        busy={pendingReactivate !== null && busyId === pendingReactivate.id}
       />
     </div>
   );

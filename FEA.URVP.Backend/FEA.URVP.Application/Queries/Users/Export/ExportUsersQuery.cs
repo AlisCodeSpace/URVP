@@ -13,13 +13,17 @@ public sealed class ExportUsersQuery : IRequest<UserExportFileDto>
     public SortDirection SortDir { get; }
     public bool FacultyWithProjectsOnly { get; }
 
+    /// <summary>basic (name, email, role) or full (profile and matched projects).</summary>
+    public string? Detail { get; }
+
     public ExportUsersQuery(
         string? format,
         string? search = null,
         UserRole? role = null,
         UserSortField sortBy = UserSortField.Name,
         SortDirection sortDir = SortDirection.Asc,
-        bool facultyWithProjectsOnly = false)
+        bool facultyWithProjectsOnly = false,
+        string? detail = null)
     {
         Format = format;
         Search = search;
@@ -27,5 +31,6 @@ public sealed class ExportUsersQuery : IRequest<UserExportFileDto>
         SortBy = sortBy;
         SortDir = sortDir;
         FacultyWithProjectsOnly = facultyWithProjectsOnly;
+        Detail = detail;
     }
 }

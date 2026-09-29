@@ -10,16 +10,19 @@ public sealed class ListProjectsQuery : IRequest<(IReadOnlyList<ProjectDto> Item
     public ProjectStatus? Status { get; }
     public int PageNumber { get; }
     public int PageSize { get; }
+    public bool ViewerIsStudent { get; }
 
     public ListProjectsQuery(
         Guid? createdByUserId,
         ProjectStatus? status,
         int pageNumber,
-        int pageSize)
+        int pageSize,
+        bool viewerIsStudent = false)
     {
         CreatedByUserId = createdByUserId;
         Status = status;
         PageNumber = pageNumber;
         PageSize = pageSize;
+        ViewerIsStudent = viewerIsStudent;
     }
 }

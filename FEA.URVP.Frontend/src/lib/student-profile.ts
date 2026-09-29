@@ -11,6 +11,18 @@ export const DEGREE_OPTIONS = [
   "Other",
 ] as const;
 
+/** Faculties and schools from aub.edu.lb/academics/Pages/faculties.aspx. */
+export const FACULTY_OPTIONS = [
+  "Faculty of Agricultural and Food Sciences (FAFS)",
+  "Faculty of Arts and Sciences (FAS)",
+  "Faculty of Health Sciences (FHS)",
+  "Faculty of Medicine (FM)",
+  "Rafic Hariri School of Nursing (HSON)",
+  "Maroun Semaan Faculty of Engineering and Architecture (MSFEA)",
+  "School of Computing and Data Sciences (SCDS)",
+  "Suliman S. Olayan School of Business (OSB)",
+] as const;
+
 export const LANGUAGE_OPTIONS = [
   "Arabic",
   "English",
@@ -70,6 +82,8 @@ export type StudentProfileValues = {
   gender: string;
   mobileNumber: string;
   degree: string;
+  faculty: string;
+  major: string;
   expectedGraduationYear: string;
   languages: string[];
   otherLanguages: string;
@@ -103,6 +117,8 @@ export function emptyStudentProfile(
     gender: "",
     mobileNumber: "",
     degree: "",
+    faculty: "",
+    major: "",
     expectedGraduationYear: "",
     languages: [],
     otherLanguages: "",

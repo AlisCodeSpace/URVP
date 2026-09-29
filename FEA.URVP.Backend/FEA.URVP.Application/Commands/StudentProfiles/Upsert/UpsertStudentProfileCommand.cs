@@ -18,6 +18,8 @@ public sealed class UpsertStudentProfileCommand : IRequest<StudentProfileDto>
     public string Gender { get; init; } = null!;
     public string MobileNumber { get; init; } = null!;
     public string Degree { get; init; } = null!;
+    public string Faculty { get; init; } = null!;
+    public string Major { get; init; } = null!;
     public int ExpectedGraduationYear { get; init; }
     public List<string> Languages { get; init; } = [];
     public string? OtherLanguages { get; init; }

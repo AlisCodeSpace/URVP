@@ -59,6 +59,7 @@ export function ProjectDetailLoader({ id }: { id: string }) {
         <section className="site-container py-14 sm:py-16">
           <ApplicationWindowClosedNotice
             semesterName={studentProjects.semesterName}
+            registrationOpen={studentProjects.registrationOpen}
           />
         </section>
       </>

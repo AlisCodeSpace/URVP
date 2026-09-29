@@ -126,7 +126,9 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
   const { run, warnings, placements } = data;
   const isDraft = run.status === "Draft";
   const applicationsOpen = Boolean(semester?.isApplicationWindowOpen);
-  const canConfirm = isDraft && !busy && placements.length > 0 && !applicationsOpen;
+  const registrationOpen = Boolean(semester?.isRegistrationWindowOpen);
+  const canConfirm =
+    isDraft && !busy && placements.length > 0 && !applicationsOpen && !registrationOpen;
 
   const kpis = [
     { label: "Students matched", value: `${run.studentsMatched} / ${run.studentsConsidered}`, hint: `${matchRate(run)}% of eligible students` },
@@ -171,7 +173,9 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
               title={
                 applicationsOpen
                   ? "Close the student application window before confirming matching."
-                  : undefined
+                  : registrationOpen
+                    ? "Close the registration window before confirming matching."
+                    : undefined
               }
               onClick={() => setPending({ kind: "confirm" })}
             >
@@ -196,9 +200,11 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
         </p>
       ) : null}
 
-      {applicationsOpen && isDraft ? (
+      {(applicationsOpen || registrationOpen) && isDraft ? (
         <p className="admin-users-banner" role="status">
-          Close the student application window before confirming this matching run.
+          {applicationsOpen
+            ? "Close the student application window before confirming this matching run."
+            : "Close the registration window before confirming this matching run."}
         </p>
       ) : null}
 

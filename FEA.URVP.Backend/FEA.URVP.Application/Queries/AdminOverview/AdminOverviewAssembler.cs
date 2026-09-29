@@ -131,6 +131,16 @@ public static class AdminOverviewAssembler
                 Severity = "warning",
             });
         }
+        else if (semester.IsRegistrationWindowOpen(now))
+        {
+            items.Add(new AdminOverviewAttentionItemDto
+            {
+                Id = "registration-open",
+                Text = "The registration window is open. Students can update profiles and faculty can post projects. Ranking and matching stay locked.",
+                Href = "/admin/semesters",
+                Severity = "info",
+            });
+        }
         else if (semester.IsApplicationWindowOpen(now))
         {
             items.Add(new AdminOverviewAttentionItemDto

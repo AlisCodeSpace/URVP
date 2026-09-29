@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.Configure<FileStorageOptions>(configuration.GetSection(FileStorageOptions.SectionName));
         services.AddScoped<IMimeTypeValidator, MimeTypeValidator>();
         services.AddScoped<FacultyProjectMutationAccess>();
+        services.AddScoped<ProjectCycleClosure>();
 
         return services;
     }

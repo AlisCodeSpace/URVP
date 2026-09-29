@@ -9,6 +9,7 @@ public sealed class AdminProjectListItemDto
     public string FacultyName { get; init; } = null!;
     public string Affiliation { get; init; } = null!;
     public string Email { get; init; } = null!;
+    public string SemesterName { get; init; } = null!;
     public ProjectStatus Status { get; init; }
     public int VolunteersRequired { get; init; }
     public int VolunteersFilled { get; init; }

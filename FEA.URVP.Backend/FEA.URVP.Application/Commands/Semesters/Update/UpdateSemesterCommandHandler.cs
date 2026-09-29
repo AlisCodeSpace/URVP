@@ -42,6 +42,8 @@ public sealed class UpdateSemesterCommandHandler
             request.CycleEnd,
             request.ApplicationWindowStart,
             request.ApplicationWindowEnd,
+            request.RegistrationWindowStart,
+            request.RegistrationWindowEnd,
             now,
             cancellationToken);
 

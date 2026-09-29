@@ -70,8 +70,15 @@ public sealed class ProjectConfiguration : IEntityTypeConfiguration<Project>
             .HasForeignKey(p => p.CreatedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(p => p.Semester)
+            .WithMany()
+            .HasForeignKey(p => p.SemesterId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(p => p.CreatedByUserId);
+        builder.HasIndex(p => p.SemesterId);
         builder.HasIndex(p => new { p.Status, p.CreatedAt });
+        builder.HasIndex(p => new { p.SemesterId, p.Status });
 
         builder.ToTable(t =>
         {

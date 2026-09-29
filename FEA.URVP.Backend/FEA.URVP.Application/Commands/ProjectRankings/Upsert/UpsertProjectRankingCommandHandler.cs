@@ -6,6 +6,7 @@ using FEA.URVP.Application.DTOs.ProjectRankings;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Notifications;
 using FEA.URVP.Application.ProjectRankings;
+using FEA.URVP.Application.Projects;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Enums;
 using FEA.URVP.Domain.Events.Rankings;
@@ -22,6 +23,7 @@ public sealed class UpsertProjectRankingCommandHandler
     private readonly ISemesterRepository _semesters;
     private readonly IStudentProfileRepository _profiles;
     private readonly IEventBus _eventBus;
+    private readonly ProjectCycleClosure _cycleClosure;
 
     public UpsertProjectRankingCommandHandler(
         ILogger<UpsertProjectRankingCommandHandler> logger,
@@ -31,7 +33,8 @@ public sealed class UpsertProjectRankingCommandHandler
         IUserRepository users,
         ISemesterRepository semesters,
         IStudentProfileRepository profiles,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        ProjectCycleClosure cycleClosure)
         : base(logger, unitOfWork)
     {
         _rankings = rankings;
@@ -40,12 +43,15 @@ public sealed class UpsertProjectRankingCommandHandler
         _semesters = semesters;
         _profiles = profiles;
         _eventBus = eventBus;
+        _cycleClosure = cycleClosure;
     }
 
     protected override async Task<ProjectRankingDto> HandleInternal(
         UpsertProjectRankingCommand request,
         CancellationToken cancellationToken)
     {
+        await _cycleClosure.DeactivateEndedCyclesAsync(cancellationToken);
+
         var outcome = await UnitOfWork.ExecuteInTransactionAsync(
             ct => PersistAsync(request, ct),
             cancellationToken);
@@ -82,6 +88,12 @@ public sealed class UpsertProjectRankingCommandHandler
 
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new ArgumentException("Project was not found.");
+
+        if (project.SemesterId != semester!.Id)
+        {
+            throw new InvalidOperationException(
+                "Only projects in the current academic cycle can be ranked.");
+        }
 
         if (project.Status != ProjectStatus.Open)
         {

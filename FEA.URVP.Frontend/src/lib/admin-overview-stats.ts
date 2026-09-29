@@ -227,9 +227,12 @@ export function semesterChipTitle(overview: AdminOverviewDto): string {
 
 export function profileWindowLabel(overview: AdminOverviewDto): string {
   const semester = overview.semester;
-  if (!semester) return "No application window";
-  if (semester.isApplicationWindowOpen) {
-    return `Window open · ${formatScheduleRange(semester.applicationWindowStart, semester.applicationWindowEnd)}`;
+  if (!semester) return "No active window";
+  if (semester.isRegistrationWindowOpen) {
+    return `Registration open · ${formatScheduleRange(semester.registrationWindowStart, semester.registrationWindowEnd)}`;
   }
-  return `Window closed · ${formatScheduleRange(semester.applicationWindowStart, semester.applicationWindowEnd)}`;
+  if (semester.isApplicationWindowOpen) {
+    return `Applications open · ${formatScheduleRange(semester.applicationWindowStart, semester.applicationWindowEnd)}`;
+  }
+  return `Windows closed · ${formatScheduleRange(semester.applicationWindowStart, semester.applicationWindowEnd)}`;
 }

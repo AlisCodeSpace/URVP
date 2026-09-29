@@ -36,7 +36,8 @@ public static class ContentSecurityPolicy
         Append(policy, "style-src", $"{Self} 'unsafe-inline'");
 
         // data: is required by the inline SVG background-image in globals.css.
-        Append(policy, "img-src", Combine($"{Self} data:", options.ImgSrc));
+        // blob: is required for admin photo previews created with URL.createObjectURL.
+        Append(policy, "img-src", Combine($"{Self} data: blob:", options.ImgSrc));
         Append(policy, "font-src", Combine(Self, options.FontSrc));
         Append(policy, "connect-src", Combine(Self, options.ConnectSrc));
         Append(policy, "manifest-src", Self);

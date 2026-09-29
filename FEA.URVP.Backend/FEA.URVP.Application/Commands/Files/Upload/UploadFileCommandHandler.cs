@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using FEA.URVP.Application.Abstractions.Files;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.Files;
 using FEA.URVP.Application.Files;
 using FEA.URVP.Application.News;
@@ -20,6 +21,7 @@ public sealed class UploadFileCommandHandler
 {
     private readonly IFileStorageRepository _files;
     private readonly IUserRepository _users;
+    private readonly ISemesterRepository _semesters;
     private readonly IWorkshopRepository _workshops;
     private readonly INewsArticleRepository _news;
     private readonly IMimeTypeValidator _mimeTypeValidator;
@@ -30,6 +32,7 @@ public sealed class UploadFileCommandHandler
         IUnitOfWork unitOfWork,
         IFileStorageRepository files,
         IUserRepository users,
+        ISemesterRepository semesters,
         IWorkshopRepository workshops,
         INewsArticleRepository news,
         IMimeTypeValidator mimeTypeValidator,
@@ -38,6 +41,7 @@ public sealed class UploadFileCommandHandler
     {
         _files = files;
         _users = users;
+        _semesters = semesters;
         _workshops = workshops;
         _news = news;
         _mimeTypeValidator = mimeTypeValidator;
@@ -64,6 +68,12 @@ public sealed class UploadFileCommandHandler
             {
                 throw new UnauthorizedAccessException("You can only upload files for your own profile.");
             }
+
+            var semester = await _semesters.FindActiveAsync(cancellationToken);
+            ApplicationWindowRules.EnsureRegistrationOpen(
+                semester,
+                DateTime.UtcNow,
+                ApplicationWindowRules.ProfilesClosedMessage);
         }
         else if (request.EntityType == FileStorageCatalog.EntityWorkshop)
         {

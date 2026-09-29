@@ -659,6 +659,9 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(2000)");
 
+                    b.Property<Guid>("SemesterId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<byte>("Status")
                         .HasColumnType("tinyint");
 
@@ -686,6 +689,10 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
+                    b.HasIndex("SemesterId");
+
+                    b.HasIndex("SemesterId", "Status");
+
                     b.HasIndex("Status", "CreatedAt");
 
                     b.ToTable("Projects", null, t =>
@@ -694,6 +701,60 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
 
                             t.HasCheckConstraint("CK_Projects_VolunteersRequired", "[VolunteersRequired] >= 1");
                         });
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Projects.ProjectAlumni", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ArchivedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte?>("FacultyRank")
+                        .HasColumnType("tinyint");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SemesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SemesterName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("StudentEmail")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("StudentName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<byte?>("StudentRank")
+                        .HasColumnType("tinyint");
+
+                    b.Property<Guid>("StudentUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("WasConfirmed")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SemesterId");
+
+                    b.HasIndex("ProjectId", "ArchivedAt");
+
+                    b.HasIndex("ProjectId", "SemesterId", "StudentUserId")
+                        .IsUnique();
+
+                    b.ToTable("ProjectAlumni", (string)null);
                 });
 
             modelBuilder.Entity("FEA.URVP.Domain.Entities.Semesters.Semester", b =>
@@ -728,6 +789,12 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("RegistrationWindowEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RegistrationWindowStart")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -771,6 +838,11 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.Property<int>("ExpectedGraduationYear")
                         .HasColumnType("int");
 
+                    b.Property<string>("Faculty")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -779,6 +851,11 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.Property<string>("Languages")
                         .IsRequired()
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Major")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("MobileNumber")
                         .IsRequired()
@@ -1099,7 +1176,34 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("FEA.URVP.Domain.Entities.Semesters.Semester", "Semester")
+                        .WithMany()
+                        .HasForeignKey("SemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("CreatedByUser");
+
+                    b.Navigation("Semester");
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Projects.ProjectAlumni", b =>
+                {
+                    b.HasOne("FEA.URVP.Domain.Entities.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FEA.URVP.Domain.Entities.Semesters.Semester", "Semester")
+                        .WithMany()
+                        .HasForeignKey("SemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Semester");
                 });
 
             modelBuilder.Entity("FEA.URVP.Domain.Entities.StudentProfiles.StudentProfile", b =>

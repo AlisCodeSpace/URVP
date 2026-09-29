@@ -1,5 +1,10 @@
+using System.IO.Compression;
+using System.Text;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Queries.Users.Export;
+using FEA.URVP.Domain.Entities.Matching;
+using FEA.URVP.Domain.Entities.Projects;
+using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 using NSubstitute;
@@ -8,16 +13,6 @@ namespace FEA.URVP.Tests.Users;
 
 public sealed class ExportUsersQueryHandlerTests
 {
-    [Fact]
-    public async Task Pdf_export_returns_a_pdf_file()
-    {
-        var file = await Handle("pdf");
-
-        Assert.Equal(ExportUsersQueryHandler.PdfMime, file.MimeType);
-        Assert.EndsWith(".pdf", file.FileName, StringComparison.OrdinalIgnoreCase);
-        Assert.StartsWith("%PDF", System.Text.Encoding.ASCII.GetString(file.Content), StringComparison.Ordinal);
-    }
-
     [Theory]
     [InlineData("xlsx")]
     [InlineData("excel")]
@@ -28,26 +23,41 @@ public sealed class ExportUsersQueryHandlerTests
 
         Assert.Equal(ExportUsersQueryHandler.ExcelMime, file.MimeType);
         Assert.EndsWith(".xlsx", file.FileName, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("urvp-users-basic-", file.FileName, StringComparison.Ordinal);
         Assert.Equal((byte)'P', file.Content[0]);
         Assert.Equal((byte)'K', file.Content[1]);
     }
 
-    [Fact]
-    public async Task Unknown_format_is_rejected()
+    [Theory]
+    [InlineData("pdf")]
+    [InlineData("csv")]
+    public async Task Non_excel_formats_are_rejected(string format)
     {
-        var handler = new ExportUsersQueryHandler(Users());
+        var handler = Handler(Users());
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(
-            () => handler.Handle(new ExportUsersQuery("csv"), CancellationToken.None));
+            () => handler.Handle(new ExportUsersQuery(format), CancellationToken.None));
 
-        Assert.Contains("pdf or excel", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("excel", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Unknown_detail_is_rejected()
+    {
+        var handler = Handler(Users());
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(
+            () => handler.Handle(new ExportUsersQuery("xlsx", detail: "summary"), CancellationToken.None));
+
+        Assert.Contains("basic or full", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
     public async Task Search_and_role_filters_are_forwarded_to_the_repository()
     {
         var users = Users();
-        var handler = new ExportUsersQueryHandler(users);
+        var profiles = Substitute.For<IStudentProfileRepository>();
+        var handler = Handler(users, profiles);
 
         await handler.Handle(
             new ExportUsersQuery(
@@ -66,13 +76,16 @@ public sealed class ExportUsersQueryHandlerTests
             true,
             false,
             Arg.Any<CancellationToken>());
+        await profiles.DidNotReceive().ListByUserIdsAsync(
+            Arg.Any<IReadOnlyCollection<Guid>>(),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Faculty_with_projects_filter_is_forwarded_to_the_repository()
     {
         var users = Users();
-        var handler = new ExportUsersQueryHandler(users);
+        var handler = Handler(users);
 
         await handler.Handle(
             new ExportUsersQuery("xlsx", facultyWithProjectsOnly: true),
@@ -88,11 +101,92 @@ public sealed class ExportUsersQueryHandlerTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task Full_export_includes_the_profile_and_confirmed_project()
+    {
+        var userId = Guid.NewGuid();
+        var users = Substitute.For<IUserRepository>();
+        users.ListAllAsync(
+            Arg.Any<string?>(),
+            Arg.Any<UserRole?>(),
+            Arg.Any<UserSortField>(),
+            Arg.Any<SortDirection>(),
+            Arg.Any<bool>(),
+            Arg.Any<bool>(),
+            Arg.Any<CancellationToken>()).Returns([
+            new User
+            {
+                Id = userId,
+                Email = "ada@aub.edu.lb",
+                Name = "Ada Lovelace",
+                UserName = "ada",
+                Affiliation = "MSFEA",
+                Role = UserRole.Student,
+                RegisteredAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        ]);
+
+        var profiles = Substitute.For<IStudentProfileRepository>();
+        profiles.ListByUserIdsAsync(
+            Arg.Any<IReadOnlyCollection<Guid>>(),
+            Arg.Any<CancellationToken>()).Returns([
+            new StudentProfile
+            {
+                UserId = userId,
+                Gender = "Female",
+                MobileNumber = "70123456",
+                Degree = "BEng",
+                Faculty = "MSFEA",
+                Major = "Civil Engineering",
+                ExpectedGraduationYear = 2027,
+                Languages = ["English"],
+                CompletedCredits = true,
+                CumulativeAverage = 85.5m,
+                ResearchTopics = ["Water"],
+                Availability = []
+            }
+        ]);
+
+        var runs = Substitute.For<IMatchingRunRepository>();
+        runs.ListConfirmedByStudentIdsAsync(
+            Arg.Any<IReadOnlyCollection<Guid>>(),
+            Arg.Any<CancellationToken>()).Returns([
+            new Placement
+            {
+                StudentUserId = userId,
+                Status = PlacementStatus.Confirmed,
+                Project = new Project { Title = "Harbor Study" }
+            }
+        ]);
+
+        var file = await Handler(users, profiles, runs).Handle(
+            new ExportUsersQuery("xlsx", detail: "full"),
+            CancellationToken.None);
+
+        Assert.Contains("urvp-users-full-", file.FileName, StringComparison.Ordinal);
+        var sheet = ReadSheet(file.Content);
+        Assert.Contains("Harbor Study", sheet, StringComparison.Ordinal);
+        Assert.Contains("Civil Engineering", sheet, StringComparison.Ordinal);
+        Assert.Contains("85.5", sheet, StringComparison.Ordinal);
+        Assert.Contains("Matched projects", sheet, StringComparison.Ordinal);
+    }
+
     private static async Task<FEA.URVP.Application.DTOs.Users.UserExportFileDto> Handle(string format)
     {
-        var handler = new ExportUsersQueryHandler(Users());
+        var handler = Handler(Users());
         return await handler.Handle(new ExportUsersQuery(format), CancellationToken.None);
     }
+
+    private static ExportUsersQueryHandler Handler(
+        IUserRepository users,
+        IStudentProfileRepository? profiles = null,
+        IMatchingRunRepository? runs = null) =>
+        new(
+            users,
+            profiles ?? Substitute.For<IStudentProfileRepository>(),
+            runs ?? Substitute.For<IMatchingRunRepository>());
 
     private static IUserRepository Users()
     {
@@ -118,5 +212,14 @@ public sealed class ExportUsersQueryHandlerTests
             }
         ]);
         return users;
+    }
+
+    private static string ReadSheet(byte[] xlsx)
+    {
+        using var zip = new ZipArchive(new MemoryStream(xlsx), ZipArchiveMode.Read);
+        var entry = zip.GetEntry("xl/worksheets/sheet1.xml");
+        Assert.NotNull(entry);
+        using var reader = new StreamReader(entry!.Open(), Encoding.UTF8);
+        return reader.ReadToEnd();
     }
 }

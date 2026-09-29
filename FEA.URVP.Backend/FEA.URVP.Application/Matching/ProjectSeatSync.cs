@@ -22,6 +22,12 @@ internal static class ProjectSeatSync
             if (project is null) continue;
 
             project.VolunteersFilled = await runs.CountConfirmedByProjectAsync(projectId, cancellationToken);
+            if (project.Status == ProjectStatus.Inactive)
+            {
+                project.UpdatedAt = DateTime.UtcNow;
+                continue;
+            }
+
             if (project.VolunteersFilled > 0 && project.Status == ProjectStatus.Open)
             {
                 project.Status = ProjectStatus.Matching;

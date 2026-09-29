@@ -26,6 +26,8 @@ type FormValues = {
   cycleEnd: string;
   applicationWindowStart: string;
   applicationWindowEnd: string;
+  registrationWindowStart: string;
+  registrationWindowEnd: string;
 };
 
 const emptyValues: FormValues = {
@@ -35,6 +37,8 @@ const emptyValues: FormValues = {
   cycleEnd: "",
   applicationWindowStart: "",
   applicationWindowEnd: "",
+  registrationWindowStart: "",
+  registrationWindowEnd: "",
 };
 
 function toValues(dto: SemesterDto): FormValues {
@@ -45,6 +49,8 @@ function toValues(dto: SemesterDto): FormValues {
     cycleEnd: toAppDatetimeInput(dto.cycleEnd),
     applicationWindowStart: toAppDatetimeInput(dto.applicationWindowStart),
     applicationWindowEnd: toAppDatetimeInput(dto.applicationWindowEnd),
+    registrationWindowStart: toAppDatetimeInput(dto.registrationWindowStart),
+    registrationWindowEnd: toAppDatetimeInput(dto.registrationWindowEnd),
   };
 }
 
@@ -135,6 +141,8 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
   const cycleEndId = useId();
   const windowStartId = useId();
   const windowEndId = useId();
+  const registrationStartId = useId();
+  const registrationEndId = useId();
   const readOnly = Boolean(isEdit && currentDto?.hasEnded);
 
   function setField<K extends keyof FormValues>(key: K, value: FormValues[K]) {
@@ -153,6 +161,8 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
     const cycleEnd = fromAppDatetimeInput(values.cycleEnd);
     const windowStart = fromAppDatetimeInput(values.applicationWindowStart);
     const windowEnd = fromAppDatetimeInput(values.applicationWindowEnd);
+    const registrationStart = fromAppDatetimeInput(values.registrationWindowStart);
+    const registrationEnd = fromAppDatetimeInput(values.registrationWindowEnd);
 
     if (cycleStart && cycleEnd && new Date(cycleEnd) <= new Date(cycleStart)) {
       setError("Academic cycle end must be after the start date.");
@@ -170,6 +180,37 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
       setError("The application window cannot close after the academic cycle ends.");
       return;
     }
+    if (
+      registrationStart &&
+      registrationEnd &&
+      new Date(registrationEnd) <= new Date(registrationStart)
+    ) {
+      setError("Registration window end must be after the start date.");
+      return;
+    }
+    if (cycleStart && registrationStart && new Date(registrationStart) < new Date(cycleStart)) {
+      setError("The registration window cannot open before the academic cycle starts.");
+      return;
+    }
+    if (cycleEnd && registrationEnd && new Date(registrationEnd) > new Date(cycleEnd)) {
+      setError("The registration window cannot close after the academic cycle ends.");
+      return;
+    }
+    if (registrationStart && windowStart) {
+      const registrationUntil = registrationEnd
+        ? new Date(registrationEnd).getTime()
+        : Number.POSITIVE_INFINITY;
+      const applicationUntil = windowEnd
+        ? new Date(windowEnd).getTime()
+        : Number.POSITIVE_INFINITY;
+      if (
+        new Date(registrationStart).getTime() < applicationUntil &&
+        new Date(windowStart).getTime() < registrationUntil
+      ) {
+        setError("The registration window and the application window cannot overlap.");
+        return;
+      }
+    }
 
     setSaving(true);
     setError(null);
@@ -181,6 +222,8 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
         cycleEnd,
         applicationWindowStart: windowStart,
         applicationWindowEnd: windowEnd,
+        registrationWindowStart: registrationStart,
+        registrationWindowEnd: registrationEnd,
       };
 
       if (isEdit && semesterId) {
@@ -207,11 +250,11 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
       <div className="admin-panel admin-panel--wide">
         <AdminPageHeader
           title={isEdit ? "Edit URVP cycle" : "New URVP cycle"}
-          description="Schedule the URVP cycle and student application window."
+          description="Schedule the URVP cycle, registration window, and application window."
           backHref="/admin/semesters"
           backLabel="Back to URVP cycles"
         />
-        <AdminFormSkeleton fields={6} />
+        <AdminFormSkeleton fields={8} />
       </div>
     );
   }
@@ -225,7 +268,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
         description={
           readOnly
             ? "This cycle has ended. It is kept as history and cannot be changed."
-            : "Set start and end dates so each period closes automatically — or leave an end blank and close it instantly from the URVP Cycles list. You can edit dates at any time to extend or shorten a period."
+            : "Set start and end dates so each period closes automatically — or leave an end blank and close it instantly from the URVP Cycles list. Registration and applications can be opened only while the cycle is active, and they cannot overlap."
         }
         backHref="/admin/semesters"
         backLabel="Back to URVP cycles"
@@ -248,7 +291,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "repeat(auto-fit, minmax(10rem, 1fr))",
               gap: "0.75rem",
               padding: "0.9rem 1rem",
               border:
@@ -281,6 +324,35 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
                 }}
               >
                 {formatScheduleRange(currentDto.cycleStart, currentDto.cycleEnd)}
+              </p>
+            </div>
+            <div>
+              <p
+                style={{
+                  margin: "0 0 0.2rem",
+                  fontSize: "0.78rem",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
+                  color: "var(--muted)",
+                  fontWeight: 600,
+                }}
+              >
+                Registration
+              </p>
+              <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--foreground)" }}>
+                {currentDto.isRegistrationWindowOpen ? "Open" : "Closed"}
+              </p>
+              <p
+                style={{
+                  margin: "0.25rem 0 0",
+                  fontSize: "0.8rem",
+                  color: "var(--muted)",
+                }}
+              >
+                {formatScheduleRange(
+                  currentDto.registrationWindowStart,
+                  currentDto.registrationWindowEnd,
+                )}
               </p>
             </div>
             <div>
@@ -340,7 +412,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
 
         <ScheduleFieldset
           legend="Academic Cycle"
-          description="Projects are visible while this cycle is running. It opens at the start date and closes automatically at the end date. You can edit these dates later to extend or shorten the cycle, or end it instantly from the URVP Cycles list."
+          description="Nothing can be posted, edited, or ranked while this cycle is inactive. It opens at the start date and closes automatically at the end date. Ending it also closes registration and applications."
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField
@@ -379,8 +451,48 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
         </ScheduleFieldset>
 
         <ScheduleFieldset
+          legend="Registration Window"
+          description="Faculty can post and edit projects, and students can create or update profiles. Students cannot view or rank projects. This window can be open only while the cycle is active, and it cannot overlap applications."
+        >
+          <div className="grid gap-5 sm:grid-cols-2">
+            <AdminFormField
+              id={registrationStartId}
+              label="Opens"
+              hint={
+                isEdit
+                  ? "The opening date cannot be changed after the cycle is created."
+                  : "Leave blank if not yet scheduled."
+              }
+            >
+              <DateField
+                id={registrationStartId}
+                includeTime
+                placeholder="Select start date"
+                value={values.registrationWindowStart}
+                onChange={(next) => setField("registrationWindowStart", next)}
+                disabled={readOnly || Boolean(createBlockedByActive) || isEdit}
+              />
+            </AdminFormField>
+            <AdminFormField
+              id={registrationEndId}
+              label="Closes"
+              hint="Required for automatic close. Leave blank to close it manually."
+            >
+              <DateField
+                id={registrationEndId}
+                includeTime
+                placeholder="Select end date"
+                value={values.registrationWindowEnd}
+                onChange={(next) => setField("registrationWindowEnd", next)}
+                disabled={readOnly || Boolean(createBlockedByActive)}
+              />
+            </AdminFormField>
+          </div>
+        </ScheduleFieldset>
+
+        <ScheduleFieldset
           legend="Application Window"
-          description="Students may apply only while the cycle is running and the current time is inside this window. The window closes automatically at the end date. Edit the dates to extend or shorten it, or close it instantly from the URVP Cycles list."
+          description="Students rank projects and faculty rank students. Profiles and projects stay locked, and matching stays locked. This window can be open only while the cycle is active, and it cannot overlap registration."
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField

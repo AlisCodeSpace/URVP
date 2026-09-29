@@ -17,6 +17,8 @@ public sealed class StudentProfileDto
     public string? Gender { get; init; }
     public string? MobileNumber { get; init; }
     public string? Degree { get; init; }
+    public string? Faculty { get; init; }
+    public string? Major { get; init; }
     public int? ExpectedGraduationYear { get; init; }
     public IReadOnlyList<string> Languages { get; init; } = [];
     public string? OtherLanguages { get; init; }

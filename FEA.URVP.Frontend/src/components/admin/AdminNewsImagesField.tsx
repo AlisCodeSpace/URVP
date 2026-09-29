@@ -35,11 +35,32 @@ export function AdminNewsImagesField({
   const remaining = MAX_NEWS_IMAGES - images.length;
   const [limitError, setLimitError] = useState<string | null>(null);
 
-  function onPick(event: ChangeEvent<HTMLInputElement>) {
-    const picked = Array.from(event.target.files ?? []);
-    event.target.value = "";
-    if (picked.length === 0) return;
+  async function onPick(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.target;
+    // Read every file before clearing the input. The picker hands back live
+    // file handles, and resetting the control drops the ones that have not
+    // been read yet — the first photo still previews, and the rest become
+    // empty, so they render as a broken icon and upload as copies of it.
+    const selected = Array.from(input.files ?? []);
+    const picked: File[] = [];
+    for (const file of selected) {
+      try {
+        const bytes = await file.arrayBuffer();
+        if (bytes.byteLength === 0) continue;
+        picked.push(
+          new File([bytes], file.name, {
+            type: file.type,
+            lastModified: file.lastModified,
+          }),
+        );
+      } catch {
+        // A file the browser could not read is skipped below.
+      }
+    }
+    input.value = "";
+    if (selected.length === 0) return;
 
+    const unread = selected.length - picked.length;
     const oversized = picked.filter((file) => file.size > MAX_NEWS_IMAGE_BYTES);
     const withinEach = picked.filter((file) => file.size <= MAX_NEWS_IMAGE_BYTES);
     const currentTotal = images.reduce(
@@ -54,7 +75,9 @@ export function AdminNewsImagesField({
       running += file.size;
     }
 
-    if (oversized.length > 0 || accepted.length < withinEach.length) {
+    if (unread > 0) {
+      setLimitError("One or more photos could not be read. Choose them again.");
+    } else if (oversized.length > 0 || accepted.length < withinEach.length) {
       setLimitError(
         `Each photo must be ${IMAGE_SIZE_MB} MB or less, and all photos together must stay within ${IMAGES_TOTAL_MB} MB.`,
       );

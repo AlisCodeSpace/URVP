@@ -1,6 +1,62 @@
 @import "tailwindcss";
 @import "@daypicker/react/style.css";
 
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("/fonts/Proxima%20Nova/proximanova_light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("/fonts/Proxima%20Nova/proximanova_regular.ttf") format("truetype");
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("/fonts/Proxima%20Nova/proximanova_bold.otf") format("opentype");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("/fonts/Proxima%20Nova/proximanova_boldit.otf") format("opentype");
+  font-weight: 600 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("/fonts/Proxima%20Nova/proximanova_extrabold.otf") format("opentype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("/fonts/Proxima%20Nova/proximanova_black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Proxima Nova";
+  src: url("/fonts/Proxima%20Nova/proximanova_blackit.otf") format("opentype");
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   --background: #faf7fb;
   --foreground: #1a1020;
@@ -22,10 +78,10 @@
   --site-max: 72rem; /* ~1152px */
   --site-pad-x: clamp(1rem, 4.5vw, 5rem);
 
-  /* Exo site-wide (loaded via next/font → --font-exo) */
-  --font-exo-stack: var(--font-exo), "Exo", system-ui, sans-serif;
-  --font-body: var(--font-exo-stack);
-  --font-display: var(--font-exo-stack);
+  /* Proxima Nova — AUB brand typeface (self-hosted in /public/fonts) */
+  --font-sans-stack: "Proxima Nova", proxima-nova, system-ui, sans-serif;
+  --font-body: var(--font-sans-stack);
+  --font-display: var(--font-sans-stack);
 
   /*
    * Density scale for 100% browser zoom.
@@ -104,8 +160,8 @@
   --color-secondary-deep: var(--secondary-deep);
   --color-surface: var(--surface);
   --color-muted: var(--muted);
-  --font-sans: var(--font-exo-stack);
-  --font-display: var(--font-exo-stack);
+  --font-sans: var(--font-sans-stack);
+  --font-display: var(--font-sans-stack);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
@@ -119,7 +175,7 @@ html {
 
 html,
 body {
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
 }
 
 body {
@@ -128,7 +184,7 @@ body {
   overflow-x: clip;
 }
 
-/* Force Exo on interactive / form controls that browsers restyle */
+/* Force brand font on interactive / form controls that browsers restyle */
 button,
 input,
 select,
@@ -172,7 +228,7 @@ select:disabled {
   gap: 0.5rem;
   border: 1.5px solid transparent;
   border-radius: var(--radius-md);
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
   font-weight: 560;
   letter-spacing: 0.01em;
   line-height: 1.2;
@@ -467,7 +523,7 @@ select:disabled {
 }
 
 .sign-in-watermark {
-  font-family: var(--font-exo-stack), sans-serif;
+  font-family: var(--font-sans-stack), sans-serif;
   font-size: clamp(5rem, 14vw, 8.5rem);
   font-weight: 600;
   line-height: 0.8;
@@ -576,7 +632,7 @@ select:disabled {
   border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--foreground);
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
   font-size: 0.95rem;
   line-height: 1.4;
   transition:
@@ -666,7 +722,7 @@ select:disabled {
   background: var(--surface) !important;
   box-shadow: none !important;
   color: var(--foreground) !important;
-  font-family: var(--font-exo-stack) !important;
+  font-family: var(--font-sans-stack) !important;
   font-size: 0.95rem !important;
   letter-spacing: normal !important;
   cursor: pointer !important;
@@ -691,6 +747,9 @@ select:disabled {
 .field-select-trigger-label {
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--foreground);
 }
 
@@ -718,7 +777,7 @@ select:disabled {
   border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--foreground);
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
   font-size: 0.95rem;
   text-align: left;
   cursor: pointer;
@@ -782,7 +841,7 @@ select:disabled {
   --rdp-day_button-border-radius: var(--radius-sm);
   --rdp-nav_button-height: 2rem;
   --rdp-nav_button-width: 2rem;
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
   color: var(--foreground);
 }
 
@@ -795,7 +854,7 @@ select:disabled {
 }
 
 .field-date-popover .rdp-dropdown {
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--primary-deep);
@@ -856,7 +915,7 @@ select:disabled {
   border: 0;
   background: transparent;
   color: var(--primary);
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
@@ -904,13 +963,15 @@ select:disabled {
   position: relative !important;
   display: block !important;
   width: 100% !important;
+  white-space: normal !important;
+  line-height: 1.35 !important;
   margin: 0.1rem 0 !important;
   border: 0 !important;
   border-radius: var(--radius-sm) !important;
   padding: 0.55rem 1rem 0.55rem 2rem !important;
   background: transparent !important;
   color: var(--foreground) !important;
-  font-family: var(--font-exo-stack) !important;
+  font-family: var(--font-sans-stack) !important;
   font-size: 0.92rem !important;
   text-align: left !important;
   cursor: pointer !important;
@@ -1110,7 +1171,7 @@ select:disabled {
   border: 0;
   background: transparent;
   color: var(--foreground);
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
   font-size: 0.95rem;
   outline: none;
 }
@@ -1151,7 +1212,7 @@ select:disabled {
   padding: 0.55rem 0.75rem;
   text-align: left;
   color: var(--foreground);
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
   font-size: 0.92rem;
 }
 
@@ -1174,7 +1235,7 @@ select:disabled {
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface) 88%, var(--background));
   color: var(--foreground);
-  font-family: var(--font-exo-stack);
+  font-family: var(--font-sans-stack);
   font-size: 0.95rem;
   line-height: 1.5;
   padding: 0.7rem 0.85rem;
@@ -1470,10 +1531,13 @@ select:disabled {
 
 .news-admin-image-preview {
   position: relative;
+  aspect-ratio: 3 / 2;
+  background: color-mix(in srgb, var(--primary) 8%, white);
 }
 
 .news-admin-image img {
-  aspect-ratio: 3 / 2;
+  position: absolute;
+  inset: 0;
 }
 
 .news-admin-image-remove {
@@ -1778,10 +1842,6 @@ select:disabled {
   gap: 0.35rem;
   padding: 1.25rem 1.15rem 1rem;
   border-bottom: 1px solid var(--admin-rail-line);
-}
-
-.admin-sidebar-logo img {
-  filter: brightness(0) invert(1);
 }
 
 .admin-sidebar-tag {

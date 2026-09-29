@@ -100,4 +100,13 @@ public sealed class ProjectRankingRepository : IProjectRankingRepository
     public void Add(ProjectRanking ranking) => _db.ProjectRankings.Add(ranking);
 
     public void Remove(ProjectRanking ranking) => _db.ProjectRankings.Remove(ranking);
+
+    public async Task<int> RemoveAllForProjectAsync(Guid projectId, CancellationToken cancellationToken = default)
+    {
+        var rankings = await _db.ProjectRankings
+            .Where(r => r.ProjectId == projectId)
+            .ToListAsync(cancellationToken);
+        _db.ProjectRankings.RemoveRange(rankings);
+        return rankings.Count;
+    }
 }

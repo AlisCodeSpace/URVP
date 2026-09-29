@@ -3,12 +3,8 @@ using MediatR;
 
 namespace FEA.URVP.Application.Queries.Projects.GetById;
 
-public sealed class GetProjectByIdQuery : IRequest<ProjectDto>
-{
-    public Guid ProjectId { get; }
-
-    public GetProjectByIdQuery(Guid projectId)
-    {
-        ProjectId = projectId;
-    }
-}
+public sealed record GetProjectByIdQuery(
+    Guid ProjectId,
+    Guid ViewerUserId,
+    bool ViewerIsAdmin,
+    bool ViewerIsStudent) : IRequest<ProjectDto>;

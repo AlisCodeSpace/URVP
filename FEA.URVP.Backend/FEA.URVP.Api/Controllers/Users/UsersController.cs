@@ -58,11 +58,12 @@ public sealed class UsersController : ApiControllerBase
     }
 
     /// <summary>
-    /// Download matching user accounts as PDF or Excel. Admin only.
+    /// Download matching user accounts as Excel. Admin only.
     /// Honors the same search, role, and sort filters as the users list.
+    /// detail=basic includes name, email, and role.
+    /// detail=full also includes confirmed matched project names and profile fields.
     /// Student rows include only accounts with a completed profile.
     /// When facultyWithProjects is set, only faculty who posted a project are included.
-    /// Each row includes name, username, email, and role.
     /// </summary>
     [HttpGet("export")]
     [EnableRateLimiting(RateLimitingConfiguration.DownloadPolicy)]
@@ -73,6 +74,7 @@ public sealed class UsersController : ApiControllerBase
         [FromQuery] UserSortField sortBy = UserSortField.Name,
         [FromQuery] SortDirection sortDir = SortDirection.Asc,
         [FromQuery] bool facultyWithProjects = false,
+        [FromQuery] string? detail = "basic",
         CancellationToken cancellationToken = default)
     {
         if (!UserHasRole(nameof(UserRole.Admin)))
@@ -81,7 +83,7 @@ public sealed class UsersController : ApiControllerBase
         }
 
         var file = await _mediator.Send(
-            new ExportUsersQuery(format, search, role, sortBy, sortDir, facultyWithProjects),
+            new ExportUsersQuery(format, search, role, sortBy, sortDir, facultyWithProjects, detail),
             cancellationToken);
         Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
         return File(file.Content, file.MimeType, file.FileName);

@@ -1,4 +1,5 @@
 using FEA.URVP.Application.Abstractions.Persistence;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Enums;
@@ -15,6 +16,12 @@ public sealed class FacultyProjectMutationAccess
 
     public const string LockedAfterCycleEndedMessage =
         "This project can no longer be edited after the URVP cycle ends.";
+
+    public const string RegistrationClosedMessage =
+        ApplicationWindowRules.ProjectsClosedMessage;
+
+    public const string InactiveProjectMessage =
+        "This project is inactive. Reactivate it during the registration window to use it in the current cycle.";
 
     private readonly ISemesterRepository _semesters;
     private readonly IProjectRankingRepository _rankings;
@@ -46,6 +53,11 @@ public sealed class FacultyProjectMutationAccess
         CancellationToken cancellationToken)
     {
         var reason = await GetEditLockReasonAsync(project, cancellationToken);
+        if (reason is RegistrationClosedMessage or LockedAfterCycleEndedMessage or InactiveProjectMessage)
+        {
+            throw new InvalidOperationException(reason);
+        }
+
         if (isAdmin || reason is null)
         {
             return;
@@ -58,15 +70,25 @@ public sealed class FacultyProjectMutationAccess
         Project project,
         CancellationToken cancellationToken)
     {
-        if (IsLockedForCandidateRanking(project))
+        if (project.Status == ProjectStatus.Inactive)
         {
-            return LockedAfterMatchingMessage;
+            return InactiveProjectMessage;
         }
 
         var context = await LoadCycleContextAsync(cancellationToken);
         if (context.CycleEnded)
         {
             return LockedAfterCycleEndedMessage;
+        }
+
+        if (!context.RegistrationOpen)
+        {
+            return RegistrationClosedMessage;
+        }
+
+        if (IsLockedForCandidateRanking(project))
+        {
+            return LockedAfterMatchingMessage;
         }
 
         var counts = await _rankings.CountByProjectIdsAsync([project.Id], cancellationToken);
@@ -103,11 +125,13 @@ public sealed class FacultyProjectMutationAccess
 
         if (activeSemester is not null)
         {
-            return new CycleContext(activeSemester.HasEnded(now));
+            return new CycleContext(
+                activeSemester.HasEnded(now),
+                activeSemester.IsRegistrationWindowOpen(now));
         }
 
         var semesters = await _semesters.ListAllAsync(cancellationToken);
-        return new CycleContext(semesters.Any(semester => semester.HasEnded(now)));
+        return new CycleContext(semesters.Any(semester => semester.HasEnded(now)), false);
     }
 
     private static string? ResolveEditLockReason(
@@ -115,14 +139,24 @@ public sealed class FacultyProjectMutationAccess
         IReadOnlyDictionary<Guid, int> rankingCounts,
         CycleContext context)
     {
-        if (IsLockedForCandidateRanking(project))
+        if (project.Status == ProjectStatus.Inactive)
         {
-            return LockedAfterMatchingMessage;
+            return InactiveProjectMessage;
         }
 
         if (context.CycleEnded)
         {
             return LockedAfterCycleEndedMessage;
+        }
+
+        if (!context.RegistrationOpen)
+        {
+            return RegistrationClosedMessage;
+        }
+
+        if (IsLockedForCandidateRanking(project))
+        {
+            return LockedAfterMatchingMessage;
         }
 
         if (rankingCounts.GetValueOrDefault(project.Id) > 0)
@@ -133,5 +167,5 @@ public sealed class FacultyProjectMutationAccess
         return null;
     }
 
-    private sealed record CycleContext(bool CycleEnded);
+    private sealed record CycleContext(bool CycleEnded, bool RegistrationOpen);
 }

@@ -5,6 +5,7 @@ using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.Matching;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Matching;
+using FEA.URVP.Application.Projects;
 using FEA.URVP.Application.Notifications;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Enums;
@@ -23,6 +24,7 @@ public sealed class AssignStudentToProjectCommandHandler
     private readonly IProjectRankingRepository _studentRankings;
     private readonly IFacultyCandidateRankingRepository _facultyRankings;
     private readonly IEventBus _eventBus;
+    private readonly ProjectCycleClosure _cycleClosure;
 
     public AssignStudentToProjectCommandHandler(
         ILogger<AssignStudentToProjectCommandHandler> logger,
@@ -33,7 +35,8 @@ public sealed class AssignStudentToProjectCommandHandler
         IMatchingRunRepository runs,
         IProjectRankingRepository studentRankings,
         IFacultyCandidateRankingRepository facultyRankings,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        ProjectCycleClosure cycleClosure)
         : base(logger, unitOfWork)
     {
         _projects = projects;
@@ -43,12 +46,15 @@ public sealed class AssignStudentToProjectCommandHandler
         _studentRankings = studentRankings;
         _facultyRankings = facultyRankings;
         _eventBus = eventBus;
+        _cycleClosure = cycleClosure;
     }
 
     protected override async Task<PlacementDto> HandleInternal(
         AssignStudentToProjectCommand request,
         CancellationToken cancellationToken)
     {
+        await _cycleClosure.DeactivateEndedCyclesAsync(cancellationToken);
+
         var outcome = await UnitOfWork.ExecuteInTransactionAsync(
             ct => PersistAsync(request, ct),
             cancellationToken);
@@ -71,9 +77,12 @@ public sealed class AssignStudentToProjectCommandHandler
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Project {request.ProjectId} was not found.");
 
-        if (project.Status == ProjectStatus.Closed)
+        if (project.Status is ProjectStatus.Closed or ProjectStatus.Inactive)
         {
-            throw new InvalidOperationException("Closed projects cannot accept new assignments.");
+            throw new InvalidOperationException(
+                project.Status == ProjectStatus.Inactive
+                    ? "Inactive projects cannot accept assignments until they are reactivated for the current cycle."
+                    : "Closed projects cannot accept new assignments.");
         }
 
         var student = await _users.FindByIdAsync(request.StudentUserId, cancellationToken)
@@ -84,8 +93,19 @@ public sealed class AssignStudentToProjectCommandHandler
             throw new InvalidOperationException("Only students can be assigned to a project.");
         }
 
+        var semester = await _semesters.FindActiveAsync(cancellationToken)
+            ?? throw new InvalidOperationException(
+                "No active URVP cycle. Start a cycle before assigning students.");
+
+        if (project.SemesterId != semester.Id)
+        {
+            throw new InvalidOperationException(
+                "Students can only be assigned to projects in the current academic cycle.");
+        }
+
         var confirmedProjectIds = await _runs.ListConfirmedProjectIdsByStudentAsync(
             student.Id,
+            semester.Id,
             cancellationToken);
 
         if (confirmedProjectIds.Contains(project.Id))
@@ -106,10 +126,6 @@ public sealed class AssignStudentToProjectCommandHandler
             throw new InvalidOperationException(
                 $"This project is full ({project.VolunteersRequired} seat{(project.VolunteersRequired == 1 ? "" : "s")}).");
         }
-
-        var semester = await _semesters.FindActiveAsync(cancellationToken)
-            ?? throw new InvalidOperationException(
-                "No active URVP cycle. Start a cycle before assigning students.");
 
         ApplicationWindowRules.EnsureClosedForAssignment(semester, now);
 

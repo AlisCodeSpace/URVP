@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api";
+import { apiDownloadFile, apiFetch } from "@/lib/api";
 import type { PlacementDto } from "@/lib/matching-api";
 import type { MyProjectStatus } from "@/lib/project-form";
 import type { ProjectRankingStudentDto } from "@/lib/project-rankings-api";
@@ -12,6 +12,7 @@ export type AdminProjectListItemDto = {
   facultyName: string;
   affiliation: string;
   email: string;
+  semesterName: string;
   status: MyProjectStatus;
   volunteersRequired: number;
   volunteersFilled: number;
@@ -51,6 +52,19 @@ export async function listAdminProjects(
 
   return apiFetch<PaginatedAdminProjects>(
     `/api/projects/admin?${query.toString()}`,
+  );
+}
+
+export async function exportAdminProjects(
+  params: Pick<ListAdminProjectsParams, "search" | "status"> = {},
+): Promise<void> {
+  const query = new URLSearchParams();
+  if (params.search?.trim()) query.set("search", params.search.trim());
+  if (params.status) query.set("status", params.status);
+
+  await apiDownloadFile(
+    `/api/projects/admin/export?${query.toString()}`,
+    "urvp-projects.xlsx",
   );
 }
 

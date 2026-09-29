@@ -63,6 +63,7 @@ function catalogFromRanking(ranking: ProjectRankingDto): CatalogProject {
     volunteersRequired: 0,
     volunteersFilled: 0,
     status: statusByCode[ranking.projectStatus] ?? "Open",
+    semesterName: "",
     postedAt: "",
     postedAtISO: ranking.rankedAt.slice(0, 10),
     facultyName: ranking.facultyName,
@@ -139,7 +140,11 @@ function CatalogProjectCard({
       eyebrowMuted={isClosed}
       rank={rank}
       matched={matched}
-      meta={project.postedAt ? `Posted ${project.postedAt}` : ""}
+      meta={
+        [project.semesterName, project.postedAt ? `Posted ${project.postedAt}` : ""]
+          .filter(Boolean)
+          .join(" · ")
+      }
       metaEnd={
         hasOpeningsData ? (
           <span
@@ -393,7 +398,10 @@ export function ProjectsBrowse({
 
   if (catalogClosedForStudent) {
     return (
-      <ApplicationWindowClosedNotice semesterName={studentProjects.semesterName} />
+      <ApplicationWindowClosedNotice
+        semesterName={studentProjects.semesterName}
+        registrationOpen={studentProjects.registrationOpen}
+      />
     );
   }
 
@@ -545,6 +553,7 @@ export function ProjectsBrowse({
         ) : rankedEmpty && studentProjects.locked ? (
           <ApplicationWindowClosedNotice
             semesterName={studentProjects.semesterName}
+            registrationOpen={studentProjects.registrationOpen}
           />
         ) : rankedEmpty ? (
           <RankedEmptyCta />

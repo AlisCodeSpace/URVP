@@ -25,6 +25,8 @@ public static class StudentProfileMappings
             Gender = profile.Gender,
             MobileNumber = profile.MobileNumber,
             Degree = profile.Degree,
+            Faculty = profile.Faculty,
+            Major = profile.Major,
             ExpectedGraduationYear = profile.ExpectedGraduationYear,
             Languages = profile.Languages.ToList(),
             OtherLanguages = profile.OtherLanguages,

@@ -30,6 +30,14 @@ public sealed class StudentProfileConfiguration : IEntityTypeConfiguration<Stude
             .IsRequired()
             .HasMaxLength(32);
 
+        builder.Property(p => p.Faculty)
+            .IsRequired()
+            .HasMaxLength(128);
+
+        builder.Property(p => p.Major)
+            .IsRequired()
+            .HasMaxLength(128);
+
         builder.Property(p => p.ExpectedGraduationYear)
             .IsRequired();
 

@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Commands.Semesters;
 using FEA.URVP.Application.DTOs.StudentProfiles;
 using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Notifications;
@@ -18,6 +19,7 @@ public sealed class UpsertStudentProfileCommandHandler
     private readonly IStudentProfileRepository _profiles;
     private readonly IUserRepository _users;
     private readonly IFileStorageRepository _files;
+    private readonly ISemesterRepository _semesters;
     private readonly IEventBus _eventBus;
 
     public UpsertStudentProfileCommandHandler(
@@ -26,12 +28,14 @@ public sealed class UpsertStudentProfileCommandHandler
         IStudentProfileRepository profiles,
         IUserRepository users,
         IFileStorageRepository files,
+        ISemesterRepository semesters,
         IEventBus eventBus)
         : base(logger, unitOfWork)
     {
         _profiles = profiles;
         _users = users;
         _files = files;
+        _semesters = semesters;
         _eventBus = eventBus;
     }
 
@@ -48,6 +52,12 @@ public sealed class UpsertStudentProfileCommandHandler
             ?? throw new UnauthorizedAccessException("User not found.");
 
         StudentProfileAccess.EnsureCanManage(user.Role, user.Email);
+
+        var semester = await _semesters.FindActiveAsync(cancellationToken);
+        ApplicationWindowRules.EnsureRegistrationOpen(
+            semester,
+            DateTime.UtcNow,
+            ApplicationWindowRules.ProfilesClosedMessage);
 
         var transcript = await RequireOwnedDocumentAsync(
             request.TranscriptFileId,
@@ -91,6 +101,8 @@ public sealed class UpsertStudentProfileCommandHandler
         profile.Gender = request.Gender.Trim();
         profile.MobileNumber = request.MobileNumber.Trim();
         profile.Degree = request.Degree.Trim();
+        profile.Faculty = request.Faculty.Trim();
+        profile.Major = request.Major.Trim();
         profile.ExpectedGraduationYear = request.ExpectedGraduationYear;
         profile.Languages = request.Languages.Select(l => l.Trim()).Where(l => l.Length > 0).Distinct().ToList();
         profile.OtherLanguages = NormalizeOptional(request.OtherLanguages);
