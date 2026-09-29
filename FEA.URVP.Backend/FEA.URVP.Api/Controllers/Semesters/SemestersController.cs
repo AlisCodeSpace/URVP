@@ -136,8 +136,8 @@ public sealed class SemestersController : ApiControllerBase
 
     /// <summary>
     /// Opens or closes the registration window immediately, or sets scheduled
-    /// start/end dates. The cycle must be active to open it, and it cannot
-    /// overlap the application window.
+    /// start/end dates. The cycle must be active to open it. It may overlap
+    /// the application window for the time being.
     /// </summary>
     [Authorize]
     [HttpPost("{id:guid}/set-registration-window")]

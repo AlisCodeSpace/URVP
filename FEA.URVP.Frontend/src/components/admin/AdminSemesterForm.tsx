@@ -11,6 +11,7 @@ import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import { fromAppDatetimeInput, toAppDatetimeInput } from "@/lib/datetime";
 import {
+  ALLOW_OVERLAPPING_WINDOWS,
   createSemester,
   formatScheduleRange,
   getActiveSemester,
@@ -196,7 +197,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
       setError("The registration window cannot close after the academic cycle ends.");
       return;
     }
-    if (registrationStart && windowStart) {
+    if (!ALLOW_OVERLAPPING_WINDOWS && registrationStart && windowStart) {
       const registrationUntil = registrationEnd
         ? new Date(registrationEnd).getTime()
         : Number.POSITIVE_INFINITY;
@@ -268,7 +269,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
         description={
           readOnly
             ? "This cycle has ended. It is kept as history and cannot be changed."
-            : "Set start and end dates so each period closes automatically — or leave an end blank and close it instantly from the URVP Cycles list. Registration and applications can be opened only while the cycle is active, and they cannot overlap."
+            : "Set start and end dates so each period closes automatically — or leave an end blank and close it instantly from the URVP Cycles list. Registration and applications can be opened only while the cycle is active, including at the same time."
         }
         backHref="/admin/semesters"
         backLabel="Back to URVP cycles"
@@ -452,7 +453,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
 
         <ScheduleFieldset
           legend="Registration Window"
-          description="Faculty can post and edit projects, and students can create or update profiles. Students cannot view or rank projects. This window can be open only while the cycle is active, and it cannot overlap applications."
+          description="While this window is open, faculty can post and edit projects and students can create or update profiles. It can be open only while the cycle is active."
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField
@@ -492,7 +493,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
 
         <ScheduleFieldset
           legend="Application Window"
-          description="Students rank projects and faculty rank students. Profiles and projects stay locked, and matching stays locked. This window can be open only while the cycle is active, and it cannot overlap registration."
+          description="While this window is open, students can browse and rank projects and faculty can rank students. Matching stays locked until both windows close. It can be open only while the cycle is active."
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <AdminFormField

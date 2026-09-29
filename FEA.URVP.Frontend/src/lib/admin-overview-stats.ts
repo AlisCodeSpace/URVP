@@ -228,6 +228,9 @@ export function semesterChipTitle(overview: AdminOverviewDto): string {
 export function profileWindowLabel(overview: AdminOverviewDto): string {
   const semester = overview.semester;
   if (!semester) return "No active window";
+  if (semester.isRegistrationWindowOpen && semester.isApplicationWindowOpen) {
+    return "Registration and applications open";
+  }
   if (semester.isRegistrationWindowOpen) {
     return `Registration open · ${formatScheduleRange(semester.registrationWindowStart, semester.registrationWindowEnd)}`;
   }

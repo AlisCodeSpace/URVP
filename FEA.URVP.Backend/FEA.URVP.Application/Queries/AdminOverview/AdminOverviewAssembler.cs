@@ -131,6 +131,16 @@ public static class AdminOverviewAssembler
                 Severity = "warning",
             });
         }
+        else if (semester.IsRegistrationWindowOpen(now) && semester.IsApplicationWindowOpen(now))
+        {
+            items.Add(new AdminOverviewAttentionItemDto
+            {
+                Id = "both-windows-open",
+                Text = "Registration and applications are both open. Profiles, project posting, browsing, and ranking are available. Matching stays locked until both windows close.",
+                Href = "/admin/semesters",
+                Severity = "info",
+            });
+        }
         else if (semester.IsRegistrationWindowOpen(now))
         {
             items.Add(new AdminOverviewAttentionItemDto

@@ -11,6 +11,7 @@ import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
 import { adminSemesterEditHref } from "@/lib/auth";
 import {
+  ALLOW_OVERLAPPING_WINDOWS,
   deleteSemester,
   formatScheduleRange,
   listSemesters,
@@ -223,9 +224,12 @@ function ActiveSemesterPanel({
                 type="button"
                 variant="primary"
                 size="sm"
-                disabled={busyRegistration || semester.isApplicationWindowOpen}
+                disabled={
+                  busyRegistration ||
+                  (!ALLOW_OVERLAPPING_WINDOWS && semester.isApplicationWindowOpen)
+                }
                 title={
-                  semester.isApplicationWindowOpen
+                  !ALLOW_OVERLAPPING_WINDOWS && semester.isApplicationWindowOpen
                     ? "Close applications before opening registration."
                     : undefined
                 }
@@ -257,7 +261,7 @@ function ActiveSemesterPanel({
               semester.registrationWindowEnd,
             )}
             <br />
-            Faculty post projects and students update profiles. No ranking.
+            Faculty post projects and students update profiles while this is open.
           </p>
         </div>
 
@@ -285,9 +289,12 @@ function ActiveSemesterPanel({
                 type="button"
                 variant="primary"
                 size="sm"
-                disabled={busyWindow || semester.isRegistrationWindowOpen}
+                disabled={
+                  busyWindow ||
+                  (!ALLOW_OVERLAPPING_WINDOWS && semester.isRegistrationWindowOpen)
+                }
                 title={
-                  semester.isRegistrationWindowOpen
+                  !ALLOW_OVERLAPPING_WINDOWS && semester.isRegistrationWindowOpen
                     ? "Close registration before opening applications."
                     : undefined
                 }
@@ -319,7 +326,7 @@ function ActiveSemesterPanel({
               semester.applicationWindowEnd,
             )}
             <br />
-            Students and faculty rank only. Profiles and projects stay locked.
+            Students browse and rank projects, and faculty rank students, while this is open.
           </p>
         </div>
       </div>
@@ -379,7 +386,7 @@ export function AdminSemestersView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="URVP Cycles"
-        description="Schedule the cycle, then open registration and the application window while it is active. Ended cycles remain in this list as history and cannot be edited."
+        description="Schedule the cycle, then open registration and the application window while it is active. Both windows can be open together. Ended cycles remain in this list as history and cannot be edited."
         tag={
           semesters.length > 0
             ? `${semesters.length} cycle${semesters.length === 1 ? "" : "s"}`

@@ -36,12 +36,21 @@ internal static class SemesterSchedule
         }
     }
 
+    /// <summary>
+    /// TEMPORARY. Registration and the application window may be open together.
+    /// Set to false to restore mutual exclusion.
+    /// </summary>
+    internal const bool AllowOverlappingWindows = true;
+
     public static void EnsureWindowsDoNotOverlap(
         DateTime? applicationStart,
         DateTime? applicationEnd,
         DateTime? registrationStart,
         DateTime? registrationEnd)
     {
+        if (AllowOverlappingWindows)
+            return;
+
         if (Semester.RangesOverlap(
                 applicationStart,
                 applicationEnd,

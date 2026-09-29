@@ -1,6 +1,12 @@
 import { apiFetch } from "@/lib/api";
 import { formatAppDateTime } from "@/lib/datetime";
 
+/**
+ * TEMPORARY. Registration and the application window may be open together.
+ * Set to false to restore mutual exclusion.
+ */
+export const ALLOW_OVERLAPPING_WINDOWS = true;
+
 export { parseApiDate } from "@/lib/datetime";
 
 export type SemesterDto = {

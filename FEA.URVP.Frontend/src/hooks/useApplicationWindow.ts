@@ -47,13 +47,16 @@ function fetchWindowStatus(): Promise<WindowStatus> {
   return request;
 }
 
-/** Home/hero copy for the active cycle and whichever window is open. */
+/** Home/hero copy for the active cycle and whichever windows are open. */
 export function formatApplicationAnnouncement(
   semesterName: string | null,
   phase?: { registrationOpen?: boolean; applicationOpen?: boolean },
 ): string {
   if (!semesterName) {
     return "URVP is not currently active.";
+  }
+  if (phase?.registrationOpen && phase?.applicationOpen) {
+    return `Registration and applications for the URVP ${semesterName} are open.`;
   }
   if (phase?.registrationOpen) {
     return `Registration for the URVP ${semesterName} is open.`;
