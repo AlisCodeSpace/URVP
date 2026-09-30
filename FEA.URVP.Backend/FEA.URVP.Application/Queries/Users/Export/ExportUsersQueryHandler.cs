@@ -16,15 +16,18 @@ public sealed class ExportUsersQueryHandler : IRequestHandler<ExportUsersQuery, 
     private readonly IUserRepository _users;
     private readonly IStudentProfileRepository _profiles;
     private readonly IMatchingRunRepository _runs;
+    private readonly IProjectRepository _projects;
 
     public ExportUsersQueryHandler(
         IUserRepository users,
         IStudentProfileRepository profiles,
-        IMatchingRunRepository runs)
+        IMatchingRunRepository runs,
+        IProjectRepository projects)
     {
         _users = users;
         _profiles = profiles;
         _runs = runs;
+        _projects = projects;
     }
 
     public async Task<UserExportFileDto> Handle(
@@ -33,6 +36,11 @@ public sealed class ExportUsersQueryHandler : IRequestHandler<ExportUsersQuery, 
     {
         NormalizeFormat(request.Format);
         var detail = NormalizeDetail(request.Detail);
+        if (detail == "full" && request.Role is null)
+        {
+            throw new ArgumentException("Full export requires a single role.");
+        }
+
         var users = await _users.ListAllAsync(
             request.Search,
             request.Role,
@@ -42,20 +50,74 @@ public sealed class ExportUsersQueryHandler : IRequestHandler<ExportUsersQuery, 
             request.FacultyWithProjectsOnly,
             cancellationToken);
 
-        var content = detail == "full"
-            ? UserExportDocuments.ToFullExcel(await BuildFullRows(users, cancellationToken))
-            : UserExportDocuments.ToExcel(users.Select(UserExportMapper.ToBasic).ToList());
-
+        var content = await BuildWorkbook(detail, request.Role, users, cancellationToken);
         var stamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmm");
+        var scope = detail == "full" && request.Role is not null
+            ? $"{detail}-{request.Role.Value.ToString().ToLowerInvariant()}"
+            : detail;
         return new UserExportFileDto
         {
             Content = content,
             MimeType = ExcelMime,
-            FileName = $"urvp-users-{detail}-{stamp}.xlsx"
+            FileName = $"urvp-users-{scope}-{stamp}.xlsx"
         };
     }
 
-    private async Task<List<UserFullExportRow>> BuildFullRows(
+    private async Task<byte[]> BuildWorkbook(
+        string detail,
+        UserRole? role,
+        IReadOnlyList<User> users,
+        CancellationToken cancellationToken)
+    {
+        if (detail != "full")
+        {
+            return UserExportDocuments.ToExcel(users.Select(UserExportMapper.ToBasic).ToList());
+        }
+
+        return role switch
+        {
+            UserRole.Student => UserExportDocuments.ToStudentExcel(
+                await BuildStudentRows(users, cancellationToken)),
+            UserRole.Faculty => UserExportDocuments.ToFacultyExcel(
+                await BuildFacultyRows(users, cancellationToken)),
+            UserRole.Admin => UserExportDocuments.ToAdminExcel(
+                users.Select(UserExportMapper.ToAdmin).ToList()),
+            _ => throw new ArgumentException("Full export requires a single role."),
+        };
+    }
+
+    private async Task<List<UserFacultyExportRow>> BuildFacultyRows(
+        IReadOnlyList<User> users,
+        CancellationToken cancellationToken)
+    {
+        var facultyIds = users
+            .Where(user => user.Role == UserRole.Faculty)
+            .Select(user => user.Id)
+            .ToArray();
+
+        IReadOnlyList<PostedProjectTitle> titles = facultyIds.Length == 0
+            ? []
+            : await _projects.ListPostedTitlesByCreatorIdsAsync(facultyIds, cancellationToken);
+
+        var titlesByFaculty = titles
+            .Where(item => !string.IsNullOrWhiteSpace(item.Title))
+            .GroupBy(item => item.CreatedByUserId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<string>)group
+                    .Select(item => item.Title)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(title => title, StringComparer.OrdinalIgnoreCase)
+                    .ToArray());
+
+        return users
+            .Select(user => UserExportMapper.ToFaculty(
+                user,
+                titlesByFaculty.GetValueOrDefault(user.Id) ?? []))
+            .ToList();
+    }
+
+    private async Task<List<UserFullExportRow>> BuildStudentRows(
         IReadOnlyList<User> users,
         CancellationToken cancellationToken)
     {

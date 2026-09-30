@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { AdminBarChart, AdminDonutChart } from "@/components/admin/AdminCharts";
+import { Button } from "@/components/ui/Button";
+import { IconDownload } from "@/components/ui/Icons";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
-import { getAdminOverview } from "@/lib/admin-overview-api";
+import { ApiError } from "@/lib/api";
+import { exportAdminOverview, getAdminOverview } from "@/lib/admin-overview-api";
 import {
   buildAdminKpis,
   buildPipelineChart,
@@ -22,6 +26,8 @@ import {
 } from "@/lib/admin-overview-stats";
 
 export function AdminOverview() {
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const {
     data,
     loading,
@@ -30,6 +36,20 @@ export function AdminOverview() {
   } = useCancellableQuery(() => getAdminOverview(), [], {
     fallbackError: "Failed to load overview.",
   });
+
+  async function onExport() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await exportAdminOverview();
+    } catch (err) {
+      setExportError(
+        err instanceof ApiError ? err.message : "Failed to export overview.",
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const semester = data?.semester ?? null;
   const pipeline = data ? buildPipelineChart(data) : [];
@@ -53,16 +73,34 @@ export function AdminOverview() {
               : "Snapshot of assignments, capacity, and catalog health."}
           </p>
         </div>
-        <div
-          className="admin-semester-chip"
-          title={data ? semesterChipTitle(data) : undefined}
-        >
-          <span className="admin-semester-chip-label">Active URVP cycle</span>
-          <span className="admin-semester-chip-value">
-            {loading ? "Loading…" : (semester?.name ?? "None")}
-          </span>
+        <div className="admin-overview-actions">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            disabled={exporting}
+            onClick={() => void onExport()}
+          >
+            <IconDownload />
+            {exporting ? "Exporting…" : "Export Excel"}
+          </Button>
+          <div
+            className="admin-semester-chip"
+            title={data ? semesterChipTitle(data) : undefined}
+          >
+            <span className="admin-semester-chip-label">Active URVP cycle</span>
+            <span className="admin-semester-chip-value">
+              {loading ? "Loading…" : (semester?.name ?? "None")}
+            </span>
+          </div>
         </div>
       </header>
+
+      {exportError ? (
+        <p className="admin-users-banner is-error" role="alert">
+          {exportError}
+        </p>
+      ) : null}
 
       {error ? (
         <p className="admin-users-banner is-error" role="alert">

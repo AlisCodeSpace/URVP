@@ -111,6 +111,25 @@ public sealed class ProjectRepository : IProjectRepository
         return query;
     }
 
+    public async Task<IReadOnlyList<PostedProjectTitle>> ListPostedTitlesByCreatorIdsAsync(
+        IReadOnlyCollection<Guid> creatorIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (creatorIds.Count == 0)
+        {
+            return [];
+        }
+
+        var rows = await _db.Projects.AsNoTracking()
+            .Where(project => creatorIds.Contains(project.CreatedByUserId))
+            .Select(project => new { project.CreatedByUserId, project.Title })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .Select(row => new PostedProjectTitle(row.CreatedByUserId, row.Title))
+            .ToList();
+    }
+
     public async Task<IReadOnlyList<Project>> ListByStatusAsync(
         ProjectStatus status,
         CancellationToken cancellationToken = default) =>

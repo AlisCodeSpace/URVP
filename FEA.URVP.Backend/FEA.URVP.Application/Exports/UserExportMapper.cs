@@ -29,7 +29,7 @@ public static class UserExportMapper
             user.Name,
             user.Email,
             UserMappings.ToLabel(user.Role),
-            string.Join("; ", matchedProjectTitles.Where(title => !string.IsNullOrWhiteSpace(title))),
+            Join(matchedProjectTitles, "; "),
             user.UserName,
             user.Affiliation,
             profile?.Gender ?? "",
@@ -40,24 +40,43 @@ public static class UserExportMapper
             profile is null
                 ? ""
                 : profile.ExpectedGraduationYear.ToString(CultureInfo.InvariantCulture),
-            Join(profile?.Languages),
+            Join(profile?.Languages, ", "),
             profile?.OtherLanguages ?? "",
             profile is null ? "" : YesNo(profile.CompletedCredits),
             profile is null
                 ? ""
                 : profile.CumulativeAverage.ToString("0.##", CultureInfo.InvariantCulture),
-            Join(profile?.ResearchTopics),
+            Join(profile?.ResearchTopics, ", "),
             profile?.Publications ?? "",
             FormatAvailability(profile?.Availability),
             profile is null ? "" : YesNo(profile.TranscriptFileId.HasValue),
             profile is null ? "" : YesNo(profile.CvFileId.HasValue));
 
+    public static UserFacultyExportRow ToFaculty(
+        User user,
+        IReadOnlyList<string> postedProjectTitles) =>
+        new(
+            user.Name,
+            user.Email,
+            UserMappings.ToLabel(user.Role),
+            user.UserName,
+            user.Affiliation,
+            Join(postedProjectTitles, "; "));
+
+    public static UserAdminExportRow ToAdmin(User user) =>
+        new(
+            user.Name,
+            user.Email,
+            UserMappings.ToLabel(user.Role),
+            user.UserName,
+            user.Affiliation);
+
     private static string YesNo(bool value) => value ? "Yes" : "No";
 
-    private static string Join(IEnumerable<string>? values) =>
+    private static string Join(IEnumerable<string>? values, string separator) =>
         values is null
             ? ""
-            : string.Join(", ", values.Where(value => !string.IsNullOrWhiteSpace(value)));
+            : string.Join(separator, values.Where(value => !string.IsNullOrWhiteSpace(value)));
 
     private static string FormatAvailability(IReadOnlyList<DayAvailability>? availability)
     {

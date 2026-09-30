@@ -50,7 +50,7 @@ public sealed class UserExportDocumentsTests
     [Fact]
     public void Full_excel_includes_matched_projects_and_profile_fields()
     {
-        var bytes = UserExportDocuments.ToFullExcel([
+        var bytes = UserExportDocuments.ToStudentExcel([
             new UserFullExportRow(
                 "Ada Lovelace",
                 "ada@aub.edu.lb",
@@ -81,8 +81,48 @@ public sealed class UserExportDocumentsTests
         Assert.Contains("Civil Engineering", sheet, StringComparison.Ordinal);
         Assert.Contains("Completed 24 credits at AUB", sheet, StringComparison.Ordinal);
         Assert.Contains("Transcript uploaded", sheet, StringComparison.Ordinal);
-        Assert.Equal(UserExportDocuments.FullHeaders.Length, new UserFullExportRow(
+        Assert.Equal(UserExportDocuments.StudentHeaders.Length, new UserFullExportRow(
             "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "").Cells.Count);
+    }
+
+    [Fact]
+    public void Faculty_excel_includes_posted_projects_and_omits_student_fields()
+    {
+        var bytes = UserExportDocuments.ToFacultyExcel([
+            new UserFacultyExportRow(
+                "Pat Instructor",
+                "pi1@aub.edu.lb",
+                "Faculty",
+                "pi1",
+                "MSFEA",
+                "Harbor Study; Bridge Survey")
+        ]);
+        var sheet = ReadSheet(bytes);
+
+        Assert.Contains("Posted projects", sheet, StringComparison.Ordinal);
+        Assert.Contains("Harbor Study; Bridge Survey", sheet, StringComparison.Ordinal);
+        Assert.Contains("pi1", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("Matched projects", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("Cumulative average", sheet, StringComparison.Ordinal);
+        Assert.Equal(UserExportDocuments.FacultyHeaders.Length, new UserFacultyExportRow(
+            "", "", "", "", "", "").Cells.Count);
+    }
+
+    [Fact]
+    public void Admin_excel_includes_username_and_affiliation()
+    {
+        var bytes = UserExportDocuments.ToAdminExcel([
+            new UserAdminExportRow("Alex Admin", "admin@aub.edu.lb", "Admin", "aa100", "MSFEA")
+        ]);
+        var sheet = ReadSheet(bytes);
+
+        Assert.Contains("Username", sheet, StringComparison.Ordinal);
+        Assert.Contains("Affiliation", sheet, StringComparison.Ordinal);
+        Assert.Contains("aa100", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("Posted projects", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("Matched projects", sheet, StringComparison.Ordinal);
+        Assert.Equal(UserExportDocuments.AdminHeaders.Length, new UserAdminExportRow(
+            "", "", "", "", "").Cells.Count);
     }
 
     [Fact]

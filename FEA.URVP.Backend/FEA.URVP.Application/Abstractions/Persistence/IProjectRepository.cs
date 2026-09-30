@@ -3,6 +3,9 @@ using FEA.URVP.Domain.Enums;
 
 namespace FEA.URVP.Application.Abstractions.Persistence;
 
+/// <summary>A project title and the faculty account that posted it.</summary>
+public sealed record PostedProjectTitle(Guid CreatedByUserId, string Title);
+
 public interface IProjectRepository
 {
     Task<Project?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
@@ -35,6 +38,11 @@ public interface IProjectRepository
     Task<IReadOnlyList<Project>> ListAllForAdminAsync(
         string? search,
         ProjectStatus? status,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Titles of projects posted by the given accounts.</summary>
+    Task<IReadOnlyList<PostedProjectTitle>> ListPostedTitlesByCreatorIdsAsync(
+        IReadOnlyCollection<Guid> creatorIds,
         CancellationToken cancellationToken = default);
 
     /// <summary>Tracked projects in the given status (used by matching to adjust seat counts).</summary>

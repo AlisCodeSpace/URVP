@@ -102,6 +102,17 @@ public sealed class ExportUsersQueryHandlerTests
     }
 
     [Fact]
+    public async Task Full_export_without_a_role_is_rejected()
+    {
+        var handler = Handler(Users());
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(
+            () => handler.Handle(new ExportUsersQuery("xlsx", detail: "full"), CancellationToken.None));
+
+        Assert.Contains("single role", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public async Task Full_export_includes_the_profile_and_confirmed_project()
     {
         var userId = Guid.NewGuid();
@@ -162,15 +173,114 @@ public sealed class ExportUsersQueryHandlerTests
         ]);
 
         var file = await Handler(users, profiles, runs).Handle(
-            new ExportUsersQuery("xlsx", detail: "full"),
+            new ExportUsersQuery("xlsx", role: UserRole.Student, detail: "full"),
             CancellationToken.None);
 
-        Assert.Contains("urvp-users-full-", file.FileName, StringComparison.Ordinal);
+        Assert.Contains("urvp-users-full-student-", file.FileName, StringComparison.Ordinal);
         var sheet = ReadSheet(file.Content);
         Assert.Contains("Harbor Study", sheet, StringComparison.Ordinal);
         Assert.Contains("Civil Engineering", sheet, StringComparison.Ordinal);
         Assert.Contains("85.5", sheet, StringComparison.Ordinal);
         Assert.Contains("Matched projects", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("Posted projects", sheet, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Faculty_full_export_includes_posted_projects_only()
+    {
+        var userId = Guid.NewGuid();
+        var users = Substitute.For<IUserRepository>();
+        users.ListAllAsync(
+            Arg.Any<string?>(),
+            Arg.Any<UserRole?>(),
+            Arg.Any<UserSortField>(),
+            Arg.Any<SortDirection>(),
+            Arg.Any<bool>(),
+            Arg.Any<bool>(),
+            Arg.Any<CancellationToken>()).Returns([
+            new User
+            {
+                Id = userId,
+                Email = "pi1@aub.edu.lb",
+                Name = "Pat Instructor",
+                UserName = "pi1",
+                Affiliation = "MSFEA",
+                Role = UserRole.Faculty,
+                RegisteredAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        ]);
+
+        var profiles = Substitute.For<IStudentProfileRepository>();
+        var projects = Substitute.For<IProjectRepository>();
+        projects.ListPostedTitlesByCreatorIdsAsync(
+            Arg.Any<IReadOnlyCollection<Guid>>(),
+            Arg.Any<CancellationToken>()).Returns([
+            new PostedProjectTitle(userId, "Harbor Study")
+        ]);
+
+        var file = await Handler(users, profiles, projects: projects).Handle(
+            new ExportUsersQuery("xlsx", role: UserRole.Faculty, detail: "full"),
+            CancellationToken.None);
+
+        Assert.Contains("urvp-users-full-faculty-", file.FileName, StringComparison.Ordinal);
+        var sheet = ReadSheet(file.Content);
+        Assert.Contains("Posted projects", sheet, StringComparison.Ordinal);
+        Assert.Contains("Harbor Study", sheet, StringComparison.Ordinal);
+        Assert.Contains("pi1", sheet, StringComparison.Ordinal);
+        Assert.Contains("MSFEA", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("Matched projects", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("Cumulative average", sheet, StringComparison.Ordinal);
+        await profiles.DidNotReceive().ListByUserIdsAsync(
+            Arg.Any<IReadOnlyCollection<Guid>>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Admin_full_export_includes_account_fields_only()
+    {
+        var users = Substitute.For<IUserRepository>();
+        users.ListAllAsync(
+            Arg.Any<string?>(),
+            Arg.Any<UserRole?>(),
+            Arg.Any<UserSortField>(),
+            Arg.Any<SortDirection>(),
+            Arg.Any<bool>(),
+            Arg.Any<bool>(),
+            Arg.Any<CancellationToken>()).Returns([
+            new User
+            {
+                Email = "admin@aub.edu.lb",
+                Name = "Alex Admin",
+                UserName = "aa100",
+                Affiliation = "MSFEA",
+                Role = UserRole.Admin,
+                RegisteredAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            }
+        ]);
+
+        var profiles = Substitute.For<IStudentProfileRepository>();
+        var projects = Substitute.For<IProjectRepository>();
+        var file = await Handler(users, profiles, projects: projects).Handle(
+            new ExportUsersQuery("xlsx", role: UserRole.Admin, detail: "full"),
+            CancellationToken.None);
+
+        Assert.Contains("urvp-users-full-admin-", file.FileName, StringComparison.Ordinal);
+        var sheet = ReadSheet(file.Content);
+        Assert.Contains("Username", sheet, StringComparison.Ordinal);
+        Assert.Contains("aa100", sheet, StringComparison.Ordinal);
+        Assert.Contains("MSFEA", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("Posted projects", sheet, StringComparison.Ordinal);
+        Assert.DoesNotContain("Matched projects", sheet, StringComparison.Ordinal);
+        await profiles.DidNotReceive().ListByUserIdsAsync(
+            Arg.Any<IReadOnlyCollection<Guid>>(),
+            Arg.Any<CancellationToken>());
+        await projects.DidNotReceive().ListPostedTitlesByCreatorIdsAsync(
+            Arg.Any<IReadOnlyCollection<Guid>>(),
+            Arg.Any<CancellationToken>());
     }
 
     private static async Task<FEA.URVP.Application.DTOs.Users.UserExportFileDto> Handle(string format)
@@ -182,11 +292,13 @@ public sealed class ExportUsersQueryHandlerTests
     private static ExportUsersQueryHandler Handler(
         IUserRepository users,
         IStudentProfileRepository? profiles = null,
-        IMatchingRunRepository? runs = null) =>
+        IMatchingRunRepository? runs = null,
+        IProjectRepository? projects = null) =>
         new(
             users,
             profiles ?? Substitute.For<IStudentProfileRepository>(),
-            runs ?? Substitute.For<IMatchingRunRepository>());
+            runs ?? Substitute.For<IMatchingRunRepository>(),
+            projects ?? Substitute.For<IProjectRepository>());
 
     private static IUserRepository Users()
     {

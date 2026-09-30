@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api";
+import { apiDownloadFile, apiFetch } from "@/lib/api";
 import type { MatchingRunDto } from "@/lib/matching-api";
 import type { SemesterDto } from "@/lib/semesters-api";
 
@@ -80,4 +80,8 @@ export type AdminOverviewDto = {
 
 export async function getAdminOverview(): Promise<AdminOverviewDto> {
   return apiFetch<AdminOverviewDto>("/api/admin/overview");
+}
+
+export async function exportAdminOverview(): Promise<void> {
+  await apiDownloadFile("/api/admin/overview/export", "urvp-overview.xlsx");
 }

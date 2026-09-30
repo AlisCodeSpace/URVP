@@ -50,19 +50,63 @@ function usersFilter(roleFilter: string): {
   return {};
 }
 
-const USER_EXPORT_OPTIONS = [
-  {
-    id: "basic",
-    title: "Export Basic Details",
-    description: "Name, email, and role.",
-  },
-  {
-    id: "full",
-    title: "Export Full Details",
-    description:
-      "Name, email, role, the projects each student was matched to, and profile details: username, affiliation, contact, degree, faculty, major, languages, credits, cumulative average, research topics, publications, availability, and whether a transcript and CV were uploaded.",
-  },
-] as const;
+const BASIC_EXPORT_OPTION = {
+  id: "basic",
+  title: "Export Basic Details",
+  description: "Name, email, and role.",
+} as const;
+
+const STUDENT_FULL_EXPORT_OPTION = {
+  id: "full",
+  title: "Export Full Details",
+  description:
+    "Name, email, role, the projects each student was matched to, and profile details: username, affiliation, contact, degree, faculty, major, languages, credits, cumulative average, research topics, publications, availability, and whether a transcript and CV were uploaded.",
+} as const;
+
+const FACULTY_FULL_EXPORT_OPTION = {
+  id: "full",
+  title: "Export Full Details",
+  description:
+    "Name, email, role, username, affiliation, and the projects each faculty member has posted.",
+} as const;
+
+const ADMIN_FULL_EXPORT_OPTION = {
+  id: "full",
+  title: "Export Full Details",
+  description: "Name, email, role, username, and affiliation.",
+} as const;
+
+function exportOptions(roleFilter: string) {
+  if (roleFilter === "Student") {
+    return [BASIC_EXPORT_OPTION, STUDENT_FULL_EXPORT_OPTION];
+  }
+
+  if (roleFilter === "Faculty" || roleFilter === FACULTY_WITH_PROJECTS) {
+    return [BASIC_EXPORT_OPTION, FACULTY_FULL_EXPORT_OPTION];
+  }
+
+  if (roleFilter === "Admin") {
+    return [BASIC_EXPORT_OPTION, ADMIN_FULL_EXPORT_OPTION];
+  }
+
+  return [BASIC_EXPORT_OPTION];
+}
+
+function exportDescription(roleFilter: string): string {
+  if (roleFilter === "Student") {
+    return "The workbook follows the current search and sort. Student rows include only students who have completed their profile.";
+  }
+
+  if (roleFilter === FACULTY_WITH_PROJECTS) {
+    return "The workbook follows the current search and sort. Only faculty who have posted a project are included.";
+  }
+
+  if (roleFilter === "") {
+    return "The workbook follows the current search and sort. All roles exports name, email, and role.";
+  }
+
+  return "The workbook follows the current search and sort.";
+}
 
 const SORTABLE: { field: UserSortField; label: string }[] = [
   { field: "Name", label: "Name" },
@@ -201,7 +245,7 @@ export function AdminUsersView() {
     <div className="admin-panel admin-panel--wide">
       <AdminPageHeader
         title="Users"
-        description="View accounts and assign Student, Faculty, or Admin roles. Excel export follows the current search and role filters. Student exports include only students who have completed their profile. Faculty with projects includes only faculty who have posted a project."
+        description="View accounts and assign Student, Faculty, or Admin roles. Excel export follows the current search and role filters. All roles exports name, email, and role. A selected role can also export the details available for that role. Student exports include only students who have completed their profile. Faculty with projects includes only faculty who have posted a project."
       />
 
       <div className="admin-users-filters">
@@ -392,8 +436,8 @@ export function AdminUsersView() {
       <ExportChoiceModal
         open={exportOpen}
         title="Export users"
-        description="The workbook follows the current search, role, and sort. Student rows include only students who have completed their profile."
-        options={USER_EXPORT_OPTIONS}
+        description={exportDescription(roleFilter)}
+        options={exportOptions(roleFilter)}
         busyId={exporting}
         error={exportError}
         onClose={closeExport}

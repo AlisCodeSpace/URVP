@@ -2123,6 +2123,13 @@ select:disabled {
   gap: 1rem 1.5rem;
 }
 
+.admin-overview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
 .admin-semester-chip {
   display: flex;
   flex-direction: column;

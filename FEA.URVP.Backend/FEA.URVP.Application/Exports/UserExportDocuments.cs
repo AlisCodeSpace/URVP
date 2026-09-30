@@ -51,12 +51,51 @@ public sealed record UserFullExportRow(
     ];
 }
 
-/// <summary>Admin user workbooks: basic account columns, or the full profile sheet.</summary>
+public sealed record UserFacultyExportRow(
+    string Name,
+    string Email,
+    string Role,
+    string UserName,
+    string Affiliation,
+    string PostedProjects)
+{
+    public IReadOnlyList<string> Cells =>
+    [
+        Name,
+        Email,
+        Role,
+        UserName,
+        Affiliation,
+        PostedProjects,
+    ];
+}
+
+public sealed record UserAdminExportRow(
+    string Name,
+    string Email,
+    string Role,
+    string UserName,
+    string Affiliation)
+{
+    public IReadOnlyList<string> Cells =>
+    [
+        Name,
+        Email,
+        Role,
+        UserName,
+        Affiliation,
+    ];
+}
+
+/// <summary>
+/// Admin user workbooks. Basic covers every role. Full sheets include only the
+/// fields that exist for the selected role.
+/// </summary>
 public static class UserExportDocuments
 {
     public static readonly string[] BasicHeaders = ["Name", "Email", "Role"];
 
-    public static readonly string[] FullHeaders =
+    public static readonly string[] StudentHeaders =
     [
         "Name",
         "Email",
@@ -81,12 +120,35 @@ public static class UserExportDocuments
         "CV uploaded",
     ];
 
+    public static readonly string[] FacultyHeaders =
+    [
+        "Name",
+        "Email",
+        "Role",
+        "Username",
+        "Affiliation",
+        "Posted projects",
+    ];
+
+    public static readonly string[] AdminHeaders =
+    [
+        "Name",
+        "Email",
+        "Role",
+        "Username",
+        "Affiliation",
+    ];
+
     private static readonly double[] BasicWidths = [28, 36, 14];
 
-    private static readonly double[] FullWidths =
+    private static readonly double[] StudentWidths =
     [
         28, 36, 14, 36, 18, 28, 12, 18, 12, 42, 28, 18, 28, 24, 22, 16, 32, 36, 42, 16, 14,
     ];
+
+    private static readonly double[] FacultyWidths = [28, 36, 14, 18, 28, 42];
+
+    private static readonly double[] AdminWidths = [28, 36, 14, 18, 28];
 
     public static byte[] ToExcel(IReadOnlyList<UserExportRow> rows) =>
         ExcelWorkbook.Build(
@@ -95,10 +157,24 @@ public static class UserExportDocuments
             rows.Select(static row => (IReadOnlyList<string>)[row.Name, row.Email, row.Role]).ToList(),
             BasicWidths);
 
-    public static byte[] ToFullExcel(IReadOnlyList<UserFullExportRow> rows) =>
+    public static byte[] ToStudentExcel(IReadOnlyList<UserFullExportRow> rows) =>
         ExcelWorkbook.Build(
             "Users",
-            FullHeaders,
+            StudentHeaders,
             rows.Select(static row => row.Cells).ToList(),
-            FullWidths);
+            StudentWidths);
+
+    public static byte[] ToFacultyExcel(IReadOnlyList<UserFacultyExportRow> rows) =>
+        ExcelWorkbook.Build(
+            "Users",
+            FacultyHeaders,
+            rows.Select(static row => row.Cells).ToList(),
+            FacultyWidths);
+
+    public static byte[] ToAdminExcel(IReadOnlyList<UserAdminExportRow> rows) =>
+        ExcelWorkbook.Build(
+            "Users",
+            AdminHeaders,
+            rows.Select(static row => row.Cells).ToList(),
+            AdminWidths);
 }

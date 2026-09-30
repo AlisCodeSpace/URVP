@@ -60,8 +60,10 @@ public sealed class UsersController : ApiControllerBase
     /// <summary>
     /// Download matching user accounts as Excel. Admin only.
     /// Honors the same search, role, and sort filters as the users list.
-    /// detail=basic includes name, email, and role.
-    /// detail=full also includes confirmed matched project names and profile fields.
+    /// detail=basic includes name, email, and role for any role filter.
+    /// detail=full requires one role and includes only the fields that role can have:
+    /// students get profile fields and confirmed matched projects; faculty get
+    /// username, affiliation, and posted project titles; admins get username and affiliation.
     /// Student rows include only accounts with a completed profile.
     /// When facultyWithProjects is set, only faculty who posted a project are included.
     /// </summary>

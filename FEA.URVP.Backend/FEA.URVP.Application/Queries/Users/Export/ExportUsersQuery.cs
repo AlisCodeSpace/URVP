@@ -13,7 +13,10 @@ public sealed class ExportUsersQuery : IRequest<UserExportFileDto>
     public SortDirection SortDir { get; }
     public bool FacultyWithProjectsOnly { get; }
 
-    /// <summary>basic (name, email, role) or full (profile and matched projects).</summary>
+    /// <summary>
+    /// basic (name, email, role) or full. Full requires one role and includes
+    /// only the fields that role can have.
+    /// </summary>
     public string? Detail { get; }
 
     public ExportUsersQuery(
