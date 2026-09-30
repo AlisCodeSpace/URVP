@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text;
+using System.Xml.Linq;
 using FEA.URVP.Application.Exports;
 
 namespace FEA.URVP.Tests.Users;
@@ -126,6 +127,39 @@ public sealed class UserExportDocumentsTests
     }
 
     [Fact]
+    public void Faculty_excel_is_a_well_formed_workbook()
+    {
+        var bytes = UserExportDocuments.ToFacultyExcel([
+            new UserFacultyExportRow(
+                "Pat Instructor",
+                "pi1@aub.edu.lb",
+                "Faculty",
+                "pi1",
+                "MSFEA",
+                "Harbor & Bridge")
+        ]);
+
+        using var zip = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read);
+        var sheet = XDocument.Parse(ReadEntry(zip, "xl/worksheets/sheet1.xml"));
+        var styles = XDocument.Parse(ReadEntry(zip, "xl/styles.xml"));
+        XDocument.Parse(ReadEntry(zip, "[Content_Types].xml"));
+        XDocument.Parse(ReadEntry(zip, "_rels/.rels"));
+        XDocument.Parse(ReadEntry(zip, "xl/workbook.xml"));
+        XDocument.Parse(ReadEntry(zip, "xl/_rels/workbook.xml.rels"));
+
+        var ns = sheet.Root!.Name.Namespace;
+        var cols = sheet.Root.Element(ns + "cols");
+        var data = sheet.Root.Element(ns + "sheetData");
+        Assert.NotNull(cols);
+        Assert.NotNull(data);
+        Assert.Empty(cols!.Elements(ns + "sheetData"));
+        Assert.Contains(data!.Descendants(ns + "t"), cell => cell.Value == "Harbor & Bridge");
+
+        var stylesNs = styles.Root!.Name.Namespace;
+        Assert.Equal(2, styles.Root.Element(stylesNs + "fills")!.Elements().Count());
+    }
+
+    [Fact]
     public void Columns_past_z_use_two_letter_refs()
     {
         var headers = Enumerable.Range(1, 28).Select(i => $"H{i}").ToArray();
@@ -139,7 +173,12 @@ public sealed class UserExportDocumentsTests
     private static string ReadSheet(byte[] xlsx)
     {
         using var zip = new ZipArchive(new MemoryStream(xlsx), ZipArchiveMode.Read);
-        var entry = zip.GetEntry("xl/worksheets/sheet1.xml");
+        return ReadEntry(zip, "xl/worksheets/sheet1.xml");
+    }
+
+    private static string ReadEntry(ZipArchive zip, string name)
+    {
+        var entry = zip.GetEntry(name);
         Assert.NotNull(entry);
         using var reader = new StreamReader(entry!.Open(), Encoding.UTF8);
         return reader.ReadToEnd();
