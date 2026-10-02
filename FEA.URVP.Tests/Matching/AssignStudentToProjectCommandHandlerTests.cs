@@ -41,6 +41,10 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         Assert.NotNull(saved);
         Assert.Equal(MatchingRun.ManualAlgorithmVersion, saved.AlgorithmVersion);
         Assert.Equal(MatchingRunStatus.Confirmed, saved.Status);
+        runs.Received(1).AddPlacement(Arg.Is<Placement>(p =>
+            p.StudentUserId == student.Id
+            && p.ProjectId == project.Id
+            && p.Status == PlacementStatus.Confirmed));
         Assert.Single(bus.Events.OfType<PlacementAssignedEvent>());
     }
 
@@ -131,7 +135,7 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         };
         existing.MatchingRunId = run.Id;
 
-        var (handler, bus, _, _, _) = CreateHandler(
+        var (handler, bus, runs, _, _) = CreateHandler(
             student: student,
             project: project,
             configureRuns: runs =>
@@ -159,6 +163,7 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         Assert.Equal(PlacementStatus.Confirmed, existing.Status);
         Assert.Equal(project.Id, existing.ProjectId);
         Assert.Equal(dto.Id, existing.Id);
+        runs.DidNotReceive().AddPlacement(Arg.Any<Placement>());
         Assert.Single(bus.Events.OfType<PlacementAssignedEvent>());
     }
 

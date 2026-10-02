@@ -160,6 +160,9 @@ public sealed class AssignStudentToProjectCommandHandler
                 UpdatedAt = now,
             };
             run.Placements.Add(placement);
+            // Explicit insert. A preset Guid on a child of an already tracked run
+            // is otherwise saved as an update and affects 0 rows.
+            _runs.AddPlacement(placement);
         }
         else
         {

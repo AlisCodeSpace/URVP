@@ -252,6 +252,15 @@ export function AdminStudentProfileRoute() {
   );
 }
 
+/** `/admin/users/student?student=` */
+export function AdminUserStudentProfileRoute() {
+  const studentUserId = useRouteParam(RouteParam.Student);
+
+  if (!studentUserId) return <MissingParam />;
+
+  return <AdminStudentProfileView studentUserId={studentUserId} />;
+}
+
 /** `/admin/matching/run?id=` */
 export function AdminMatchingRunRoute() {
   const runId = useRouteParam(RouteParam.Id);

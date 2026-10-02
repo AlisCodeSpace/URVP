@@ -57,6 +57,23 @@
   font-display: swap;
 }
 
+/* Titles keep the Black cut even when a utility sets a lighter weight. */
+@font-face {
+  font-family: "Proxima Nova Black";
+  src: url("/fonts/Proxima%20Nova/proximanova_black.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Proxima Nova Black";
+  src: url("/fonts/Proxima%20Nova/proximanova_blackit.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   --background: #faf7fb;
   --foreground: #1a1020;
@@ -81,7 +98,7 @@
   /* Proxima Nova — AUB brand typeface (self-hosted in /public/fonts) */
   --font-sans-stack: "Proxima Nova", proxima-nova, system-ui, sans-serif;
   --font-body: var(--font-sans-stack);
-  --font-display: var(--font-sans-stack);
+  --font-display: "Proxima Nova Black", "Proxima Nova", proxima-nova, system-ui, sans-serif;
 
   /*
    * Density scale for 100% browser zoom.
@@ -161,7 +178,7 @@
   --color-surface: var(--surface);
   --color-muted: var(--muted);
   --font-sans: var(--font-sans-stack);
-  --font-display: var(--font-sans-stack);
+  --font-display: "Proxima Nova Black", "Proxima Nova", proxima-nova, system-ui, sans-serif;
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
@@ -176,6 +193,18 @@ html {
 html,
 body {
   font-family: var(--font-sans-stack);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.admin-profile-project-title,
+[class*="--font-display"] {
+  font-family: var(--font-display);
+  font-synthesis: none;
 }
 
 body {
@@ -2830,6 +2859,46 @@ button.admin-widget-link {
   color: var(--foreground);
   font-size: 0.95rem;
   font-weight: 650;
+}
+
+.admin-users-name-link {
+  color: var(--primary);
+  font-size: 0.95rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.admin-users-name-link:hover {
+  text-decoration: underline;
+}
+
+.admin-profile-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-profile-project {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 4%, white);
+}
+
+.admin-profile-project-title {
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.admin-profile-project-title:hover {
+  text-decoration: underline;
 }
 
 .admin-users-meta,
