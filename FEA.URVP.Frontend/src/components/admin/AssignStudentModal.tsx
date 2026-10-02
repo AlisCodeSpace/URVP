@@ -119,10 +119,10 @@ export function AssignStudentModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="dialog-layer-panel assign-student-dialog relative z-10 w-full"
+        className="dialog-layer-panel assign-student-dialog relative z-10 w-full rounded-[var(--radius-lg)] border border-primary/12 bg-surface shadow-[0_24px_60px_-28px_rgba(61,18,72,0.45)]"
       >
         <div className="assign-student-dialog-head">
-          <div>
+          <div className="assign-student-dialog-copy">
             <h2 id={titleId} className="assign-student-dialog-title">
               Assign a student
             </h2>
@@ -135,6 +135,7 @@ export function AssignStudentModal({
             type="button"
             variant="outline"
             size="sm"
+            className="assign-student-close"
             disabled={busyId !== null}
             onClick={onClose}
           >
