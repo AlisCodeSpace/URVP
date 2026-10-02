@@ -288,7 +288,7 @@ function CandidateCard({
     .join(" · ");
 
   return (
-    <li className="assign-student-card">
+    <li className={`assign-student-card${assignedElsewhere ? "" : " has-action"}`}>
       <div className="assign-student-card-main">
         <p className="assign-student-name">{candidate.name}</p>
         <p className="assign-student-line">
@@ -299,6 +299,14 @@ function CandidateCard({
         <p className="assign-student-line">
           {candidate.hasProfile ? study || "Profile saved" : "No URVP profile yet"}
         </p>
+        {assignedElsewhere ? (
+          <p
+            className="assign-student-line"
+            title={candidate.assignedProjectTitle ?? "Another project"}
+          >
+            Assigned to {candidate.assignedProjectTitle ?? "another project"}
+          </p>
+        ) : null}
         <div className="assign-student-chips">
           {candidate.matchedResearchTopics.map((topic) => (
             <span key={topic} className="admin-rank-badge assign-student-chip" title={topic}>
@@ -324,29 +332,24 @@ function CandidateCard({
           ) : null}
         </div>
       </div>
-      <div className="assign-student-card-actions">
-        {assignedHere ? (
-          <span className="admin-rank-badge is-assigned">Assigned here</span>
-        ) : assignedElsewhere ? (
-          <span
-            className="admin-rank-badge is-muted assign-student-chip"
-            title={candidate.assignedProjectTitle ?? "Another project"}
-          >
-            On {candidate.assignedProjectTitle ?? "another project"}
-          </span>
-        ) : (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            disabled={!canAssign || disabled}
-            title={!canAssign ? blockedReason : undefined}
-            onClick={onAssign}
-          >
-            {busy ? "Assigning…" : "Assign"}
-          </Button>
-        )}
-      </div>
+      {assignedElsewhere ? null : (
+        <div className="assign-student-card-actions">
+          {assignedHere ? (
+            <span className="admin-rank-badge is-assigned">Assigned here</span>
+          ) : (
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              disabled={!canAssign || disabled}
+              title={!canAssign ? blockedReason : undefined}
+              onClick={onAssign}
+            >
+              {busy ? "Assigning…" : "Assign"}
+            </Button>
+          )}
+        </div>
+      )}
       <Link
         href={adminStudentProfileHref(projectId, candidate.userId)}
         className="admin-person-profile assign-student-profile"
