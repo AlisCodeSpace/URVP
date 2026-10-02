@@ -72,7 +72,7 @@ public sealed class AssignStudentToProjectPersistenceTests : IDisposable
             SemesterId = semester.Id,
             Title = "Water systems",
             BriefDescription = "Research",
-            VolunteersRequired = 2,
+            VolunteersRequired = 1,
             Status = ProjectStatus.Open,
             FacultyNameSnapshot = "Faculty",
             AffiliationSnapshot = "FEA",
@@ -101,6 +101,7 @@ public sealed class AssignStudentToProjectPersistenceTests : IDisposable
         Assert.Contains(placements, placement => placement.StudentUserId == second.Id);
 
         var storedProject = await _db.Projects.AsNoTracking().SingleAsync(p => p.Id == project.Id);
+        Assert.Equal(1, storedProject.VolunteersRequired);
         Assert.Equal(2, storedProject.VolunteersFilled);
         Assert.Equal(ProjectStatus.Matching, storedProject.Status);
     }

@@ -61,12 +61,6 @@ public sealed class UpdateProjectCommandHandler
             request.IsAdmin,
             cancellationToken);
 
-        if (request.VolunteersRequired < project.VolunteersFilled)
-        {
-            throw new ArgumentException(
-                $"Volunteers required cannot be less than already filled ({project.VolunteersFilled}).");
-        }
-
         var owner = await _users.FindByIdAsync(project.CreatedByUserId, cancellationToken)
             ?? throw new InvalidOperationException("Project owner was not found.");
 

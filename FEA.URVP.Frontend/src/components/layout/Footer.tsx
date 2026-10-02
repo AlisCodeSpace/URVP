@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heading, Text } from "@/components/ui/Typography";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
-import { FOOTER_LOGO_SRC, Logo, SSU_LOGO_SRC } from "@/components/ui/Logo";
+import { Logo, NAV_LOGO_SRC, SSU_LOGO_SRC } from "@/components/ui/Logo";
 import {
   FacebookIcon,
   InstagramIcon,
@@ -38,11 +38,13 @@ export function Footer() {
         <div>
           <Logo
             href="/"
-            src={FOOTER_LOGO_SRC}
-            alt="American University of Beirut, Institute for Academic Innovation and Development"
-            size={56}
-            width={277}
+            src={NAV_LOGO_SRC}
+            alt="Institute for Academic Innovation and Development"
+            size={64}
+            width={263}
             showWordmark={false}
+            imageClassName="h-11 w-auto sm:h-14 lg:h-16"
+            className="shrink-0"
           />
           <Text as="p" size="2" mt="2" className="!text-white/65">
             Undergraduate Research Volunteer Program

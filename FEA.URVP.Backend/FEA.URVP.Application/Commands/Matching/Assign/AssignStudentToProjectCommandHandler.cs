@@ -120,13 +120,6 @@ public sealed class AssignStudentToProjectCommandHandler
             throw new InvalidOperationException($"This student is already assigned to \"{title}\".");
         }
 
-        var filled = await _runs.CountConfirmedByProjectAsync(project.Id, cancellationToken);
-        if (filled >= project.VolunteersRequired)
-        {
-            throw new InvalidOperationException(
-                $"This project is full ({project.VolunteersRequired} seat{(project.VolunteersRequired == 1 ? "" : "s")}).");
-        }
-
         ApplicationWindowRules.EnsureClosedForAssignment(semester, now);
 
         var run = await _runs.FindManualBySemesterAsync(semester.Id, cancellationToken);

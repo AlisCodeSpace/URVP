@@ -2255,6 +2255,122 @@ a.admin-kpi:hover {
   margin-bottom: 0.9rem;
 }
 
+.admin-widget-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.assign-student-dialog {
+  display: flex;
+  max-width: 46rem;
+  max-height: min(44rem, calc(100dvh - 2.5rem));
+  flex-direction: column;
+  padding: 1.25rem 1.35rem 1rem;
+}
+
+.assign-student-dialog-head,
+.assign-student-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.85rem 1.15rem;
+}
+
+.assign-student-dialog-head {
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.assign-student-dialog-title {
+  margin: 0;
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+}
+
+.assign-student-dialog-sub,
+.assign-student-hint {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.assign-student-hint {
+  margin: 0.75rem 0;
+}
+
+.assign-student-tabs {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.assign-student-tab {
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--primary);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 650;
+}
+
+.assign-student-tab.is-active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.assign-student-list {
+  min-height: 8rem;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.assign-student-cards {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assign-student-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--background);
+  padding: 0.9rem 1rem;
+}
+
+.assign-student-card-main {
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+
+.assign-student-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+
+.assign-student-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
+}
+
 .admin-widget-title {
   margin: 0;
   color: var(--foreground);
@@ -4018,6 +4134,11 @@ body:has(.page-loader) .admin-menu-btn {
   max-height: min(32rem, calc(100dvh - 2.5rem));
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.dialog-layer-panel.assign-student-dialog {
+  max-height: min(44rem, calc(100dvh - 2.5rem));
+  overflow: hidden;
 }
 
 /* Below desktop nav (lg): keep dropdowns inside the viewport */
