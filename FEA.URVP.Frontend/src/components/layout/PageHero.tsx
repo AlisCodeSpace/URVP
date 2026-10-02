@@ -40,7 +40,7 @@ export function PageHero({
       <div className="hero-grid absolute inset-0" aria-hidden />
       <Container className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-16 pt-[calc(6rem+env(safe-area-inset-top,0px))] sm:justify-center sm:pb-24 sm:pt-[calc(7rem+env(safe-area-inset-top,0px))]">
         <p
-          className={`animate-fade-up font-[family-name:var(--font-display)] font-semibold leading-[0.85] tracking-tight text-white ${titleScaleClass[titleScale]}`}
+          className={`animate-fade-up font-[family-name:var(--font-display)] font-semibold uppercase leading-[0.9] tracking-[0.02em] text-white ${titleScaleClass[titleScale]}`}
         >
           {title}
         </p>

@@ -68,7 +68,7 @@ export function SignInView() {
             size="8"
             weight="medium"
             my="4"
-            className="sign-in-enter-delay relative max-w-lg !font-[family-name:var(--font-display)] !leading-[1.05] !text-white"
+            className="sign-in-enter-delay relative max-w-lg !font-[family-name:var(--font-display)] !uppercase !tracking-[0.02em] !leading-[1.08] !text-white"
           >
             Where faculty projects meet student ambition.
           </Heading>
