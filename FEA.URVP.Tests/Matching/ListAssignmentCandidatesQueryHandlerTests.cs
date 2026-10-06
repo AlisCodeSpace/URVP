@@ -1,50 +1,63 @@
-using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Queries.Matching.ListAssignmentCandidates;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.Projects;
+using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
+using FEA.URVP.Infrastructure.Data.Context;
+using FEA.URVP.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
 namespace FEA.URVP.Tests.Matching;
 
-public sealed class ListAssignmentCandidatesQueryHandlerTests
+public sealed class ListAssignmentCandidatesQueryHandlerTests : IDisposable
 {
+    private readonly AppDbContext _db;
+    private readonly ListAssignmentCandidatesQueryHandler _handler;
+    private readonly Semester _semester = new() { Name = "Fall 2026", IsActive = true };
+
+    public ListAssignmentCandidatesQueryHandlerTests()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _db = new AppDbContext(options);
+        _db.Semesters.Add(_semester);
+        _db.SaveChanges();
+
+        var projects = Substitute.For<FEA.URVP.Application.Abstractions.Persistence.IProjectRepository>();
+        projects.FindByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(call => _db.Projects.AsNoTracking()
+                .FirstOrDefaultAsync(project => project.Id == call.Arg<Guid>()));
+
+        _handler = new ListAssignmentCandidatesQueryHandler(
+            projects,
+            new AssignmentCandidateReadRepository(_db));
+    }
+
     [Fact]
     public async Task Recommended_list_prefers_shared_research_interests_and_qualifications()
     {
-        var project = new Project
-        {
-            Title = "Water systems",
-            ResearchAreas = ["Water", "Structures"],
-            MinQualifications = "Civil engineering majors in the Faculty of Engineering.",
-            FacultyNameSnapshot = "Faculty",
-            AffiliationSnapshot = "FEA",
-            EmailSnapshot = "faculty@mail.aub.edu",
-            BriefDescription = "Research",
-            VolunteersRequired = 1,
-        };
-
-        var fit = Student("Ada Lovelace", "ada@mail.aub.edu", "ada");
-        var other = Student("Grace Hopper", "grace@mail.aub.edu", "grace");
-        var noProfile = Student("Alan Turing", "alan@mail.aub.edu", "alan");
-
-        var profiles = new List<StudentProfile>
-        {
+        var project = Project("Water systems", ["Water", "Structures"], "Civil engineering majors in the Faculty of Engineering.");
+        var fit = Student("Ada Lovelace", "ada@mail.aub.edu");
+        var other = Student("Grace Hopper", "grace@mail.aub.edu");
+        var noProfile = Student("Alan Turing", "alan@mail.aub.edu");
+        _db.Projects.Add(project);
+        _db.Users.AddRange(fit, other, noProfile);
+        _db.StudentProfiles.AddRange(
             Profile(fit.Id, "Faculty of Engineering", "Civil Engineering", ["Water", "Climate"]),
-            Profile(other.Id, "FAS", "Biology", ["Biology"]),
-        };
+            Profile(other.Id, "FAS", "Biology", ["Biology"]));
+        await _db.SaveChangesAsync();
 
-        var handler = Handler(project, [fit, other, noProfile], profiles, []);
-
-        var recommended = await handler.Handle(
+        var recommended = await _handler.Handle(
             new ListAssignmentCandidatesQuery(project.Id, null, true, 1, 10),
             CancellationToken.None);
-        var all = await handler.Handle(
+        var all = await _handler.Handle(
             new ListAssignmentCandidatesQuery(project.Id, null, false, 1, 10),
             CancellationToken.None);
-        var searched = await handler.Handle(
+        var searched = await _handler.Handle(
             new ListAssignmentCandidatesQuery(project.Id, "biology", false, 1, 10),
             CancellationToken.None);
 
@@ -64,38 +77,17 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests
     }
 
     [Fact]
-    public async Task Marks_students_already_assigned_to_a_project()
+    public async Task Marks_students_already_assigned_to_another_project()
     {
-        var project = new Project
-        {
-            Title = "Water systems",
-            ResearchAreas = ["Water"],
-            FacultyNameSnapshot = "Faculty",
-            AffiliationSnapshot = "FEA",
-            EmailSnapshot = "faculty@mail.aub.edu",
-            BriefDescription = "Research",
-            VolunteersRequired = 1,
-        };
-        var student = Student("Ada Lovelace", "ada@mail.aub.edu", "ada");
-        var otherProject = new Project
-        {
-            Title = "Bridge sensors",
-            FacultyNameSnapshot = "Faculty",
-            AffiliationSnapshot = "FEA",
-            EmailSnapshot = "faculty@mail.aub.edu",
-            BriefDescription = "Research",
-            VolunteersRequired = 1,
-        };
-        var placement = new Placement
-        {
-            StudentUserId = student.Id,
-            ProjectId = otherProject.Id,
-            Project = otherProject,
-            Status = PlacementStatus.Confirmed,
-        };
+        var project = Project("Water systems", ["Water"], null);
+        var otherProject = Project("Bridge sensors", ["Structures"], null);
+        var student = Student("Ada Lovelace", "ada@mail.aub.edu");
+        _db.Projects.AddRange(project, otherProject);
+        _db.Users.Add(student);
+        await _db.SaveChangesAsync();
+        Place(student.Id, otherProject);
 
-        var handler = Handler(project, [student], [], [placement]);
-        var result = await handler.Handle(
+        var result = await _handler.Handle(
             new ListAssignmentCandidatesQuery(project.Id, null, false, 1, 10),
             CancellationToken.None);
 
@@ -105,76 +97,71 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests
     }
 
     [Fact]
-    public async Task Excludes_students_already_assigned_to_this_project()
+    public async Task Excludes_students_already_assigned_to_this_project_and_pages()
     {
-        var project = new Project
-        {
-            Title = "Water systems",
-            FacultyNameSnapshot = "Faculty",
-            AffiliationSnapshot = "FEA",
-            EmailSnapshot = "faculty@mail.aub.edu",
-            BriefDescription = "Research",
-            VolunteersRequired = 2,
-        };
-        var assigned = Student("Ada Lovelace", "ada@mail.aub.edu", "ada");
-        var free = Student("Grace Hopper", "grace@mail.aub.edu", "grace");
-        var placement = new Placement
-        {
-            StudentUserId = assigned.Id,
-            ProjectId = project.Id,
-            Project = project,
-            Status = PlacementStatus.Confirmed,
-        };
+        var project = Project("Water systems", [], null);
+        project.VolunteersRequired = 8;
+        var assigned = Student("Ada Lovelace", "ada@mail.aub.edu");
+        var others = Enumerable.Range(1, 7)
+            .Select(index => Student($"Student {index:00}", $"s{index}@mail.aub.edu"))
+            .ToArray();
+        _db.Projects.Add(project);
+        _db.Users.Add(assigned);
+        _db.Users.AddRange(others);
+        await _db.SaveChangesAsync();
+        Place(assigned.Id, project);
 
-        var handler = Handler(project, [assigned, free], [], [placement]);
-        var result = await handler.Handle(
-            new ListAssignmentCandidatesQuery(project.Id, null, false, 1, 10),
+        var page = await _handler.Handle(
+            new ListAssignmentCandidatesQuery(project.Id, null, false, 1, 6),
             CancellationToken.None);
 
-        Assert.Equal(free.Id, Assert.Single(result.Items).UserId);
-        Assert.Equal(1, result.TotalCount);
+        Assert.Equal(7, page.TotalCount);
+        Assert.Equal(6, page.Items.Count);
+        Assert.DoesNotContain(page.Items, item => item.UserId == assigned.Id);
     }
 
-    private static ListAssignmentCandidatesQueryHandler Handler(
-        Project project,
-        IReadOnlyList<User> students,
-        IReadOnlyList<StudentProfile> profiles,
-        IReadOnlyList<Placement> placements)
+    private Project Project(string title, List<string> areas, string? qualifications) => new()
     {
-        var projects = Substitute.For<IProjectRepository>();
-        projects.FindByIdAsync(project.Id, Arg.Any<CancellationToken>()).Returns(project);
+        Title = title,
+        ResearchAreas = areas,
+        ActivityTypes = ["Lab"],
+        MinQualifications = qualifications,
+        FacultyNameSnapshot = "Faculty",
+        AffiliationSnapshot = "FEA",
+        EmailSnapshot = "faculty@mail.aub.edu",
+        BriefDescription = "Research",
+        VolunteersRequired = 2,
+        SemesterId = _semester.Id,
+        CreatedByUserId = Guid.NewGuid(),
+    };
 
-        var users = Substitute.For<IUserRepository>();
-        users.ListAllAsync(
-                null,
-                UserRole.Student,
-                UserSortField.Name,
-                SortDirection.Asc,
-                false,
-                false,
-                Arg.Any<CancellationToken>())
-            .Returns(students);
-
-        var profileRepo = Substitute.For<IStudentProfileRepository>();
-        profileRepo.ListByUserIdsAsync(
-                Arg.Any<IReadOnlyCollection<Guid>>(),
-                Arg.Any<CancellationToken>())
-            .Returns(profiles);
-
-        var runs = Substitute.For<IMatchingRunRepository>();
-        runs.ListConfirmedByStudentIdsAsync(
-                Arg.Any<IReadOnlyCollection<Guid>>(),
-                Arg.Any<CancellationToken>())
-            .Returns(placements);
-
-        return new ListAssignmentCandidatesQueryHandler(projects, users, profileRepo, runs);
+    private void Place(Guid studentUserId, Project project)
+    {
+        var run = new MatchingRun
+        {
+            SemesterId = _semester.Id,
+            Status = MatchingRunStatus.Confirmed,
+            AlgorithmVersion = MatchingRun.ManualAlgorithmVersion,
+            CreatedByUserId = Guid.NewGuid(),
+        };
+        _db.MatchingRuns.Add(run);
+        _db.Placements.Add(new Placement
+        {
+            MatchingRunId = run.Id,
+            StudentUserId = studentUserId,
+            ProjectId = project.Id,
+            Status = PlacementStatus.Confirmed,
+            StudentRank = 1,
+            FacultyRank = 1,
+        });
+        _db.SaveChanges();
     }
 
-    private static User Student(string name, string email, string userName) => new()
+    private static User Student(string name, string email) => new()
     {
         Name = name,
         Email = email,
-        UserName = userName,
+        UserName = email.Split('@')[0],
         Affiliation = "AUB",
         Role = UserRole.Student,
     };
@@ -196,4 +183,6 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests
         CompletedCredits = true,
         CumulativeAverage = 85,
     };
+
+    public void Dispose() => _db.Dispose();
 }

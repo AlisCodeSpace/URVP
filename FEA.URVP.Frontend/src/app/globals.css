@@ -2413,6 +2413,11 @@ a.admin-kpi:hover {
   cursor: pointer;
 }
 
+.admin-person-card.is-selected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 4%, white);
+}
+
 .assign-student-card.is-selected {
   border-color: var(--primary);
   background: color-mix(in srgb, var(--primary) 4%, white);

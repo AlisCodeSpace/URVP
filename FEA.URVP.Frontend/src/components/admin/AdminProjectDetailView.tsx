@@ -363,15 +363,9 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
           aria-labelledby="assigned-students-heading"
         >
           <header className="admin-widget-head admin-widget-head-row">
-            <div>
-              <h3 id="assigned-students-heading" className="admin-widget-title">
-                Assigned students
-              </h3>
-              <p className="admin-widget-sub">
-                Confirmed assignments. Assign any student, including students
-                who have not ranked a project.
-              </p>
-            </div>
+            <h3 id="assigned-students-heading" className="admin-widget-title">
+              Assigned students
+            </h3>
             {assignmentAllowed ? (
               <Button
                 href={adminAssignStudentsHref(project.id)}

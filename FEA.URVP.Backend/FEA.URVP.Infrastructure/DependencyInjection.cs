@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IProjectRankingRepository, ProjectRankingRepository>();
         services.AddScoped<IFacultyCandidateRankingRepository, FacultyCandidateRankingRepository>();
         services.AddScoped<IMatchingRunRepository, MatchingRunRepository>();
+        services.AddScoped<IAssignmentCandidateReadRepository, AssignmentCandidateReadRepository>();
         services.AddScoped<IFileStorageRepository, FileStorageRepository>();
         services.AddScoped<IValueListRepository, ValueListRepository>();
         services.AddScoped<INewsArticleRepository, NewsArticleRepository>();

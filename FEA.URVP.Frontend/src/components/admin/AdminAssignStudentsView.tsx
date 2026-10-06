@@ -19,7 +19,7 @@ import {
 import { projectStatusClass } from "@/lib/project-form";
 import { getActiveSemester } from "@/lib/semesters-api";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 6;
 
 type CandidateList = "recommended" | "all";
 
@@ -350,22 +350,24 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
                 : "No students match this search."}
             </p>
           ) : (
-            <ul className="assign-student-cards" aria-busy={loading}>
-              {candidates.map((candidate) => (
-                <CandidateCard
-                  key={candidate.userId}
-                  candidate={candidate}
-                  projectId={projectId}
-                  canAssign={assignmentAllowed}
-                  blockedReason={blockedReason}
-                  selected={selected.has(candidate.userId)}
-                  busy={busyIds.has(candidate.userId)}
-                  disabled={working}
-                  onToggle={() => toggle(candidate.userId)}
-                  onAssign={() => void assign([candidate.userId])}
-                />
-              ))}
-            </ul>
+            <div className="admin-people" aria-busy={loading}>
+              <ul className="admin-person-list">
+                {candidates.map((candidate) => (
+                  <CandidateCard
+                    key={candidate.userId}
+                    candidate={candidate}
+                    projectId={projectId}
+                    canAssign={assignmentAllowed}
+                    blockedReason={blockedReason}
+                    selected={selected.has(candidate.userId)}
+                    busy={busyIds.has(candidate.userId)}
+                    disabled={working}
+                    onToggle={() => toggle(candidate.userId)}
+                    onAssign={() => void assign([candidate.userId])}
+                  />
+                ))}
+              </ul>
+            </div>
           )}
 
           {selectedCount > 0 ? (
@@ -464,11 +466,36 @@ function CandidateCard({
     !candidate.qualificationsMentionFaculty;
 
   return (
-    <li className={`assign-student-card${selected ? " is-selected" : ""}`}>
-      <div className="assign-student-card-top">
-        <p className="assign-student-name" title={candidate.name}>
-          {candidate.name}
-        </p>
+    <li
+      className={`admin-person-card bg-slate-50${selected ? " is-selected" : ""}`}
+    >
+      <div className="admin-person-card-main">
+        <div className="admin-person-badges">
+          {candidate.matchedResearchTopics.map((topic) => (
+            <span key={topic} className="admin-rank-badge" title={topic}>
+              {topic}
+            </span>
+          ))}
+          {candidate.qualificationsMentionMajor ? (
+            <span className="admin-rank-badge">Major in qualifications</span>
+          ) : null}
+          {candidate.qualificationsMentionFaculty ? (
+            <span className="admin-rank-badge">Faculty in qualifications</span>
+          ) : null}
+          {noMatch ? (
+            <span className="admin-rank-badge is-muted">
+              No shared research interests
+            </span>
+          ) : null}
+        </div>
+        <p className="admin-person-name">{candidate.name}</p>
+        {assignedElsewhere ? (
+          <p className="admin-person-meta">
+            On {candidate.assignedProjectTitle ?? "another project"}
+          </p>
+        ) : null}
+      </div>
+      <div className="admin-person-card-actions">
         {assignedElsewhere || !canAssign ? null : (
           <input
             type="checkbox"
@@ -479,51 +506,9 @@ function CandidateCard({
             onChange={onToggle}
           />
         )}
-      </div>
-      <a className="admin-users-email assign-student-line" href={`mailto:${candidate.email}`}>
-        {candidate.email}
-      </a>
-      <p className="assign-student-line" title={study}>
-        {candidate.hasProfile ? study || "Profile saved" : "No URVP profile yet"}
-      </p>
-      {assignedElsewhere ? (
-        <p className="assign-student-line" title={candidate.assignedProjectTitle ?? undefined}>
-          Assigned to {candidate.assignedProjectTitle ?? "another project"}
-        </p>
-      ) : null}
-
-      <div className="assign-student-chips">
-        {candidate.matchedResearchTopics.map((topic) => (
-          <span key={topic} className="admin-rank-badge assign-student-chip" title={topic}>
-            {topic}
-          </span>
-        ))}
-        {candidate.qualificationsMentionMajor ? (
-          <span className="admin-rank-badge assign-student-chip">
-            Major in qualifications
-          </span>
-        ) : null}
-        {candidate.qualificationsMentionFaculty ? (
-          <span className="admin-rank-badge assign-student-chip">
-            Faculty in qualifications
-          </span>
-        ) : null}
-        {noMatch ? (
-          <span className="admin-rank-badge is-muted assign-student-chip">
-            No shared research interests
-          </span>
-        ) : null}
-      </div>
-
-      <div className="assign-student-card-foot">
-        <Link
-          href={adminStudentProfileHref(projectId, candidate.userId)}
-          className="admin-person-profile"
-        >
-          View Profile
-          <span aria-hidden>→</span>
-        </Link>
-        {assignedElsewhere ? null : (
+        {assignedElsewhere ? (
+          <span className="admin-rank-badge is-muted">On another project</span>
+        ) : (
           <Button
             type="button"
             variant="primary"
@@ -535,6 +520,22 @@ function CandidateCard({
             {busy ? "Assigning…" : "Assign"}
           </Button>
         )}
+      </div>
+      <div className="admin-person-meta-row">
+        <p className="admin-person-meta">
+          <a className="admin-users-email" href={`mailto:${candidate.email}`}>
+            {candidate.email}
+          </a>
+          <span aria-hidden> · </span>
+          {candidate.hasProfile ? study || "Profile saved" : "No URVP profile yet"}
+        </p>
+        <Link
+          href={adminStudentProfileHref(projectId, candidate.userId)}
+          className="admin-person-profile"
+        >
+          View Profile
+          <span aria-hidden>→</span>
+        </Link>
       </div>
     </li>
   );
