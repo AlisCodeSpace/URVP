@@ -2262,72 +2262,111 @@ a.admin-kpi:hover {
   gap: 1rem;
 }
 
-.assign-student-dialog {
-  display: flex;
-  max-width: 46rem;
-  max-height: min(44rem, calc(100dvh - 2.5rem));
-  flex-direction: column;
-  padding: 1.25rem 1.35rem 1rem;
+.assign-page {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
 }
 
-.assign-student-dialog > * {
-  flex-shrink: 0;
+@media (min-width: 1024px) {
+  .assign-page {
+    grid-template-columns: 19rem minmax(0, 1fr);
+  }
+
+  .assign-page-side {
+    position: sticky;
+    top: 1rem;
+  }
 }
 
-.assign-student-dialog-head,
+.assign-page-side {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.assign-page-main {
+  min-width: 0;
+}
+
+.assign-page-project {
+  margin: 0.15rem 0 0.25rem;
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+}
+
+.assign-page-seats {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.assign-page-seats-count {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.assign-page-seats-count strong {
+  color: var(--primary);
+  font-size: 1.5rem;
+}
+
+.assign-page-assigned {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assign-page-assigned li {
+  display: grid;
+  min-width: 0;
+}
+
+.assign-page-assigned a {
+  color: var(--primary);
+  font-weight: 650;
+  font-size: 0.9rem;
+}
+
+.assign-page-assigned span {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assign-page-quals {
+  margin: 0.5rem 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .assign-student-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 0.85rem 1.15rem;
 }
 
-.assign-student-toolbar {
-  flex-wrap: wrap;
-}
-
-.assign-student-dialog-head {
-  align-items: flex-start;
-  flex-wrap: nowrap;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.assign-student-dialog-copy {
-  min-width: 0;
-  flex: 1 1 0;
-}
-
-.assign-student-close {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-
-.assign-student-dialog-title {
-  margin: 0;
-  color: var(--primary);
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 550;
-  letter-spacing: -0.02em;
-}
-
-.assign-student-dialog-sub,
 .assign-student-hint {
-  margin: 0.35rem 0 0;
+  margin: 0.75rem 0 1rem;
   color: var(--muted);
   font-size: 0.85rem;
   line-height: 1.45;
 }
 
-.assign-student-hint {
-  margin: 0.75rem 0 0.9rem;
-}
-
 .assign-student-tabs {
   display: flex;
-  flex: 0 0 auto;
-  align-items: stretch;
   gap: 0.35rem;
   height: 2.75rem;
 }
@@ -2336,9 +2375,8 @@ a.admin-kpi:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 1 1 0;
-  min-width: 9.25rem;
   height: 100%;
+  min-width: 9.25rem;
   border: 1.5px solid color-mix(in srgb, var(--primary) 16%, transparent);
   border-radius: var(--radius-md);
   background: var(--surface);
@@ -2355,21 +2393,52 @@ a.admin-kpi:hover {
   color: white;
 }
 
-.assign-student-dialog > .assign-student-list {
-  min-height: 10rem;
-  flex: 1 1 auto;
-  flex-shrink: 1;
-  margin-bottom: 0.75rem;
-  overflow-y: auto;
-  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--primary) 3%, white);
-  padding: 0.75rem;
+.assign-student-hint-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.75rem 0 1rem;
 }
 
-.assign-student-list > .admin-users-status {
-  padding: 1.5rem 0.5rem;
-  text-align: center;
+.assign-student-hint-row .assign-student-hint {
+  margin: 0;
+}
+
+.assign-student-check {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.assign-student-card.is-selected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 4%, white);
+}
+
+.assign-selection-bar {
+  position: sticky;
+  bottom: 1rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 0.65rem 0.9rem;
+  box-shadow: 0 14px 30px -18px rgba(61, 18, 72, 0.55);
+}
+
+.assign-selection-count {
+  margin-right: auto;
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 650;
 }
 
 .assign-student-loading {
@@ -2394,31 +2463,35 @@ a.admin-kpi:hover {
 
 .assign-student-cards {
   display: grid;
-  gap: 0.75rem;
-  margin: 0;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 0.85rem;
+  margin: 0 0 1rem;
   padding: 0;
   list-style: none;
 }
 
 .assign-student-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  height: 11.25rem;
-  gap: 0.2rem;
-  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
-  border-radius: var(--radius-md);
-  background: white;
-  padding: 0.9rem 1rem 2.35rem;
-  overflow: hidden;
-}
-
-.assign-student-card-main {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: var(--radius-md);
+  background: white;
+  padding: 0.9rem 1rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.assign-student-card:hover {
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+  box-shadow: 0 8px 22px -16px rgba(61, 18, 72, 0.5);
+}
+
+.assign-student-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .assign-student-name,
@@ -2429,11 +2502,6 @@ a.admin-kpi:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.assign-student-card.has-action .assign-student-name,
-.assign-student-card.has-action .assign-student-card-main > .assign-student-line {
-  max-width: calc(100% - 8.5rem);
 }
 
 .assign-student-name {
@@ -2448,35 +2516,24 @@ a.admin-kpi:hover {
 
 .assign-student-chips {
   display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 0.35rem;
-  min-width: 0;
-  width: 100%;
-  margin-top: 0.35rem;
-  overflow: hidden;
+  margin: 0.35rem 0 0.75rem;
 }
 
 .assign-student-chip {
-  display: block;
-  min-width: 0;
-  max-width: max-content;
-  flex: 0 1 auto;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.assign-student-card-actions {
-  position: absolute;
-  top: 0.9rem;
-  right: 1rem;
-}
-
-.assign-student-profile {
-  position: absolute;
-  right: 1rem;
-  bottom: 0.75rem;
+.assign-student-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
 }
 
 .admin-widget-title {
@@ -4242,11 +4299,6 @@ body:has(.page-loader) .admin-menu-btn {
   max-height: min(32rem, calc(100dvh - 2.5rem));
   overflow-x: hidden;
   overflow-y: auto;
-}
-
-.dialog-layer-panel.assign-student-dialog {
-  max-height: min(44rem, calc(100dvh - 2.5rem));
-  overflow: hidden;
 }
 
 /* Below desktop nav (lg): keep dropdowns inside the viewport */

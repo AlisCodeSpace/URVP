@@ -285,6 +285,10 @@ export function adminProjectHref(projectId: string): string {
   return withParams("/admin/projects/detail", { [RouteParam.Id]: projectId });
 }
 
+export function adminAssignStudentsHref(projectId: string): string {
+  return withParams("/admin/projects/assign", { [RouteParam.Id]: projectId });
+}
+
 export function adminStudentProfileHref(
   projectId: string,
   studentUserId: string,

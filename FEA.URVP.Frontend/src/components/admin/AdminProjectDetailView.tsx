@@ -7,7 +7,6 @@ import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { BackLink } from "@/components/ui/BackLink";
 import { Button } from "@/components/ui/Button";
 import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
-import { AssignStudentModal } from "@/components/admin/AssignStudentModal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminFormSkeleton, RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
@@ -29,7 +28,8 @@ import {
   optionalRankLabel,
   rankLabel,
 } from "@/lib/project-rankings-api";
-import { adminStudentProfileHref } from "@/lib/auth";
+import { getAssignmentGate } from "@/lib/assignment-gate";
+import { adminAssignStudentsHref, adminStudentProfileHref } from "@/lib/auth";
 import type { ProjectDto } from "@/lib/projects-api";
 import { getActiveSemester } from "@/lib/semesters-api";
 
@@ -102,7 +102,6 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
   const [removeTarget, setRemoveTarget] = useState<PlacementDto | null>(null);
   const [removing, setRemoving] = useState(false);
   const [searchInput, setSearchInput] = useState("");
-  const [assignOpen, setAssignOpen] = useState(false);
   const {
     data: loaded,
     loading,
@@ -197,30 +196,12 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
     project.volunteersRequired > 0
       ? Math.round((assigned.length / project.volunteersRequired) * 100)
       : 0;
-  const applicationsOpen = Boolean(activeSemester?.isApplicationWindowOpen);
-  const registrationOpen = Boolean(activeSemester?.isRegistrationWindowOpen);
-  const onCurrentCycle =
-    Boolean(activeSemester) &&
-    activeSemester?.id === project.semesterId &&
-    project.status !== "Inactive";
-  const seatsOpen = onCurrentCycle && project.status !== "Closed";
-  const assignmentAllowed =
-    seatsOpen &&
-    Boolean(activeSemester) &&
-    !applicationsOpen &&
-    !registrationOpen;
+  const {
+    applicationsOpen,
+    assignmentAllowed,
+    blockedReason: assignBlockedReason,
+  } = getAssignmentGate(project, activeSemester);
   const canAssign = assignmentAllowed && busyStudentId === null;
-  const assignBlockedReason = applicationsOpen
-    ? "Close the student application window before assigning students."
-    : registrationOpen
-      ? "Close the registration window before assigning students."
-      : !activeSemester
-        ? "Start a cycle before assigning students."
-        : project.status === "Closed"
-          ? "Closed projects cannot accept new assignments."
-          : project.status === "Inactive"
-            ? "Inactive projects cannot accept assignments until they are reactivated."
-            : undefined;
   const rankGroups = groupedRankings(rankings, project.id);
   const rankingQuery = searchInput.trim();
   const filteredRankGroups = rankingQuery
@@ -391,16 +372,25 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
                 who have not ranked a project.
               </p>
             </div>
-            <Button
-              type="button"
-              variant="primary"
-              size="sm"
-              disabled={!assignmentAllowed || busyStudentId !== null || removing}
-              title={!assignmentAllowed ? assignBlockedReason : undefined}
-              onClick={() => setAssignOpen(true)}
-            >
-              Assign student
-            </Button>
+            {assignmentAllowed ? (
+              <Button
+                href={adminAssignStudentsHref(project.id)}
+                variant="primary"
+                size="sm"
+              >
+                Assign student
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                disabled
+                title={assignBlockedReason}
+              >
+                Assign student
+              </Button>
+            )}
           </header>
 
           {assigned.length === 0 ? (
@@ -482,17 +472,6 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
           )}
         </section>
       </div>
-
-      {assignOpen ? (
-        <AssignStudentModal
-          projectId={project.id}
-          projectTitle={project.title}
-          canAssign={assignmentAllowed}
-          blockedReason={assignBlockedReason}
-          onClose={() => setAssignOpen(false)}
-          onAssigned={load}
-        />
-      ) : null}
 
       <ConfirmModal
         open={removeTarget !== null}

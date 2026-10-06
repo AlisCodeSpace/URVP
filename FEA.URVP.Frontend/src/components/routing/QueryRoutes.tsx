@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
+import { AdminAssignStudentsView } from "@/components/admin/AdminAssignStudentsView";
 import { AdminMatchingRunDetailView } from "@/components/admin/AdminMatchingRunDetailView";
 import { AdminNewsForm } from "@/components/admin/AdminNewsForm";
 import { AdminProjectDetailView } from "@/components/admin/AdminProjectDetailView";
@@ -235,6 +236,15 @@ export function AdminProjectRoute() {
   if (!projectId) return <MissingParam />;
 
   return <AdminProjectDetailView projectId={projectId} />;
+}
+
+/** `/admin/projects/assign?id=` */
+export function AdminAssignStudentsRoute() {
+  const projectId = useRouteParam(RouteParam.Id);
+
+  if (!projectId) return <MissingParam />;
+
+  return <AdminAssignStudentsView projectId={projectId} />;
 }
 
 /** `/admin/projects/student?id=&student=` */

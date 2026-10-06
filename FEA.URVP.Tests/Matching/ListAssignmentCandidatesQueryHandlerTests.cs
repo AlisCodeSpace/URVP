@@ -104,6 +104,37 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests
         Assert.Equal("Bridge sensors", item.AssignedProjectTitle);
     }
 
+    [Fact]
+    public async Task Excludes_students_already_assigned_to_this_project()
+    {
+        var project = new Project
+        {
+            Title = "Water systems",
+            FacultyNameSnapshot = "Faculty",
+            AffiliationSnapshot = "FEA",
+            EmailSnapshot = "faculty@mail.aub.edu",
+            BriefDescription = "Research",
+            VolunteersRequired = 2,
+        };
+        var assigned = Student("Ada Lovelace", "ada@mail.aub.edu", "ada");
+        var free = Student("Grace Hopper", "grace@mail.aub.edu", "grace");
+        var placement = new Placement
+        {
+            StudentUserId = assigned.Id,
+            ProjectId = project.Id,
+            Project = project,
+            Status = PlacementStatus.Confirmed,
+        };
+
+        var handler = Handler(project, [assigned, free], [], [placement]);
+        var result = await handler.Handle(
+            new ListAssignmentCandidatesQuery(project.Id, null, false, 1, 10),
+            CancellationToken.None);
+
+        Assert.Equal(free.Id, Assert.Single(result.Items).UserId);
+        Assert.Equal(1, result.TotalCount);
+    }
+
     private static ListAssignmentCandidatesQueryHandler Handler(
         Project project,
         IReadOnlyList<User> students,

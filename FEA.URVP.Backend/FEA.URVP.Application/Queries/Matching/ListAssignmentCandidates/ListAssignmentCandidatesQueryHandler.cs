@@ -65,6 +65,7 @@ public sealed class ListAssignmentCandidatesQueryHandler
                 project.MinQualifications,
                 profileByUser.GetValueOrDefault(student.Id),
                 placementByUser.GetValueOrDefault(student.Id)))
+            .Where(candidate => candidate.Dto.AssignedProjectId != project.Id)
             .Where(candidate => MatchesSearch(candidate, search))
             .Where(candidate => !request.RecommendedOnly || candidate.Fit.IsRecommended);
 
