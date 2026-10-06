@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { AUB_STAMP_SRC } from "@/components/ui/Logo";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -7,9 +8,9 @@ export const metadata: Metadata = {
   description:
     "Match with faculty research. Shape your academic path. Undergraduate Research Volunteer Program – AY 2026–27.",
   icons: {
-    icon: [{ url: "/aub-logo.png", type: "image/png" }],
-    apple: [{ url: "/aub-logo.png", type: "image/png" }],
-    shortcut: "/aub-logo.png",
+    icon: [{ url: AUB_STAMP_SRC, type: "image/png" }],
+    apple: [{ url: AUB_STAMP_SRC, type: "image/png" }],
+    shortcut: AUB_STAMP_SRC,
   },
 };
 
