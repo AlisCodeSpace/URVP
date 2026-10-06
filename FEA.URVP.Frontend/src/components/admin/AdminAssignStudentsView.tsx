@@ -104,13 +104,6 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
   const candidates = data?.items ?? [];
   const count = data?.totalCount ?? 0;
 
-  const selectable = assignmentAllowed
-    ? candidates.filter((candidate) => candidate.assignedProjectId == null)
-    : [];
-  const allPageSelected =
-    selectable.length > 0 &&
-    selectable.every((candidate) => selected.has(candidate.userId));
-
   const working = busyIds.size > 0;
   const selectedCount = selected.size;
 
@@ -118,17 +111,6 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
     setSelected((current) => {
       const next = new Set(current);
       if (!next.delete(studentUserId)) next.add(studentUserId);
-      return next;
-    });
-  }
-
-  function togglePage() {
-    setSelected((current) => {
-      const next = new Set(current);
-      for (const candidate of selectable) {
-        if (allPageSelected) next.delete(candidate.userId);
-        else next.add(candidate.userId);
-      }
       return next;
     });
   }
@@ -308,25 +290,6 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
             </div>
           </div>
 
-          <div className="assign-student-hint-row">
-            <p className="assign-student-hint">
-              {list === "recommended"
-                ? "Students whose research interests overlap this project, or whose faculty or major is named in its qualifications."
-                : "Every unassigned student account. Cards show only the profile details that relate to this project."}
-            </p>
-            {selectable.length > 0 ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={working}
-                onClick={togglePage}
-              >
-                {allPageSelected ? "Deselect page" : "Select page"}
-              </Button>
-            ) : null}
-          </div>
-
           {actionError ? (
             <p className="admin-users-banner is-error" role="alert">
               {actionError}
@@ -380,7 +343,7 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
               </span>
               <Button
                 type="button"
-                variant="outline"
+                variant="danger"
                 size="sm"
                 disabled={working}
                 onClick={() => setSelected(new Set())}
@@ -456,7 +419,6 @@ function CandidateCard({
   onToggle: () => void;
   onAssign: () => void;
 }) {
-  const assignedElsewhere = candidate.assignedProjectId != null;
   const study = [candidate.degree, candidate.faculty, candidate.major]
     .filter(Boolean)
     .join(" · ");
@@ -489,14 +451,9 @@ function CandidateCard({
           ) : null}
         </div>
         <p className="admin-person-name">{candidate.name}</p>
-        {assignedElsewhere ? (
-          <p className="admin-person-meta">
-            On {candidate.assignedProjectTitle ?? "another project"}
-          </p>
-        ) : null}
       </div>
       <div className="admin-person-card-actions">
-        {assignedElsewhere || !canAssign ? null : (
+        {canAssign ? (
           <input
             type="checkbox"
             className="assign-student-check"
@@ -505,21 +462,17 @@ function CandidateCard({
             disabled={disabled}
             onChange={onToggle}
           />
-        )}
-        {assignedElsewhere ? (
-          <span className="admin-rank-badge is-muted">On another project</span>
-        ) : (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            disabled={!canAssign || disabled}
-            title={!canAssign ? blockedReason : undefined}
-            onClick={onAssign}
-          >
-            {busy ? "Assigning…" : "Assign"}
-          </Button>
-        )}
+        ) : null}
+        <Button
+          type="button"
+          variant="primary"
+          size="sm"
+          disabled={!canAssign || disabled}
+          title={!canAssign ? blockedReason : undefined}
+          onClick={onAssign}
+        >
+          {busy ? "Assigning…" : "Assign"}
+        </Button>
       </div>
       <div className="admin-person-meta-row">
         <p className="admin-person-meta">

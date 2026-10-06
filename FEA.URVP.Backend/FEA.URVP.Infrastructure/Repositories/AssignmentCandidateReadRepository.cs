@@ -79,17 +79,17 @@ public sealed class AssignmentCandidateReadRepository : IAssignmentCandidateRead
     }
 
     /// <summary>
-    /// Students only, minus anyone confirmed on this project. Profile columns are
-    /// projected so transcripts, availability, and the rest of the profile stay in the database.
+    /// Students only, minus anyone already confirmed on any current-cycle project.
+    /// Profile columns are projected so the rest of the profile stays in the database.
     /// </summary>
     private IQueryable<CandidateRow> Eligible(Guid projectId)
     {
+        _ = projectId;
         return
             from user in _db.Users.AsNoTracking()
             where user.Role == UserRole.Student
             where !_db.Placements.Any(placement =>
                 placement.StudentUserId == user.Id
-                && placement.ProjectId == projectId
                 && placement.Status == PlacementStatus.Confirmed
                 && placement.MatchingRun.SemesterId == placement.Project.SemesterId
                 && placement.Project.Status != ProjectStatus.Inactive)

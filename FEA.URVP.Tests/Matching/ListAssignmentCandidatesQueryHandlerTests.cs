@@ -77,23 +77,23 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task Marks_students_already_assigned_to_another_project()
+    public async Task Excludes_students_already_assigned_to_another_project()
     {
         var project = Project("Water systems", ["Water"], null);
         var otherProject = Project("Bridge sensors", ["Structures"], null);
-        var student = Student("Ada Lovelace", "ada@mail.aub.edu");
+        var assigned = Student("Ada Lovelace", "ada@mail.aub.edu");
+        var free = Student("Grace Hopper", "grace@mail.aub.edu");
         _db.Projects.AddRange(project, otherProject);
-        _db.Users.Add(student);
+        _db.Users.AddRange(assigned, free);
         await _db.SaveChangesAsync();
-        Place(student.Id, otherProject);
+        Place(assigned.Id, otherProject);
 
         var result = await _handler.Handle(
             new ListAssignmentCandidatesQuery(project.Id, null, false, 1, 10),
             CancellationToken.None);
 
-        var item = Assert.Single(result.Items);
-        Assert.Equal(otherProject.Id, item.AssignedProjectId);
-        Assert.Equal("Bridge sensors", item.AssignedProjectTitle);
+        Assert.Equal(free.Id, Assert.Single(result.Items).UserId);
+        Assert.Equal(1, result.TotalCount);
     }
 
     [Fact]

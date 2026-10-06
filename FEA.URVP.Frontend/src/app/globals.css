@@ -2356,6 +2356,7 @@ a.admin-kpi:hover {
   align-items: flex-end;
   justify-content: space-between;
   gap: 0.85rem 1.15rem;
+  margin-bottom: 1rem;
 }
 
 .assign-student-hint {
@@ -2431,7 +2432,7 @@ a.admin-kpi:hover {
   align-items: center;
   justify-content: flex-end;
   gap: 0.6rem;
-  margin: 0 0 1rem;
+  margin: 1.5rem 0 1rem;
   border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
   border-radius: var(--radius-md);
   background: var(--surface);
