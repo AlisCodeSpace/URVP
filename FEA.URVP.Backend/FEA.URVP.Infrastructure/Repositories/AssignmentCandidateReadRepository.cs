@@ -79,8 +79,9 @@ public sealed class AssignmentCandidateReadRepository : IAssignmentCandidateRead
     }
 
     /// <summary>
-    /// Students only, minus anyone already confirmed on any current-cycle project.
-    /// Profile columns are projected so the rest of the profile stays in the database.
+    /// Students with a saved profile, minus anyone already confirmed on a
+    /// current-cycle project. Profile columns are projected so the rest of the
+    /// profile stays in the database.
     /// </summary>
     private IQueryable<CandidateRow> Eligible(Guid projectId)
     {
@@ -94,19 +95,18 @@ public sealed class AssignmentCandidateReadRepository : IAssignmentCandidateRead
                 && placement.MatchingRun.SemesterId == placement.Project.SemesterId
                 && placement.Project.Status != ProjectStatus.Inactive)
             join profile in _db.StudentProfiles.AsNoTracking()
-                on user.Id equals profile.UserId into profiles
-            from profile in profiles.DefaultIfEmpty()
+                on user.Id equals profile.UserId
             select new CandidateRow
             {
                 UserId = user.Id,
                 Name = user.Name,
                 Email = user.Email,
                 UserName = user.UserName,
-                HasProfile = profile != null,
-                Faculty = profile != null ? profile.Faculty : null,
-                Major = profile != null ? profile.Major : null,
-                Degree = profile != null ? profile.Degree : null,
-                ResearchTopics = profile != null ? profile.ResearchTopics : null,
+                HasProfile = true,
+                Faculty = profile.Faculty,
+                Major = profile.Major,
+                Degree = profile.Degree,
+                ResearchTopics = profile.ResearchTopics,
             };
     }
 

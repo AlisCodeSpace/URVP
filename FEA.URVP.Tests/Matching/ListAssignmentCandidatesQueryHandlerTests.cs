@@ -67,11 +67,11 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests : IDisposable
         Assert.True(recommended.Items[0].QualificationsMentionMajor);
         Assert.True(recommended.Items[0].QualificationsMentionFaculty);
 
-        Assert.Equal(3, all.TotalCount);
+        Assert.Equal(2, all.TotalCount);
         Assert.Equal(
-            ["Ada Lovelace", "Alan Turing", "Grace Hopper"],
+            ["Ada Lovelace", "Grace Hopper"],
             all.Items.Select(item => item.Name).ToArray());
-        Assert.False(all.Items.Single(item => item.UserId == noProfile.Id).HasProfile);
+        Assert.DoesNotContain(all.Items, item => item.UserId == noProfile.Id);
 
         Assert.Equal(other.Id, Assert.Single(searched.Items).UserId);
     }
@@ -85,6 +85,9 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests : IDisposable
         var free = Student("Grace Hopper", "grace@mail.aub.edu");
         _db.Projects.AddRange(project, otherProject);
         _db.Users.AddRange(assigned, free);
+        _db.StudentProfiles.AddRange(
+            Profile(assigned.Id, "FEA", "Civil Engineering", ["Water"]),
+            Profile(free.Id, "FEA", "Civil Engineering", ["Water"]));
         await _db.SaveChangesAsync();
         Place(assigned.Id, otherProject);
 
@@ -108,6 +111,9 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests : IDisposable
         _db.Projects.Add(project);
         _db.Users.Add(assigned);
         _db.Users.AddRange(others);
+        _db.StudentProfiles.Add(Profile(assigned.Id, "FEA", "Civil Engineering", ["Water"]));
+        _db.StudentProfiles.AddRange(
+            others.Select(student => Profile(student.Id, "FEA", "Civil Engineering", ["Water"])));
         await _db.SaveChangesAsync();
         Place(assigned.Id, project);
 

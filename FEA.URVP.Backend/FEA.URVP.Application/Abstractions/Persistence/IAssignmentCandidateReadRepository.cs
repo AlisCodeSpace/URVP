@@ -4,7 +4,8 @@ namespace FEA.URVP.Application.Abstractions.Persistence;
 
 /// <summary>
 /// Reads assignment candidates without loading full user, profile, or placement graphs.
-/// Students already confirmed on any current-cycle project are excluded in the database.
+/// Only students with a saved profile are included. Students already confirmed
+/// on any current-cycle project are excluded in the database.
 /// </summary>
 public interface IAssignmentCandidateReadRepository
 {
