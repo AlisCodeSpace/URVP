@@ -94,6 +94,47 @@ export async function updatePlacementStatus(
   });
 }
 
+export type AssignmentCandidate = {
+  userId: string;
+  name: string;
+  email: string;
+  faculty: string | null;
+  major: string | null;
+  degree: string | null;
+  hasProfile: boolean;
+  matchedResearchTopics: string[];
+  qualificationsMentionMajor: boolean;
+  qualificationsMentionFaculty: boolean;
+  assignedProjectId: string | null;
+  assignedProjectTitle: string | null;
+};
+
+export type PaginatedAssignmentCandidates = {
+  items: AssignmentCandidate[];
+  pageNumber: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+};
+
+export async function listAssignmentCandidates(params: {
+  projectId: string;
+  search?: string;
+  recommendedOnly?: boolean;
+  pageNumber?: number;
+  pageSize?: number;
+}): Promise<PaginatedAssignmentCandidates> {
+  const query = new URLSearchParams();
+  if (params.search?.trim()) query.set("search", params.search.trim());
+  if (params.recommendedOnly) query.set("recommendedOnly", "true");
+  query.set("pageNumber", String(params.pageNumber ?? 1));
+  query.set("pageSize", String(params.pageSize ?? 8));
+
+  return apiFetch<PaginatedAssignmentCandidates>(
+    `/api/matching/projects/${params.projectId}/assignment-candidates?${query.toString()}`,
+  );
+}
+
 export async function assignStudentToProject(payload: {
   projectId: string;
   studentUserId: string;

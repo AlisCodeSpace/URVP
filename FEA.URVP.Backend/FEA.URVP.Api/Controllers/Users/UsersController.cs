@@ -2,6 +2,7 @@ using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.Users.AssignRole;
 using FEA.URVP.Application.Queries.Users.Export;
+using FEA.URVP.Application.Queries.Users.GetProjectActivity;
 using FEA.URVP.Application.Queries.Users.List;
 using FEA.URVP.Domain.Enums;
 using MediatR;
@@ -89,6 +90,22 @@ public sealed class UsersController : ApiControllerBase
             cancellationToken);
         Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
         return File(file.Content, file.MimeType, file.FileName);
+    }
+
+    /// <summary>
+    /// Projects the student has ranked in the current cycle, and projects they are assigned to.
+    /// Admin only.
+    /// </summary>
+    [HttpGet("{id:guid}/project-activity")]
+    public async Task<IActionResult> ProjectActivity(Guid id, CancellationToken cancellationToken)
+    {
+        if (!UserHasRole(nameof(UserRole.Admin)))
+        {
+            return ForbiddenResponse();
+        }
+
+        var activity = await _mediator.Send(new GetStudentProjectActivityQuery(id), cancellationToken);
+        return SuccessResponse(activity);
     }
 
     /// <summary>Assign a role to a user account. Admin only.</summary>

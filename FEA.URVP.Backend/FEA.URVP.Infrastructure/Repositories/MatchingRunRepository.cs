@@ -118,6 +118,7 @@ public sealed class MatchingRunRepository : IMatchingRunRepository
         return await _db.Placements
             .AsNoTracking()
             .Include(p => p.Project)
+            .Include(p => p.StudentUser)
             .Where(p => studentUserIds.Contains(p.StudentUserId)
                         && p.Status == PlacementStatus.Confirmed
                         && p.MatchingRun.SemesterId == p.Project.SemesterId
@@ -144,4 +145,6 @@ public sealed class MatchingRunRepository : IMatchingRunRepository
     }
 
     public void Add(MatchingRun run) => _db.MatchingRuns.Add(run);
+
+    public void AddPlacement(Placement placement) => _db.Placements.Add(placement);
 }

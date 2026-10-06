@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import Link from "next/link";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { ExportChoiceModal } from "@/components/admin/ExportChoiceModal";
@@ -10,6 +11,7 @@ import { IconDownload } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
+import { adminUserStudentProfileHref } from "@/lib/auth";
 import {
   assignUserRole,
   exportUsers,
@@ -356,7 +358,16 @@ export function AdminUsersView() {
                   return (
                     <tr key={user.id}>
                       <td>
-                        <div className="admin-users-name">{user.name}</div>
+                        {user.role === "Student" ? (
+                          <Link
+                            href={adminUserStudentProfileHref(user.id)}
+                            className="admin-users-name-link"
+                          >
+                            {user.name}
+                          </Link>
+                        ) : (
+                          <div className="admin-users-name">{user.name}</div>
+                        )}
                         {user.userName ? (
                           <div className="admin-users-meta">@{user.userName}</div>
                         ) : null}

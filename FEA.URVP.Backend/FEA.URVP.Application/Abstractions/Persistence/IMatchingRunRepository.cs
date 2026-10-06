@@ -58,4 +58,11 @@ public interface IMatchingRunRepository
         CancellationToken cancellationToken = default);
 
     void Add(MatchingRun run);
+
+    /// <summary>
+    /// Tracks a new placement for insert. Placement ids are client-generated
+    /// Guids, so adding the entity only to <see cref="MatchingRun.Placements"/>
+    /// marks it modified when the run is already tracked.
+    /// </summary>
+    void AddPlacement(Placement placement);
 }

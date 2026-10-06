@@ -41,27 +41,33 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         Assert.NotNull(saved);
         Assert.Equal(MatchingRun.ManualAlgorithmVersion, saved.AlgorithmVersion);
         Assert.Equal(MatchingRunStatus.Confirmed, saved.Status);
+        runs.Received(1).AddPlacement(Arg.Is<Placement>(p =>
+            p.StudentUserId == student.Id
+            && p.ProjectId == project.Id
+            && p.Status == PlacementStatus.Confirmed));
         Assert.Single(bus.Events.OfType<PlacementAssignedEvent>());
     }
 
     [Fact]
-    public async Task Rejects_when_project_is_full()
+    public async Task Assigns_when_posted_seats_are_already_filled()
     {
-        var (handler, _, runs, project, student) = CreateHandler();
+        var (handler, bus, runs, project, student) = CreateHandler();
         project.VolunteersRequired = 1;
         runs.CountConfirmedByProjectAsync(project.Id, Arg.Any<CancellationToken>()).Returns(1);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            handler.Handle(
-                new AssignStudentToProjectCommand
-                {
-                    CurrentUserId = Guid.NewGuid(),
-                    ProjectId = project.Id,
-                    StudentUserId = student.Id,
-                },
-                CancellationToken.None));
+        var dto = await handler.Handle(
+            new AssignStudentToProjectCommand
+            {
+                CurrentUserId = Guid.NewGuid(),
+                ProjectId = project.Id,
+                StudentUserId = student.Id,
+            },
+            CancellationToken.None);
 
-        Assert.Contains("full", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(student.Id, dto.StudentUserId);
+        Assert.Equal(project.Id, dto.ProjectId);
+        Assert.Equal(PlacementStatus.Confirmed, dto.Status);
+        Assert.Single(bus.Events.OfType<PlacementAssignedEvent>());
     }
 
     [Fact]
@@ -131,7 +137,7 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         };
         existing.MatchingRunId = run.Id;
 
-        var (handler, bus, _, _, _) = CreateHandler(
+        var (handler, bus, runs, _, _) = CreateHandler(
             student: student,
             project: project,
             configureRuns: runs =>
@@ -159,6 +165,7 @@ public sealed class AssignStudentToProjectCommandHandlerTests
         Assert.Equal(PlacementStatus.Confirmed, existing.Status);
         Assert.Equal(project.Id, existing.ProjectId);
         Assert.Equal(dto.Id, existing.Id);
+        runs.DidNotReceive().AddPlacement(Arg.Any<Placement>());
         Assert.Single(bus.Events.OfType<PlacementAssignedEvent>());
     }
 

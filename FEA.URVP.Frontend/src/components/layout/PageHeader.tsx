@@ -39,7 +39,7 @@ export function PageHeader({
             size="8"
             weight="medium"
             mt={eyebrow ? "3" : "0"}
-            className="!font-[family-name:var(--font-display)] !text-white"
+            className="!font-[family-name:var(--font-display)] !uppercase !tracking-[0.02em] !text-white"
           >
             {title}
           </Heading>

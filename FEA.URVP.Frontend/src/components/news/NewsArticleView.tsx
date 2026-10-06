@@ -53,7 +53,7 @@ export function NewsArticleView({
             size="8"
             weight="medium"
             mt="4"
-            className="animate-fade-up !font-[family-name:var(--font-display)] !leading-[1.08] !text-white"
+            className="animate-fade-up !font-[family-name:var(--font-display)] !uppercase !tracking-[0.02em] !leading-[1.1] !text-white"
           >
             {article.title}
           </Heading>

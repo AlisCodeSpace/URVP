@@ -7,6 +7,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { BackLink } from "@/components/ui/BackLink";
 import { Button } from "@/components/ui/Button";
 import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
+import { AssignStudentModal } from "@/components/admin/AssignStudentModal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminFormSkeleton, RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
 import { ApiError } from "@/lib/api";
@@ -101,6 +102,7 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
   const [removeTarget, setRemoveTarget] = useState<PlacementDto | null>(null);
   const [removing, setRemoving] = useState(false);
   const [searchInput, setSearchInput] = useState("");
+  const [assignOpen, setAssignOpen] = useState(false);
   const {
     data: loaded,
     loading,
@@ -201,13 +203,24 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
     Boolean(activeSemester) &&
     activeSemester?.id === project.semesterId &&
     project.status !== "Inactive";
-  const seatsOpen = onCurrentCycle && project.status !== "Closed" && remaining > 0;
-  const canAssign =
+  const seatsOpen = onCurrentCycle && project.status !== "Closed";
+  const assignmentAllowed =
     seatsOpen &&
-    busyStudentId === null &&
     Boolean(activeSemester) &&
     !applicationsOpen &&
     !registrationOpen;
+  const canAssign = assignmentAllowed && busyStudentId === null;
+  const assignBlockedReason = applicationsOpen
+    ? "Close the student application window before assigning students."
+    : registrationOpen
+      ? "Close the registration window before assigning students."
+      : !activeSemester
+        ? "Start a cycle before assigning students."
+        : project.status === "Closed"
+          ? "Closed projects cannot accept new assignments."
+          : project.status === "Inactive"
+            ? "Inactive projects cannot accept assignments until they are reactivated."
+            : undefined;
   const rankGroups = groupedRankings(rankings, project.id);
   const rankingQuery = searchInput.trim();
   const filteredRankGroups = rankingQuery
@@ -274,12 +287,15 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
               <div
                 className="admin-meter-track"
                 role="progressbar"
-                aria-valuenow={fill}
+                aria-valuenow={Math.min(fill, 100)}
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-label="Seat fill"
               >
-                <span className="admin-meter-fill" style={{ width: `${fill}%` }} />
+                <span
+                  className="admin-meter-fill"
+                  style={{ width: `${Math.min(fill, 100)}%` }}
+                />
               </div>
             </div>
           ) : null}
@@ -292,8 +308,6 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
               ? "Listing is closed"
               : project.status === "Inactive"
                 ? "Previous academic cycle"
-              : remaining === 0
-                ? "At capacity"
                 : applicationsOpen
                   ? "After applications close"
                   : "Open for assignment"}
@@ -367,13 +381,26 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
           className="admin-widget admin-people admin-assigned"
           aria-labelledby="assigned-students-heading"
         >
-          <header className="admin-widget-head">
-            <h3 id="assigned-students-heading" className="admin-widget-title">
-              Assigned students
-            </h3>
-            <p className="admin-widget-sub">
-              Confirmed seats. Assign from ranked applicants.
-            </p>
+          <header className="admin-widget-head admin-widget-head-row">
+            <div>
+              <h3 id="assigned-students-heading" className="admin-widget-title">
+                Assigned students
+              </h3>
+              <p className="admin-widget-sub">
+                Confirmed assignments. Assign any student, including students
+                who have not ranked a project.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              disabled={!assignmentAllowed || busyStudentId !== null || removing}
+              title={!assignmentAllowed ? assignBlockedReason : undefined}
+              onClick={() => setAssignOpen(true)}
+            >
+              Assign student
+            </Button>
           </header>
 
           {assigned.length === 0 ? (
@@ -444,13 +471,7 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
                       ranking={ranking}
                       projectId={project.id}
                       canAssign={canAssign}
-                      assignBlockedReason={
-                        applicationsOpen
-                          ? "Close the student application window before assigning students."
-                          : registrationOpen
-                            ? "Close the registration window before assigning students."
-                            : undefined
-                      }
+                      assignBlockedReason={assignBlockedReason}
                       busy={busyStudentId === ranking.studentUserId}
                       onAssign={() => void assign(ranking.studentUserId)}
                     />
@@ -461,6 +482,17 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
           )}
         </section>
       </div>
+
+      {assignOpen ? (
+        <AssignStudentModal
+          projectId={project.id}
+          projectTitle={project.title}
+          canAssign={assignmentAllowed}
+          blockedReason={assignBlockedReason}
+          onClose={() => setAssignOpen(false)}
+          onAssigned={load}
+        />
+      ) : null}
 
       <ConfirmModal
         open={removeTarget !== null}

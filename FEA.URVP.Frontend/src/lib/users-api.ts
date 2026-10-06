@@ -1,4 +1,6 @@
 import { apiDownloadFile, apiFetch } from "@/lib/api";
+import type { PlacementDto } from "@/lib/matching-api";
+import type { ProjectRankingDto } from "@/lib/project-rankings-api";
 
 export type UserRoleName = "Student" | "Faculty" | "Admin";
 export type UserSortField = "Name" | "Email" | "Role";
@@ -75,6 +77,19 @@ export async function exportUsers(
   await apiDownloadFile(
     `/api/users/export?${query.toString()}`,
     detail === "full" ? "urvp-users-full.xlsx" : "urvp-users-basic.xlsx",
+  );
+}
+
+export type StudentProjectActivityDto = {
+  rankings: ProjectRankingDto[];
+  assignments: PlacementDto[];
+};
+
+export async function getStudentProjectActivity(
+  userId: string,
+): Promise<StudentProjectActivityDto> {
+  return apiFetch<StudentProjectActivityDto>(
+    `/api/users/${userId}/project-activity`,
   );
 }
 

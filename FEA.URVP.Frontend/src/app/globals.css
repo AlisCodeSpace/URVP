@@ -57,6 +57,23 @@
   font-display: swap;
 }
 
+/* Titles keep the Black cut even when a utility sets a lighter weight. */
+@font-face {
+  font-family: "Proxima Nova Black";
+  src: url("/fonts/Proxima%20Nova/proximanova_black.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Proxima Nova Black";
+  src: url("/fonts/Proxima%20Nova/proximanova_blackit.otf") format("opentype");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   --background: #faf7fb;
   --foreground: #1a1020;
@@ -81,7 +98,7 @@
   /* Proxima Nova — AUB brand typeface (self-hosted in /public/fonts) */
   --font-sans-stack: "Proxima Nova", proxima-nova, system-ui, sans-serif;
   --font-body: var(--font-sans-stack);
-  --font-display: var(--font-sans-stack);
+  --font-display: "Proxima Nova Black", "Proxima Nova", proxima-nova, system-ui, sans-serif;
 
   /*
    * Density scale for 100% browser zoom.
@@ -161,7 +178,7 @@
   --color-surface: var(--surface);
   --color-muted: var(--muted);
   --font-sans: var(--font-sans-stack);
-  --font-display: var(--font-sans-stack);
+  --font-display: "Proxima Nova Black", "Proxima Nova", proxima-nova, system-ui, sans-serif;
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
@@ -176,6 +193,18 @@ html {
 html,
 body {
   font-family: var(--font-sans-stack);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.admin-profile-project-title,
+[class*="--font-display"] {
+  font-family: var(--font-display);
+  font-synthesis: none;
 }
 
 body {
@@ -2226,6 +2255,230 @@ a.admin-kpi:hover {
   margin-bottom: 0.9rem;
 }
 
+.admin-widget-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.assign-student-dialog {
+  display: flex;
+  max-width: 46rem;
+  max-height: min(44rem, calc(100dvh - 2.5rem));
+  flex-direction: column;
+  padding: 1.25rem 1.35rem 1rem;
+}
+
+.assign-student-dialog > * {
+  flex-shrink: 0;
+}
+
+.assign-student-dialog-head,
+.assign-student-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.85rem 1.15rem;
+}
+
+.assign-student-toolbar {
+  flex-wrap: wrap;
+}
+
+.assign-student-dialog-head {
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.assign-student-dialog-copy {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+.assign-student-close {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.assign-student-dialog-title {
+  margin: 0;
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+}
+
+.assign-student-dialog-sub,
+.assign-student-hint {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.assign-student-hint {
+  margin: 0.75rem 0 0.9rem;
+}
+
+.assign-student-tabs {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+  gap: 0.35rem;
+  height: 2.75rem;
+}
+
+.assign-student-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 9.25rem;
+  height: 100%;
+  border: 1.5px solid color-mix(in srgb, var(--primary) 16%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--primary);
+  padding: 0 1rem;
+  font-size: 0.95rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.assign-student-tab.is-active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.assign-student-dialog > .assign-student-list {
+  min-height: 10rem;
+  flex: 1 1 auto;
+  flex-shrink: 1;
+  margin-bottom: 0.75rem;
+  overflow-y: auto;
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 3%, white);
+  padding: 0.75rem;
+}
+
+.assign-student-list > .admin-users-status {
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+}
+
+.assign-student-loading {
+  display: flex;
+  min-height: 12rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.assign-student-spinner {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  border: 2px solid color-mix(in srgb, var(--primary) 22%, transparent);
+  border-top-color: var(--primary);
+  border-radius: 999px;
+  animation: page-loader-spin 0.9s linear infinite;
+}
+
+.assign-student-cards {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assign-student-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 11.25rem;
+  gap: 0.2rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 12%, transparent);
+  border-radius: var(--radius-md);
+  background: white;
+  padding: 0.9rem 1rem 2.35rem;
+  overflow: hidden;
+}
+
+.assign-student-card-main {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.assign-student-name,
+.assign-student-line {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assign-student-card.has-action .assign-student-name,
+.assign-student-card.has-action .assign-student-card-main > .assign-student-line {
+  max-width: calc(100% - 8.5rem);
+}
+
+.assign-student-name {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.assign-student-line {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.assign-student-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  width: 100%;
+  margin-top: 0.35rem;
+  overflow: hidden;
+}
+
+.assign-student-chip {
+  display: block;
+  min-width: 0;
+  max-width: max-content;
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assign-student-card-actions {
+  position: absolute;
+  top: 0.9rem;
+  right: 1rem;
+}
+
+.assign-student-profile {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.75rem;
+}
+
 .admin-widget-title {
   margin: 0;
   color: var(--foreground);
@@ -2830,6 +3083,46 @@ button.admin-widget-link {
   color: var(--foreground);
   font-size: 0.95rem;
   font-weight: 650;
+}
+
+.admin-users-name-link {
+  color: var(--primary);
+  font-size: 0.95rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.admin-users-name-link:hover {
+  text-decoration: underline;
+}
+
+.admin-profile-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-profile-project {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 4%, white);
+}
+
+.admin-profile-project-title {
+  color: var(--primary);
+  font-size: 1rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.admin-profile-project-title:hover {
+  text-decoration: underline;
 }
 
 .admin-users-meta,
@@ -3949,6 +4242,11 @@ body:has(.page-loader) .admin-menu-btn {
   max-height: min(32rem, calc(100dvh - 2.5rem));
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+.dialog-layer-panel.assign-student-dialog {
+  max-height: min(44rem, calc(100dvh - 2.5rem));
+  overflow: hidden;
 }
 
 /* Below desktop nav (lg): keep dropdowns inside the viewport */

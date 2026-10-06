@@ -6,6 +6,7 @@ using FEA.URVP.Application.Commands.Matching.Run;
 using FEA.URVP.Application.Commands.Matching.UpdatePlacementStatus;
 using FEA.URVP.Application.Queries.Matching.GetById;
 using FEA.URVP.Application.Queries.Matching.List;
+using FEA.URVP.Application.Queries.Matching.ListAssignmentCandidates;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -98,6 +99,37 @@ public sealed class MatchingController : ApiControllerBase
 
         var run = await _mediator.Send(new DiscardMatchingRunCommand(id), cancellationToken);
         return SuccessResponse(run, "Matching run discarded");
+    }
+
+    /// <summary>
+    /// Students an admin can assign to a project. Recommended results share the
+    /// project's research areas or are named in its qualifications.
+    /// </summary>
+    [HttpGet("projects/{projectId:guid}/assignment-candidates")]
+    public async Task<IActionResult> ListAssignmentCandidates(
+        Guid projectId,
+        [FromQuery] string? search = null,
+        [FromQuery] bool recommendedOnly = false,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 8,
+        CancellationToken cancellationToken = default)
+    {
+        if (!UserHasRole(nameof(UserRole.Admin)))
+            return ForbiddenResponse();
+
+        pageNumber = Math.Max(1, pageNumber);
+        pageSize = Math.Clamp(pageSize, 1, 50);
+
+        var (items, totalCount) = await _mediator.Send(
+            new ListAssignmentCandidatesQuery(
+                projectId,
+                search,
+                recommendedOnly,
+                pageNumber,
+                pageSize),
+            cancellationToken);
+
+        return PaginatedResponse(items, pageNumber, pageSize, totalCount);
     }
 
     /// <summary>Assign a student to a project immediately. Occupies a seat.</summary>
