@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { studentProfileHref, studentRankingsHref } from "@/lib/auth";
+import {
+  studentMatchedProjectsHref,
+  studentProfileHref,
+  studentRankingsHref,
+} from "@/lib/auth";
 
 const links = [
   { href: studentProfileHref(), label: "My Profile" },
   { href: studentRankingsHref(), label: "Ranked Projects" },
+  { href: studentMatchedProjectsHref(), label: "Matched Projects" },
 ] as const;
 
 export function StudentPortalNav() {

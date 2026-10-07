@@ -53,4 +53,26 @@ public static class MatchingMappings
         CreatedAt = placement.CreatedAt,
         UpdatedAt = placement.UpdatedAt,
     };
+
+    public static MyPlacementDto ToMyPlacementDto(this Placement placement)
+    {
+        var project = placement.Project
+            ?? throw new InvalidOperationException("Project navigation is required to map a placement.");
+
+        return new MyPlacementDto
+        {
+            Id = placement.Id,
+            ProjectId = placement.ProjectId,
+            ProjectTitle = project.Title,
+            FacultyName = project.FacultyNameSnapshot,
+            FacultyAffiliation = project.AffiliationSnapshot,
+            SemesterName = project.Semester?.Name ?? "",
+            BriefDescription = project.BriefDescription,
+            ResearchAreas = project.ResearchAreas,
+            ActivityTypes = project.ActivityTypes,
+            ProjectStatus = (byte)project.Status,
+            StudentRank = placement.StudentRank,
+            AssignedAt = placement.CreatedAt,
+        };
+    }
 }

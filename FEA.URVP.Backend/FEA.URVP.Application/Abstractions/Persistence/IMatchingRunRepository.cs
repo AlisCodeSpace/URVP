@@ -57,6 +57,22 @@ public interface IMatchingRunRepository
         IReadOnlyCollection<Guid> projectIds,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Confirmed placements that occupy a seat on the project's current cycle,
+    /// including projects the student did not rank.
+    /// </summary>
+    Task<IReadOnlyList<Placement>> ListCurrentConfirmedByStudentAsync(
+        Guid studentUserId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// True when the student occupies a seat on this project in its current cycle.
+    /// </summary>
+    Task<bool> StudentOccupiesProjectAsync(
+        Guid studentUserId,
+        Guid projectId,
+        CancellationToken cancellationToken = default);
+
     void Add(MatchingRun run);
 
     /// <summary>

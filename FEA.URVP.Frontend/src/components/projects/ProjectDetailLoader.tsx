@@ -8,7 +8,7 @@ import { ProjectDetail } from "@/components/projects/ProjectDetail";
 import { useStudentProjectsLocked } from "@/hooks/useApplicationWindow";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { ApiError } from "@/lib/api";
-import { projectsHref } from "@/lib/auth";
+import { projectsHref, studentMatchedProjectsHref } from "@/lib/auth";
 import { getProject, toCatalogProject } from "@/lib/projects-api";
 import { NotFoundView } from "@/components/ui/NotFoundView";
 import { ProjectDetailSkeleton } from "@/components/ui/SectionSkeletons";
@@ -24,6 +24,9 @@ export function ProjectDetailLoader({ id }: { id: string }) {
         if (err instanceof ApiError && err.status === 404) {
           return { kind: "missing" as const, project: null, message: null };
         }
+        if (err instanceof ApiError && err.status === 400) {
+          return { kind: "closed" as const, project: null, message: null };
+        }
         return {
           kind: "error" as const,
           project: null,
@@ -32,21 +35,23 @@ export function ProjectDetailLoader({ id }: { id: string }) {
         };
       }
     },
-    [id],
+    [id, studentProjects.pending],
     {
-      enabled: !studentProjects.pending && !studentProjects.locked,
+      enabled: !studentProjects.pending,
     },
   );
   const project = projectQuery.data?.project ?? null;
   const notFound = projectQuery.data?.kind === "missing";
+  const closed = projectQuery.data?.kind === "closed";
   const error = projectQuery.data?.message ?? null;
+  const assigned = studentProjects.locked && project != null;
 
-  if (studentProjects.locked) {
+  if (studentProjects.pending || projectQuery.data == null) {
     return (
       <>
         <PageHeader
-          title="Projects"
-          description="Research listings are hidden while the student application window is closed."
+          title="Project"
+          description="Loading research opportunity details…"
         >
           <Link
             href={projectsHref()}
@@ -54,6 +59,28 @@ export function ProjectDetailLoader({ id }: { id: string }) {
           >
             <span aria-hidden>←</span>
             Back to projects
+          </Link>
+        </PageHeader>
+        <section className="site-container py-14 sm:py-16">
+          <ProjectDetailSkeleton />
+        </section>
+      </>
+    );
+  }
+
+  if (closed || (studentProjects.locked && notFound)) {
+    return (
+      <>
+        <PageHeader
+          title="Projects"
+          description="Research listings are hidden while the student application window is closed."
+        >
+          <Link
+            href={studentMatchedProjectsHref()}
+            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+          >
+            <span aria-hidden>←</span>
+            Matched projects
           </Link>
         </PageHeader>
         <section className="site-container py-14 sm:py-16">
@@ -121,5 +148,5 @@ export function ProjectDetailLoader({ id }: { id: string }) {
     );
   }
 
-  return <ProjectDetail project={project} />;
+  return <ProjectDetail project={project} assigned={assigned} />;
 }

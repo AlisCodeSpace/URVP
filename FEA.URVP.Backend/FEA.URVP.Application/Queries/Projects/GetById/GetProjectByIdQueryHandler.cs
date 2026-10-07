@@ -11,6 +11,7 @@ public sealed class GetProjectByIdQueryHandler : IRequestHandler<GetProjectByIdQ
 {
     private readonly IProjectRepository _projects;
     private readonly ISemesterRepository _semesters;
+    private readonly IMatchingRunRepository _runs;
     private readonly FacultyProjectMutationAccess _mutationAccess;
     private readonly ProjectCycleClosure _cycleClosure;
 
@@ -18,12 +19,14 @@ public sealed class GetProjectByIdQueryHandler : IRequestHandler<GetProjectByIdQ
         IProjectRepository projects,
         ISemesterRepository semesters,
         FacultyProjectMutationAccess mutationAccess,
-        ProjectCycleClosure cycleClosure)
+        ProjectCycleClosure cycleClosure,
+        IMatchingRunRepository runs)
     {
         _projects = projects;
         _semesters = semesters;
         _mutationAccess = mutationAccess;
         _cycleClosure = cycleClosure;
+        _runs = runs;
     }
 
     public async Task<ProjectDto> Handle(GetProjectByIdQuery request, CancellationToken cancellationToken)
@@ -46,8 +49,15 @@ public sealed class GetProjectByIdQueryHandler : IRequestHandler<GetProjectByIdQ
 
         if (request.ViewerIsStudent && !canSeePreviousCycle)
         {
-            ApplicationWindowRules.EnsureStudentsCanViewProjects(
-                active, now, viewerIsStudent: true);
+            var participating = await _runs.StudentOccupiesProjectAsync(
+                request.ViewerUserId,
+                request.ProjectId,
+                cancellationToken);
+            if (!participating)
+            {
+                ApplicationWindowRules.EnsureStudentsCanViewProjects(
+                    active, now, viewerIsStudent: true);
+            }
         }
 
         var lockReason = await _mutationAccess.GetEditLockReasonAsync(project, cancellationToken);

@@ -37,6 +37,26 @@ export async function getMyProjectRankings(): Promise<ProjectRankingDto[]> {
   return apiFetch<ProjectRankingDto[]>("/api/project-rankings/me");
 }
 
+/** A project the signed-in student is participating in. `studentRank` is 0 when they did not rank it. */
+export type MyPlacementDto = {
+  id: string;
+  projectId: string;
+  projectTitle: string;
+  facultyName: string;
+  facultyAffiliation: string;
+  semesterName: string;
+  briefDescription: string;
+  researchAreas: string[];
+  activityTypes: string[];
+  projectStatus: number;
+  studentRank: number;
+  assignedAt: string;
+};
+
+export async function getMyPlacements(): Promise<MyPlacementDto[]> {
+  return apiFetch<MyPlacementDto[]>("/api/project-rankings/me/placements");
+}
+
 export async function getProjectRankings(
   projectId: string,
 ): Promise<ProjectRankingStudentDto[]> {

@@ -1,6 +1,7 @@
 using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.ProjectRankings.Remove;
 using FEA.URVP.Application.Commands.ProjectRankings.Upsert;
+using FEA.URVP.Application.Queries.Matching.GetMine;
 using FEA.URVP.Application.Queries.ProjectRankings.GetMine;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -32,6 +33,23 @@ public sealed class ProjectRankingsController : ApiControllerBase
 
         var rankings = await _mediator.Send(new GetMyProjectRankingsQuery(userId), cancellationToken);
         return SuccessResponse(rankings);
+    }
+
+    /// <summary>
+    /// Projects the signed-in student is participating in, including assignments
+    /// to projects they did not rank.
+    /// </summary>
+    [HttpGet("me/placements")]
+    public async Task<IActionResult> GetMyPlacements(CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        var placements = await _mediator.Send(new GetMyPlacementsQuery(userId), cancellationToken);
+        return SuccessResponse(placements);
     }
 
     /// <summary>

@@ -247,6 +247,10 @@ export function studentRankingsHref(): string {
   return studentProjectsHref();
 }
 
+export function studentMatchedProjectsHref(): string {
+  return "/student/matches";
+}
+
 export function myProjectsHref(userId: string): string {
   return withParams("/my-projects", { [RouteParam.User]: userId });
 }

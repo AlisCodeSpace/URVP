@@ -2,11 +2,12 @@
 
 import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
-import { studentProfileHref } from "@/lib/auth";
+import { studentMatchedProjectsHref, studentProfileHref } from "@/lib/auth";
 
 const otherPages = [
   { href: "/", label: "Home" },
   { href: studentProfileHref(), label: "My profile" },
+  { href: studentMatchedProjectsHref(), label: "Matched projects" },
   { href: "/workshops", label: "Workshops" },
   { href: "/news", label: "News" },
 ] as const;

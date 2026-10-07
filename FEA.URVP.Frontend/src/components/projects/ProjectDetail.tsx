@@ -13,7 +13,12 @@ import {
   isResearchTopicMatch,
   useStudentResearchTopics,
 } from "@/hooks/useStudentResearchTopics";
-import { isStudent, projectsHref, studentProfileHref } from "@/lib/auth";
+import {
+  isStudent,
+  projectsHref,
+  studentMatchedProjectsHref,
+  studentProfileHref,
+} from "@/lib/auth";
 import { openingsLeft, type CatalogProject } from "@/lib/projects";
 
 function DetailFact({
@@ -117,7 +122,13 @@ function splitJoined(value: string): string[] {
     .filter(Boolean);
 }
 
-export function ProjectDetail({ project }: { project: CatalogProject }) {
+export function ProjectDetail({
+  project,
+  assigned = false,
+}: {
+  project: CatalogProject;
+  assigned?: boolean;
+}) {
   const { status } = useAuth();
   const isSignedIn = Boolean(status?.isAuthenticated);
   const canRank = isSignedIn && isStudent(status?.role);
@@ -141,11 +152,11 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
         description={`${project.semesterName ? `${project.semesterName} · ` : ""}${project.facultyName} · ${project.affiliation}. Posted ${project.postedAt}.`}
       >
         <Link
-          href={projectsHref()}
+          href={assigned ? studentMatchedProjectsHref() : projectsHref()}
           className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
         >
           <span aria-hidden>←</span>
-          Back to projects
+          {assigned ? "Back to matched projects" : "Back to projects"}
         </Link>
       </PageHeader>
 
@@ -256,7 +267,9 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
                 mt="3"
                 className="!leading-relaxed !text-muted"
               >
-                {isClosed ? (
+                {assigned ? (
+                  "You are participating in this project."
+                ) : isClosed ? (
                   "This listing is not accepting new volunteers right now."
                 ) : applicationsClosed ? (
                   "The student application window is currently closed. Check back during the application period (typically mid-September to end of September)."
@@ -282,7 +295,11 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
               </Text>
 
               <div className="mt-6 flex flex-col gap-2">
-                {isClosed || applicationsClosed ? (
+                {assigned ? (
+                  <Button href={studentMatchedProjectsHref()} variant="primary" size="md">
+                    Matched projects
+                  </Button>
+                ) : isClosed || applicationsClosed ? (
                   <Button
                     type="button"
                     variant="outline"
@@ -328,9 +345,11 @@ export function ProjectDetail({ project }: { project: CatalogProject }) {
                     Sign in to apply
                   </Button>
                 )}
-                <Button href={projectsHref()} variant="ghost" size="md">
-                  Browse more
-                </Button>
+                {assigned ? null : (
+                  <Button href={projectsHref()} variant="ghost" size="md">
+                    Browse more
+                  </Button>
+                )}
               </div>
             </aside>
           </div>

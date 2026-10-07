@@ -3,6 +3,7 @@ import {
   myProjectsHref,
   newProjectHref,
   projectsHref,
+  studentMatchedProjectsHref,
   studentProfileHref,
   studentRankingsHref,
 } from "@/lib/auth";
@@ -36,6 +37,7 @@ function step(
 export function studentTourSteps(go: Go): Step[] {
   const profile = studentProfileHref();
   const rankings = studentRankingsHref();
+  const matches = studentMatchedProjectsHref();
   const catalog = projectsHref();
 
   return [
@@ -43,7 +45,7 @@ export function studentTourSteps(go: Go): Step[] {
       target: '[data-tour="student-portal"]',
       title: "Your student portal",
       content:
-        "Start here. Complete your profile first, then rank up to three faculty projects for matching.",
+        "Start here. Complete your profile, rank up to three projects, and check Matched Projects for the work you are participating in.",
     }),
     step(profile, go, {
       target: '[data-tour="student-profile"]',
@@ -62,6 +64,12 @@ export function studentTourSteps(go: Go): Step[] {
       title: "Your ranked projects",
       content:
         "Your 1st, 2nd, and 3rd choices appear here. Matching is based on these rankings.",
+    }),
+    step(matches, go, {
+      target: '[data-tour="student-matches"]',
+      title: "Projects you are participating in",
+      content:
+        "After matching, every project you are assigned to appears here.",
     }),
     step(catalog, go, {
       target: '[data-tour="project-filters"]',
