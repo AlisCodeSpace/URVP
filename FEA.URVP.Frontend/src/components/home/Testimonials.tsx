@@ -27,13 +27,13 @@ export function Testimonials() {
           {testimonials.map((item) => (
             <li
               key={item.name}
-              className="flex flex-col rounded-lg border border-primary/12 bg-background px-6 py-7"
+              className="flex h-full flex-col rounded-lg border border-primary/12 bg-background px-6 py-7"
             >
               <blockquote className="flex flex-1 flex-col">
                 <Text
                   as="p"
                   size="3"
-                  className="!font-[family-name:var(--font-display)] !leading-relaxed !text-primary"
+                  className="flex-1 !font-[family-name:var(--font-display)] !leading-relaxed !text-primary"
                 >
                   “{item.quote}”
                 </Text>
