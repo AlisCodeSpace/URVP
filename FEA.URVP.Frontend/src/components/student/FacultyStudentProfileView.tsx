@@ -82,7 +82,7 @@ export function FacultyStudentProfileView({
         <PageHeader
           eyebrow="Faculty portal"
           title={error ? "Student profile" : displayName}
-          description="Review this student's qualifications and rank them as a candidate for your project."
+          description="Review this student's qualifications for your project."
         >
           <Link
             href={viewProjectHref(userId, projectId)}
@@ -116,7 +116,7 @@ export function FacultyStudentProfileView({
                 >
                   {rankingsError}
                 </Text>
-              ) : project ? (
+              ) : project && current ? (
                 <section className="rounded-[var(--radius-lg)] border border-primary/12 bg-surface p-5 sm:p-7">
                   <Heading
                     as="h2"

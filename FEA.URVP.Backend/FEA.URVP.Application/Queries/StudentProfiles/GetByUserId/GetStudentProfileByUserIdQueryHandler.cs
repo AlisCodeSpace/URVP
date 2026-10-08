@@ -14,17 +14,23 @@ public sealed class GetStudentProfileByUserIdQueryHandler
     private readonly IUserRepository _users;
     private readonly IFileStorageRepository _files;
     private readonly IProjectRankingRepository _rankings;
+    private readonly IMatchingRunRepository _placements;
+    private readonly IProjectAlumniRepository _alumni;
 
     public GetStudentProfileByUserIdQueryHandler(
         IStudentProfileRepository profiles,
         IUserRepository users,
         IFileStorageRepository files,
-        IProjectRankingRepository rankings)
+        IProjectRankingRepository rankings,
+        IMatchingRunRepository placements,
+        IProjectAlumniRepository alumni)
     {
         _profiles = profiles;
         _users = users;
         _files = files;
         _rankings = rankings;
+        _placements = placements;
+        _alumni = alumni;
     }
 
     public async Task<StudentProfileDto> Handle(
@@ -43,16 +49,13 @@ public sealed class GetStudentProfileByUserIdQueryHandler
 
         if (viewer.Role is not UserRole.Admin)
         {
-            var ranked = await _rankings.StudentHasRankedFacultyProjectAsync(
-                request.StudentUserId,
+            await StudentProfileAccess.EnsureFacultyMayViewStudentAsync(
                 viewer.Id,
+                request.StudentUserId,
+                _rankings,
+                _placements,
+                _alumni,
                 cancellationToken);
-
-            if (!ranked)
-            {
-                throw new UnauthorizedAccessException(
-                    "You can only view profiles of students who ranked a project you posted.");
-            }
         }
 
         var student = await _users.FindByIdAsync(request.StudentUserId, cancellationToken)

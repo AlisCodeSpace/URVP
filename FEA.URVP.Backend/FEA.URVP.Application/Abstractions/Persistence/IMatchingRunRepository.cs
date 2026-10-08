@@ -73,6 +73,15 @@ public interface IMatchingRunRepository
         Guid projectId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// True when the student has a confirmed placement on a project posted by the
+    /// faculty member in that project's current academic cycle.
+    /// </summary>
+    Task<bool> StudentAssignedToFacultyProjectAsync(
+        Guid studentUserId,
+        Guid facultyUserId,
+        CancellationToken cancellationToken = default);
+
     void Add(MatchingRun run);
 
     /// <summary>

@@ -35,7 +35,7 @@ public sealed class StudentProfilesController : ApiControllerBase
     }
 
     /// <summary>
-    /// Faculty (or admin) view of a student who ranked one of the caller's projects.
+    /// Faculty (or admin) view of a student who ranked or was assigned to one of the caller's projects.
     /// </summary>
     [HttpGet("{userId:guid}")]
     public async Task<IActionResult> GetByUserId(Guid userId, CancellationToken cancellationToken)

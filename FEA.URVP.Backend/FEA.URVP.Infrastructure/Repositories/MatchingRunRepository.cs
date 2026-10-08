@@ -163,6 +163,19 @@ public sealed class MatchingRunRepository : IMatchingRunRepository
                 p => p.StudentUserId == studentUserId && p.ProjectId == projectId,
                 cancellationToken);
 
+    public Task<bool> StudentAssignedToFacultyProjectAsync(
+        Guid studentUserId,
+        Guid facultyUserId,
+        CancellationToken cancellationToken = default) =>
+        _db.Placements
+            .AsNoTracking()
+            .AnyAsync(
+                p => p.StudentUserId == studentUserId
+                     && p.Status == PlacementStatus.Confirmed
+                     && p.MatchingRun.SemesterId == p.Project.SemesterId
+                     && p.Project.CreatedByUserId == facultyUserId,
+                cancellationToken);
+
     private IQueryable<Placement> CurrentSeatPlacements() =>
         _db.Placements
             .AsNoTracking()

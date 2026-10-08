@@ -22,6 +22,16 @@ public sealed class ProjectAlumniRepository : IProjectAlumniRepository
             a => a.ProjectId == projectId && a.SemesterId == semesterId,
             cancellationToken);
 
+    public Task<bool> StudentWasConfirmedOnFacultyProjectAsync(
+        Guid studentUserId,
+        Guid facultyUserId,
+        CancellationToken cancellationToken = default) =>
+        _db.ProjectAlumni.AnyAsync(
+            a => a.StudentUserId == studentUserId
+                 && a.WasConfirmed
+                 && a.Project.CreatedByUserId == facultyUserId,
+            cancellationToken);
+
     public async Task<IReadOnlyList<ProjectAlumni>> ListByProjectAsync(
         Guid projectId,
         CancellationToken cancellationToken = default) =>
