@@ -4,6 +4,8 @@ using FEA.URVP.Api.Controllers.Base;
 using FEA.URVP.Application.Commands.Projects.Create;
 using FEA.URVP.Application.Commands.Projects.Delete;
 using FEA.URVP.Application.Commands.Projects.Reactivate;
+using FEA.URVP.Application.Commands.Projects.ResearchAssistants.Add;
+using FEA.URVP.Application.Commands.Projects.ResearchAssistants.Remove;
 using FEA.URVP.Application.Commands.Projects.Update;
 using FEA.URVP.Application.Queries.ProjectRankings.ListByProject;
 using FEA.URVP.Application.Queries.Projects.Export;
@@ -13,6 +15,7 @@ using FEA.URVP.Application.Queries.Projects.GetById;
 using FEA.URVP.Application.Queries.Projects.List;
 using FEA.URVP.Application.Queries.Projects.ListAlumni;
 using FEA.URVP.Application.Queries.Projects.ListAdmin;
+using FEA.URVP.Application.Queries.Projects.ListResearchAssistants;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -181,6 +184,73 @@ public sealed class ProjectsController : ApiControllerBase
                 UserHasRole(nameof(UserRole.Student))),
             cancellationToken);
         return SuccessResponse(project);
+    }
+
+    /// <summary>
+    /// People helping run this project. They do not occupy a volunteer seat.
+    /// Project owner or admin only.
+    /// </summary>
+    [HttpGet("{id:guid}/research-assistants")]
+    public async Task<IActionResult> ListResearchAssistants(Guid id, CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        var assistants = await _mediator.Send(
+            new ListProjectResearchAssistantsQuery(id, userId, UserHasRole(nameof(UserRole.Admin))),
+            cancellationToken);
+        return SuccessResponse(assistants);
+    }
+
+    /// <summary>
+    /// Add a research assistant from a user id, or from a name and email when the person
+    /// is entered directly. Project owner or admin only.
+    /// </summary>
+    [HttpPost("{id:guid}/research-assistants")]
+    public async Task<IActionResult> AddResearchAssistant(
+        Guid id,
+        [FromBody] AddProjectResearchAssistantCommand command,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        command.ProjectId = id;
+        command.CurrentUserId = userId;
+        command.IsAdmin = UserHasRole(nameof(UserRole.Admin));
+
+        var assistant = await _mediator.Send(command, cancellationToken);
+        return SuccessResponse(assistant, "Research assistant added");
+    }
+
+    /// <summary>Remove a research assistant. Project owner or admin only.</summary>
+    [HttpDelete("{id:guid}/research-assistants/{assistantId:guid}")]
+    public async Task<IActionResult> RemoveResearchAssistant(
+        Guid id,
+        Guid assistantId,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        await _mediator.Send(
+            new RemoveProjectResearchAssistantCommand(
+                id,
+                assistantId,
+                userId,
+                UserHasRole(nameof(UserRole.Admin))),
+            cancellationToken);
+
+        return SuccessResponse<object?>(null, "Research assistant removed");
     }
 
     /// <summary>

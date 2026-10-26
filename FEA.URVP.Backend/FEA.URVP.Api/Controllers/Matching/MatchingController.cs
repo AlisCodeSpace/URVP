@@ -110,6 +110,7 @@ public sealed class MatchingController : ApiControllerBase
         Guid projectId,
         [FromQuery] string? search = null,
         [FromQuery] bool recommendedOnly = false,
+        [FromQuery] bool rankedProjectsOnly = false,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 8,
         CancellationToken cancellationToken = default)
@@ -125,6 +126,7 @@ public sealed class MatchingController : ApiControllerBase
                 projectId,
                 search,
                 recommendedOnly,
+                rankedProjectsOnly,
                 pageNumber,
                 pageSize),
             cancellationToken);

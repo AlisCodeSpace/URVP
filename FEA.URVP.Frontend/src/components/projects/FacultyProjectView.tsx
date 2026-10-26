@@ -9,6 +9,7 @@ import { FacultyProjectAlumni } from "@/components/projects/FacultyProjectAlumni
 import { FacultyProjectParticipants } from "@/components/projects/FacultyProjectParticipants";
 import { FacultyProjectRankings } from "@/components/projects/FacultyProjectRankings";
 import { FacultyProjectReadonly } from "@/components/projects/FacultyProjectReadonly";
+import { ProjectResearchAssistants } from "@/components/projects/ProjectResearchAssistants";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useState } from "react";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
@@ -199,6 +200,7 @@ export function FacultyProjectView({
                   />
                 </>
               )}
+              <ProjectResearchAssistants projectId={projectId} tone="faculty" />
               <FacultyProjectAlumni
                 userId={userId}
                 projectId={projectId}

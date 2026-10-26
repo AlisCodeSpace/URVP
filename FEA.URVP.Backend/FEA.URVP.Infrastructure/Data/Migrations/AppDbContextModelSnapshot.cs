@@ -757,6 +757,52 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.ToTable("ProjectAlumni", (string)null);
                 });
 
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Projects.ProjectResearchAssistant", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AddedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddedByUserId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ProjectId", "Email")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId", "UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.ToTable("ProjectResearchAssistants", (string)null);
+                });
+
             modelBuilder.Entity("FEA.URVP.Domain.Entities.Semesters.Semester", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1204,6 +1250,32 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.Navigation("Project");
 
                     b.Navigation("Semester");
+                });
+
+            modelBuilder.Entity("FEA.URVP.Domain.Entities.Projects.ProjectResearchAssistant", b =>
+                {
+                    b.HasOne("FEA.URVP.Domain.Entities.Users.User", "AddedByUser")
+                        .WithMany()
+                        .HasForeignKey("AddedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("FEA.URVP.Domain.Entities.Projects.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FEA.URVP.Domain.Entities.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AddedByUser");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FEA.URVP.Domain.Entities.StudentProfiles.StudentProfile", b =>

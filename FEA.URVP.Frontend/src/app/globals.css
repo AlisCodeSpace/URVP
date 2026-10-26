@@ -2359,8 +2359,16 @@ a.admin-kpi:hover {
   margin-bottom: 1rem;
 }
 
-.assign-student-hint {
-  margin: 0.75rem 0 1rem;
+.assign-student-rank-filter {
+  flex: 1 1 100%;
+}
+
+.research-assistant-chooser-wrap {
+  margin-top: 0.9rem;
+}
+
+.research-assistant-chooser {
+  margin: 0;
   color: var(--muted);
   font-size: 0.85rem;
   line-height: 1.45;
@@ -2392,6 +2400,13 @@ a.admin-kpi:hover {
   border-color: var(--primary);
   background: var(--primary);
   color: white;
+}
+
+.assign-student-hint {
+  margin: 0.75rem 0 1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
 }
 
 .assign-student-hint-row {
@@ -3573,6 +3588,10 @@ body.admin-drawer-open {
 }
 
 .admin-project-copy {
+  margin-bottom: 1rem;
+}
+
+.admin-project-assistants {
   margin-bottom: 1rem;
 }
 

@@ -31,6 +31,7 @@ public sealed class ListAssignmentCandidatesQueryHandler
             var (items, totalCount) = await _candidates.PageEligibleAsync(
                 project.Id,
                 request.Search,
+                request.RankedProjectsOnly,
                 request.PageNumber,
                 request.PageSize,
                 cancellationToken);
@@ -41,7 +42,11 @@ public sealed class ListAssignmentCandidatesQueryHandler
             return (items.Select(item => ToDto(item, project.ResearchAreas, project.MinQualifications, labels)).ToList(), totalCount);
         }
 
-        var eligible = await _candidates.ListEligibleAsync(project.Id, request.Search, cancellationToken);
+        var eligible = await _candidates.ListEligibleAsync(
+            project.Id,
+            request.Search,
+            request.RankedProjectsOnly,
+            cancellationToken);
         var ranked = eligible
             .Select(student => (
                 student,

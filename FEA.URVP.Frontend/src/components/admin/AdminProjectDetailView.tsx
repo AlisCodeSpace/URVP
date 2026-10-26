@@ -31,6 +31,7 @@ import {
 import { getAssignmentGate } from "@/lib/assignment-gate";
 import { adminAssignStudentsHref, adminStudentProfileHref } from "@/lib/auth";
 import type { ProjectDto } from "@/lib/projects-api";
+import { ProjectResearchAssistants } from "@/components/projects/ProjectResearchAssistants";
 import { getActiveSemester } from "@/lib/semesters-api";
 
 const RANK_GROUPS = [
@@ -345,6 +346,8 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
           )}
         </ListingBlock>
       </section>
+
+      <ProjectResearchAssistants projectId={project.id} tone="admin" />
 
       {!activeSemester ? (
         <p className="admin-users-banner" role="status">
