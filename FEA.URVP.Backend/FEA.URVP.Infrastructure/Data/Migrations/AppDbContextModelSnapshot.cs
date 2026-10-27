@@ -774,31 +774,17 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
                     b.Property<Guid>("ProjectId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AddedByUserId");
 
-                    b.HasIndex("ProjectId");
-
-                    b.HasIndex("UserId");
+                    b.HasIndex("Email");
 
                     b.HasIndex("ProjectId", "Email")
                         .IsUnique();
-
-                    b.HasIndex("ProjectId", "UserId")
-                        .IsUnique()
-                        .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("ProjectResearchAssistants", (string)null);
                 });
@@ -1266,16 +1252,9 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FEA.URVP.Domain.Entities.Users.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("AddedByUser");
 
                     b.Navigation("Project");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FEA.URVP.Domain.Entities.StudentProfiles.StudentProfile", b =>

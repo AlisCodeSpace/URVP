@@ -1,18 +1,25 @@
 import { apiFetch } from "@/lib/api";
+import type { MyProjectStatus } from "@/lib/project-form";
 
 export type ProjectResearchAssistant = {
   id: string;
-  userId: string | null;
-  name: string;
+  /** Stored lowercase. */
   email: string;
+  /** Account name; null until the person has signed in. */
+  name: string | null;
+  hasSignedIn: boolean;
   addedAt: string;
 };
 
-/** Either a directory user, or a name and email entered directly. */
-export type AddResearchAssistantInput = {
-  userId?: string;
-  name?: string;
-  email?: string;
+/** A project the signed-in person is listed on as a research assistant. */
+export type AssistedProject = {
+  projectId: string;
+  title: string;
+  semesterName: string;
+  status: MyProjectStatus;
+  facultyName: string;
+  facultyEmail: string;
+  addedAt: string;
 };
 
 export async function listResearchAssistants(
@@ -25,17 +32,13 @@ export async function listResearchAssistants(
 
 export async function addResearchAssistant(
   projectId: string,
-  input: AddResearchAssistantInput,
+  email: string,
 ): Promise<ProjectResearchAssistant> {
   return apiFetch<ProjectResearchAssistant>(
     `/api/projects/${projectId}/research-assistants`,
     {
       method: "POST",
-      body: JSON.stringify({
-        userId: input.userId ?? null,
-        name: input.name ?? null,
-        email: input.email ?? null,
-      }),
+      body: JSON.stringify({ email }),
     },
   );
 }
@@ -48,4 +51,9 @@ export async function removeResearchAssistant(
     `/api/projects/${projectId}/research-assistants/${assistantId}`,
     { method: "DELETE" },
   );
+}
+
+/** Projects where the signed-in user is listed as a research assistant, matched by email. */
+export async function listAssistedProjects(): Promise<AssistedProject[]> {
+  return apiFetch<AssistedProject[]>("/api/projects/assisting");
 }

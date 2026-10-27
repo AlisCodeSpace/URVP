@@ -12,10 +12,6 @@ public sealed class ProjectResearchAssistantConfiguration : IEntityTypeConfigura
 
         builder.HasKey(assistant => assistant.Id);
 
-        builder.Property(assistant => assistant.Name)
-            .IsRequired()
-            .HasMaxLength(128);
-
         builder.Property(assistant => assistant.Email)
             .IsRequired()
             .HasMaxLength(256);
@@ -27,23 +23,15 @@ public sealed class ProjectResearchAssistantConfiguration : IEntityTypeConfigura
             .HasForeignKey(assistant => assistant.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(assistant => assistant.User)
-            .WithMany()
-            .HasForeignKey(assistant => assistant.UserId)
-            .OnDelete(DeleteBehavior.SetNull);
-
         builder.HasOne(assistant => assistant.AddedByUser)
             .WithMany()
             .HasForeignKey(assistant => assistant.AddedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(assistant => assistant.ProjectId);
-
         builder.HasIndex(assistant => new { assistant.ProjectId, assistant.Email })
             .IsUnique();
 
-        builder.HasIndex(assistant => new { assistant.ProjectId, assistant.UserId })
-            .IsUnique()
-            .HasFilter("[UserId] IS NOT NULL");
+        // "Projects I assist" looks people up by email across projects.
+        builder.HasIndex(assistant => assistant.Email);
     }
 }

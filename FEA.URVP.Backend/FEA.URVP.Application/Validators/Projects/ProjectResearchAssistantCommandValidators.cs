@@ -15,17 +15,10 @@ public sealed class AddProjectResearchAssistantCommandValidator
         RuleFor(command => command.CurrentUserId)
             .NotEmpty().WithMessage("CurrentUserId is required.");
 
-        When(command => command.UserId is null || command.UserId == Guid.Empty, () =>
-        {
-            RuleFor(command => command.Name)
-                .NotEmpty().WithMessage("Name is required.")
-                .MaximumLength(128).WithMessage("Name must be at most 128 characters.");
-
-            RuleFor(command => command.Email)
-                .NotEmpty().WithMessage("Email is required.")
-                .MaximumLength(256).WithMessage("Email must be at most 256 characters.")
-                .EmailAddress().WithMessage("A valid email address is required.");
-        });
+        RuleFor(command => command.Email)
+            .NotEmpty().WithMessage("Email is required.")
+            .MaximumLength(256).WithMessage("Email must be at most 256 characters.")
+            .EmailAddress().WithMessage("A valid email address is required.");
     }
 }
 

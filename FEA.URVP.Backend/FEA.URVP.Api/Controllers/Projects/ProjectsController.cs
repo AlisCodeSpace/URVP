@@ -15,6 +15,7 @@ using FEA.URVP.Application.Queries.Projects.GetById;
 using FEA.URVP.Application.Queries.Projects.List;
 using FEA.URVP.Application.Queries.Projects.ListAlumni;
 using FEA.URVP.Application.Queries.Projects.ListAdmin;
+using FEA.URVP.Application.Queries.Projects.ListAssistedProjects;
 using FEA.URVP.Application.Queries.Projects.ListResearchAssistants;
 using FEA.URVP.Domain.Enums;
 using MediatR;
@@ -187,6 +188,23 @@ public sealed class ProjectsController : ApiControllerBase
     }
 
     /// <summary>
+    /// Projects where the signed-in user is listed as a research assistant, matched by email.
+    /// Works for someone added before they ever signed in.
+    /// </summary>
+    [HttpGet("assisting")]
+    public async Task<IActionResult> ListAssistedProjects(CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == Guid.Empty)
+        {
+            return UnauthorizedResponse();
+        }
+
+        var projects = await _mediator.Send(new ListAssistedProjectsQuery(userId), cancellationToken);
+        return SuccessResponse(projects);
+    }
+
+    /// <summary>
     /// People helping run this project. They do not occupy a volunteer seat.
     /// Project owner or admin only.
     /// </summary>
@@ -206,8 +224,8 @@ public sealed class ProjectsController : ApiControllerBase
     }
 
     /// <summary>
-    /// Add a research assistant from a user id, or from a name and email when the person
-    /// is entered directly. Project owner or admin only.
+    /// Add a research assistant by email. The person need not have signed in yet.
+    /// Project owner or admin only.
     /// </summary>
     [HttpPost("{id:guid}/research-assistants")]
     public async Task<IActionResult> AddResearchAssistant(

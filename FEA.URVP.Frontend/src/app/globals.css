@@ -2367,11 +2367,17 @@ a.admin-kpi:hover {
   margin-top: 0.9rem;
 }
 
-.research-assistant-chooser {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.85rem;
-  line-height: 1.45;
+.research-assistant-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  max-width: 34rem;
+}
+
+.research-assistant-form-field {
+  flex: 1 1 14rem;
+  min-width: 0;
 }
 
 .assign-student-tabs {

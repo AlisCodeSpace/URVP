@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Commands.Projects.ResearchAssistants.Add;
 using FEA.URVP.Application.Commands.Projects.ResearchAssistants.Remove;
+using FEA.URVP.Application.Queries.Projects.ListAssistedProjects;
 using FEA.URVP.Application.Queries.Projects.ListResearchAssistants;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;
@@ -18,6 +19,7 @@ public sealed class ProjectResearchAssistantTests : IDisposable
     private readonly AddProjectResearchAssistantCommandHandler _add;
     private readonly RemoveProjectResearchAssistantCommandHandler _remove;
     private readonly ListProjectResearchAssistantsQueryHandler _list;
+    private readonly ListAssistedProjectsQueryHandler _assisting;
     private readonly User _faculty;
     private readonly User _admin;
     private readonly Project _project;
@@ -52,13 +54,11 @@ public sealed class ProjectResearchAssistantTests : IDisposable
         _db.SaveChanges();
 
         var projects = new ProjectRepository(_db);
-        var users = new UserRepository(_db);
         var assistants = new ProjectResearchAssistantRepository(_db);
         _add = new AddProjectResearchAssistantCommandHandler(
             NullLogger<AddProjectResearchAssistantCommandHandler>.Instance,
             _db,
             projects,
-            users,
             assistants);
         _remove = new RemoveProjectResearchAssistantCommandHandler(
             NullLogger<RemoveProjectResearchAssistantCommandHandler>.Instance,
@@ -66,62 +66,92 @@ public sealed class ProjectResearchAssistantTests : IDisposable
             projects,
             assistants);
         _list = new ListProjectResearchAssistantsQueryHandler(projects, assistants);
+        _assisting = new ListAssistedProjectsQueryHandler(new UserRepository(_db), assistants);
     }
 
     [Fact]
-    public async Task Owner_can_add_a_directory_user_and_a_typed_entry_then_remove_one()
+    public async Task Email_is_stored_lowercase_and_has_no_name_until_the_person_signs_in()
     {
-        var student = Person("Grace Hopper", "grace@mail.aub.edu", UserRole.Student);
-        _db.Users.Add(student);
+        var added = await _add.Handle(new AddProjectResearchAssistantCommand
+        {
+            ProjectId = _project.Id,
+            CurrentUserId = _faculty.Id,
+            Email = "  Lab.Aide@Mail.AUB.edu ",
+        }, CancellationToken.None);
+
+        Assert.Equal("lab.aide@mail.aub.edu", added.Email);
+        Assert.Null(added.Name);
+        Assert.False(added.HasSignedIn);
+
+        _db.Users.Add(Person("Lab Aide", "lab.aide@mail.aub.edu", UserRole.Student));
         await _db.SaveChangesAsync();
-
-        var linked = await _add.Handle(new AddProjectResearchAssistantCommand
-        {
-            ProjectId = _project.Id,
-            CurrentUserId = _faculty.Id,
-            UserId = student.Id,
-        }, CancellationToken.None);
-
-        var typed = await _add.Handle(new AddProjectResearchAssistantCommand
-        {
-            ProjectId = _project.Id,
-            CurrentUserId = _faculty.Id,
-            Name = "Lab Aide",
-            Email = "aide@mail.aub.edu",
-        }, CancellationToken.None);
 
         var listed = await _list.Handle(
             new ListProjectResearchAssistantsQuery(_project.Id, _faculty.Id, false),
             CancellationToken.None);
 
-        Assert.Equal(student.Id, linked.UserId);
-        Assert.Equal("Grace Hopper", linked.Name);
-        Assert.Null(typed.UserId);
-        Assert.Equal(["Grace Hopper", "Lab Aide"], listed.Select(assistant => assistant.Name).ToArray());
+        var entry = Assert.Single(listed);
+        Assert.Equal("Lab Aide", entry.Name);
+        Assert.True(entry.HasSignedIn);
+    }
+
+    [Fact]
+    public async Task Person_added_before_their_first_sign_in_sees_the_project_afterwards()
+    {
+        await _add.Handle(new AddProjectResearchAssistantCommand
+        {
+            ProjectId = _project.Id,
+            CurrentUserId = _admin.Id,
+            IsAdmin = true,
+            Email = "new.person@mail.aub.edu",
+        }, CancellationToken.None);
+
+        var newcomer = Person("New Person", "new.person@mail.aub.edu", UserRole.Student);
+        var bystander = Person("Someone Else", "else@mail.aub.edu", UserRole.Student);
+        _db.Users.AddRange(newcomer, bystander);
+        await _db.SaveChangesAsync();
+
+        var mine = await _assisting.Handle(new ListAssistedProjectsQuery(newcomer.Id), CancellationToken.None);
+        var theirs = await _assisting.Handle(new ListAssistedProjectsQuery(bystander.Id), CancellationToken.None);
+
+        var project = Assert.Single(mine);
+        Assert.Equal(_project.Id, project.ProjectId);
+        Assert.Equal("Water systems", project.Title);
+        Assert.Equal("Fall 2026", project.SemesterName);
+        Assert.Empty(theirs);
+    }
+
+    [Fact]
+    public async Task Owner_can_remove_an_assistant()
+    {
+        var added = await _add.Handle(new AddProjectResearchAssistantCommand
+        {
+            ProjectId = _project.Id,
+            CurrentUserId = _faculty.Id,
+            Email = "aide@mail.aub.edu",
+        }, CancellationToken.None);
 
         await _remove.Handle(
-            new RemoveProjectResearchAssistantCommand(_project.Id, typed.Id, _faculty.Id, false),
+            new RemoveProjectResearchAssistantCommand(_project.Id, added.Id, _faculty.Id, false),
             CancellationToken.None);
 
         var after = await _list.Handle(
             new ListProjectResearchAssistantsQuery(_project.Id, _admin.Id, true),
             CancellationToken.None);
-        Assert.Equal(linked.Id, Assert.Single(after).Id);
+        Assert.Empty(after);
     }
 
     [Fact]
     public async Task Admin_can_add_on_another_faculty_project()
     {
-        var added = await _add.Handle(new AddProjectResearchAssistantCommand
+        await _add.Handle(new AddProjectResearchAssistantCommand
         {
             ProjectId = _project.Id,
             CurrentUserId = _admin.Id,
             IsAdmin = true,
-            Name = "Lab Aide",
             Email = "aide@mail.aub.edu",
         }, CancellationToken.None);
 
-        Assert.Equal("Lab Aide", added.Name);
         Assert.Equal(_admin.Id, _db.ProjectResearchAssistants.Single().AddedByUserId);
     }
 
@@ -137,7 +167,6 @@ public sealed class ProjectResearchAssistantTests : IDisposable
             {
                 ProjectId = _project.Id,
                 CurrentUserId = other.Id,
-                Name = "Lab Aide",
                 Email = "aide@mail.aub.edu",
             },
             CancellationToken.None));
@@ -148,13 +177,12 @@ public sealed class ProjectResearchAssistantTests : IDisposable
     }
 
     [Fact]
-    public async Task Rejects_a_duplicate_person()
+    public async Task Rejects_a_duplicate_email_regardless_of_case()
     {
         await _add.Handle(new AddProjectResearchAssistantCommand
         {
             ProjectId = _project.Id,
             CurrentUserId = _faculty.Id,
-            Name = "Lab Aide",
             Email = "aide@mail.aub.edu",
         }, CancellationToken.None);
 
@@ -163,12 +191,27 @@ public sealed class ProjectResearchAssistantTests : IDisposable
             {
                 ProjectId = _project.Id,
                 CurrentUserId = _faculty.Id,
-                Name = "Someone Else",
                 Email = "AIDE@mail.aub.edu",
             },
             CancellationToken.None));
 
         Assert.Contains("already a research assistant", duplicate.Message);
+    }
+
+    [Fact]
+    public async Task Rejects_the_project_owner_as_their_own_assistant()
+    {
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => _add.Handle(
+            new AddProjectResearchAssistantCommand
+            {
+                ProjectId = _project.Id,
+                CurrentUserId = _admin.Id,
+                IsAdmin = true,
+                Email = "ADA.FACULTY@mail.aub.edu",
+            },
+            CancellationToken.None));
+
+        Assert.Contains("cannot also be its research assistant", error.Message);
     }
 
     private static User Person(string name, string email, UserRole role) => new()

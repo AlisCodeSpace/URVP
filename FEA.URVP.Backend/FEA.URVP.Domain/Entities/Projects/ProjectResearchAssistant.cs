@@ -4,9 +4,9 @@ using FEA.URVP.Domain.Entities.Users;
 namespace FEA.URVP.Domain.Entities.Projects;
 
 /// <summary>
-/// Someone helping run a project. Not a volunteer seat.
-/// <see cref="UserId"/> is set when the person is chosen from a directory user;
-/// a typed entry stores only the name and email.
+/// Someone helping run a project outside the portal. Not a volunteer seat, and it grants
+/// no access. Identified only by <see cref="Email"/> (stored lowercase), so the person can be
+/// added before they have ever signed in; their name comes from their account once they have.
 /// </summary>
 public class ProjectResearchAssistant
 {
@@ -18,13 +18,7 @@ public class ProjectResearchAssistant
 
     public Project Project { get; set; } = null!;
 
-    public Guid? UserId { get; set; }
-
-    public User? User { get; set; }
-
-    [Required, MaxLength(128)]
-    public string Name { get; set; } = null!;
-
+    /// <summary>Lowercase, trimmed. Matches the lowercase email stored at sign-in.</summary>
     [Required, MaxLength(256)]
     public string Email { get; set; } = null!;
 

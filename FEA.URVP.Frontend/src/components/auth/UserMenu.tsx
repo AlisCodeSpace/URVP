@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useTour } from "@/components/tour/TourProvider";
-import { portalHref, roleLabel, type AuthStatus } from "@/lib/auth";
+import { useAssistedProjects } from "@/hooks/useAssistedProjects";
+import { portalHref, researchAssistantHref, roleLabel, type AuthStatus } from "@/lib/auth";
 import { canTakeTour } from "@/lib/tour";
 
 type UserMenuProps = {
@@ -27,6 +28,8 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
   const portal = portalHref(status.role, status.userId);
   const initial = (name.charAt(0) || "U").toUpperCase();
   const showTour = Boolean(tour && canTakeTour(status.role));
+  const assisted = useAssistedProjects(Boolean(status.isAuthenticated));
+  const showAssisting = (assisted.data?.length ?? 0) > 0;
 
   function startTour() {
     setOpen(false);
@@ -72,6 +75,15 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
         >
           Portal
         </Link>
+        {showAssisting ? (
+          <Link
+            href={researchAssistantHref()}
+            className="btn btn-md w-full border border-white/25 bg-white/10 text-white hover:bg-white/20"
+            onClick={onNavigate}
+          >
+            Research assistant
+          </Link>
+        ) : null}
         {showTour ? (
           <button
             type="button"
@@ -144,6 +156,19 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
             >
               Portal
             </Link>
+            {showAssisting ? (
+              <Link
+                href={researchAssistantHref()}
+                role="menuitem"
+                className="btn btn-sm w-full border border-white/25 bg-white/10 text-white hover:bg-white/20"
+                onClick={() => {
+                  setOpen(false);
+                  onNavigate?.();
+                }}
+              >
+                Research assistant
+              </Link>
+            ) : null}
             {showTour ? (
               <button
                 type="button"

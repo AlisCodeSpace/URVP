@@ -231,6 +231,11 @@ export function projectsHref(): string {
   return "/projects";
 }
 
+/** Read-only list of projects the signed-in user is a research assistant on. */
+export function researchAssistantHref(): string {
+  return "/research-assistant";
+}
+
 export function projectDetailHref(projectId: string): string {
   return withParams("/projects/detail", { [RouteParam.Id]: projectId });
 }

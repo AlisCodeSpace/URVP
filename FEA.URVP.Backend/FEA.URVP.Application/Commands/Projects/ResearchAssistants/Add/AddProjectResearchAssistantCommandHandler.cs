@@ -1,6 +1,7 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.DTOs.Projects;
+using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Projects;
 using FEA.URVP.Domain.Entities.Projects;
 using Microsoft.Extensions.Logging;
@@ -11,19 +12,16 @@ public sealed class AddProjectResearchAssistantCommandHandler
     : BaseCommandHandler<AddProjectResearchAssistantCommand, ProjectResearchAssistantDto>
 {
     private readonly IProjectRepository _projects;
-    private readonly IUserRepository _users;
     private readonly IProjectResearchAssistantRepository _assistants;
 
     public AddProjectResearchAssistantCommandHandler(
         ILogger<AddProjectResearchAssistantCommandHandler> logger,
         IUnitOfWork unitOfWork,
         IProjectRepository projects,
-        IUserRepository users,
         IProjectResearchAssistantRepository assistants)
         : base(logger, unitOfWork)
     {
         _projects = projects;
-        _users = users;
         _assistants = assistants;
     }
 
@@ -36,31 +34,16 @@ public sealed class AddProjectResearchAssistantCommandHandler
 
         ProjectResearchAssistantAccess.EnsureCanManage(project, request.CurrentUserId, request.IsAdmin);
 
+        var email = request.Email!.Trim().ToLowerInvariant();
+
+        if (string.Equals(project.EmailSnapshot.Trim(), email, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "The faculty member who posted this project cannot also be its research assistant.");
+        }
+
         var existing = await _assistants.ListByProjectAsync(project.Id, cancellationToken);
-        var userId = request.UserId is { } id && id != Guid.Empty ? id : (Guid?)null;
-
-        string name;
-        string email;
-        if (userId is Guid linkedUserId)
-        {
-            var user = await _users.FindByIdAsync(linkedUserId, cancellationToken)
-                ?? throw new KeyNotFoundException($"User {linkedUserId} was not found.");
-
-            if (existing.Any(assistant => assistant.UserId == user.Id))
-            {
-                throw new InvalidOperationException("This person is already a research assistant on this project.");
-            }
-
-            name = user.Name.Trim();
-            email = user.Email.Trim();
-        }
-        else
-        {
-            name = request.Name!.Trim();
-            email = request.Email!.Trim();
-        }
-
-        if (existing.Any(assistant => EmailsMatch(assistant.Email, email)))
+        if (existing.Any(assistant => assistant.Email == email))
         {
             throw new InvalidOperationException("This person is already a research assistant on this project.");
         }
@@ -68,8 +51,6 @@ public sealed class AddProjectResearchAssistantCommandHandler
         var assistant = new ProjectResearchAssistant
         {
             ProjectId = project.Id,
-            UserId = userId,
-            Name = name,
             Email = email,
             AddedByUserId = request.CurrentUserId,
             CreatedAt = DateTime.UtcNow,
@@ -78,19 +59,7 @@ public sealed class AddProjectResearchAssistantCommandHandler
         _assistants.Add(assistant);
         await UnitOfWork.SaveChangesAsync(cancellationToken);
 
-        return ToDto(assistant);
+        var names = await _assistants.NamesForEmailsAsync([email], cancellationToken);
+        return assistant.ToDto(names);
     }
-
-    internal static bool EmailsMatch(string left, string right) =>
-        string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
-
-    internal static ProjectResearchAssistantDto ToDto(ProjectResearchAssistant assistant) =>
-        new()
-        {
-            Id = assistant.Id,
-            UserId = assistant.UserId,
-            Name = assistant.Name,
-            Email = assistant.Email,
-            AddedAt = assistant.CreatedAt,
-        };
 }

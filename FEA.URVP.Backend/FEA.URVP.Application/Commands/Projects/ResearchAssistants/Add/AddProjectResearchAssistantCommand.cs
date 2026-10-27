@@ -5,8 +5,8 @@ using MediatR;
 namespace FEA.URVP.Application.Commands.Projects.ResearchAssistants.Add;
 
 /// <summary>
-/// Adds a research assistant. Pass <see cref="UserId"/> when the person comes from a
-/// user list, or <see cref="Name"/> and <see cref="Email"/> for a typed entry.
+/// Adds a research assistant by email. The person need not have signed in yet; they are
+/// matched by email whenever they do.
 /// </summary>
 public sealed class AddProjectResearchAssistantCommand : IRequest<ProjectResearchAssistantDto>
 {
@@ -18,10 +18,6 @@ public sealed class AddProjectResearchAssistantCommand : IRequest<ProjectResearc
 
     [JsonIgnore]
     public bool IsAdmin { get; set; }
-
-    public Guid? UserId { get; init; }
-
-    public string? Name { get; init; }
 
     public string? Email { get; init; }
 }

@@ -1,6 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Projects.ResearchAssistants.Add;
 using FEA.URVP.Application.DTOs.Projects;
+using FEA.URVP.Application.Mappings;
 using FEA.URVP.Application.Projects;
 using MediatR;
 
@@ -30,8 +30,10 @@ public sealed class ListProjectResearchAssistantsQueryHandler
         ProjectResearchAssistantAccess.EnsureCanManage(project, request.CurrentUserId, request.IsAdmin);
 
         var assistants = await _assistants.ListByProjectAsync(project.Id, cancellationToken);
-        return assistants
-            .Select(AddProjectResearchAssistantCommandHandler.ToDto)
-            .ToList();
+        var names = await _assistants.NamesForEmailsAsync(
+            assistants.Select(assistant => assistant.Email).ToList(),
+            cancellationToken);
+
+        return assistants.Select(assistant => assistant.ToDto(names)).ToList();
     }
 }
