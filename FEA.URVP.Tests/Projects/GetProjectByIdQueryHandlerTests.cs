@@ -93,7 +93,14 @@ public sealed class GetProjectByIdQueryHandlerTests
             Substitute.For<IProjectAlumniRepository>(),
             Substitute.For<IUnitOfWork>());
         var access = new FacultyProjectMutationAccess(semesters, rankings);
-        var handler = new GetProjectByIdQueryHandler(projects, semesters, access, closure, runs);
+        var handler = new GetProjectByIdQueryHandler(
+            projects,
+            semesters,
+            access,
+            closure,
+            runs,
+            Substitute.For<IUserRepository>(),
+            Substitute.For<IProjectResearchAssistantRepository>());
 
         await Task.CompletedTask;
         return (handler, runs, project, semester);

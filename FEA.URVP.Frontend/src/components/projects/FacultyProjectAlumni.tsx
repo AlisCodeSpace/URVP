@@ -3,7 +3,6 @@
 import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
-import { viewRankedStudentHref } from "@/lib/auth";
 import { optionalRankLabel } from "@/lib/project-rankings-api";
 import type { ProjectAlumniDto } from "@/lib/projects-api";
 import type { MyProjectStatus } from "@/lib/project-form";
@@ -26,19 +25,17 @@ function groupByCycle(alumni: ProjectAlumniDto[]) {
 }
 
 export function FacultyProjectAlumni({
-  userId,
-  projectId,
   projectStatus,
   alumni,
   loading,
   error,
+  profileHref,
 }: {
-  userId: string;
-  projectId: string;
   projectStatus: MyProjectStatus;
   alumni: ProjectAlumniDto[] | null;
   loading: boolean;
   error: string | null;
+  profileHref: (studentUserId: string) => string;
 }) {
   if (!error && !loading && alumni != null && alumni.length === 0 && projectStatus !== "Inactive") {
     return null;
@@ -104,7 +101,7 @@ export function FacultyProjectAlumni({
                       <p className="ranked-students-meta">{student.studentEmail || "—"}</p>
                       <div className="ranked-students-actions">
                         <Button
-                          href={viewRankedStudentHref(userId, projectId, student.studentUserId)}
+                          href={profileHref(student.studentUserId)}
                           variant="outline-secondary"
                           size="sm"
                         >

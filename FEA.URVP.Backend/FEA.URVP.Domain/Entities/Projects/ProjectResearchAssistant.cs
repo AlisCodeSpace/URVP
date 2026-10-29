@@ -4,8 +4,9 @@ using FEA.URVP.Domain.Entities.Users;
 namespace FEA.URVP.Domain.Entities.Projects;
 
 /// <summary>
-/// Someone helping run a project outside the portal. Not a volunteer seat, and it grants
-/// no access. Identified only by <see cref="Email"/> (stored lowercase), so the person can be
+/// Someone listed to help review a project. They do not take a volunteer seat.
+/// They can open the project and rank students, and they cannot edit the listing.
+/// Identified only by <see cref="Email"/> (stored lowercase), so the person can be
 /// added before they have ever signed in; their name comes from their account once they have.
 /// </summary>
 public class ProjectResearchAssistant

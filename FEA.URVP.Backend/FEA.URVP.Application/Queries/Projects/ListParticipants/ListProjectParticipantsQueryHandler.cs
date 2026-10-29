@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.DTOs.Projects;
+using FEA.URVP.Application.Projects;
 using MediatR;
 
 namespace FEA.URVP.Application.Queries.Projects.ListParticipants;
@@ -9,13 +10,19 @@ public sealed class ListProjectParticipantsQueryHandler
 {
     private readonly IProjectRepository _projects;
     private readonly IMatchingRunRepository _runs;
+    private readonly IUserRepository _users;
+    private readonly IProjectResearchAssistantRepository _assistants;
 
     public ListProjectParticipantsQueryHandler(
         IProjectRepository projects,
-        IMatchingRunRepository runs)
+        IMatchingRunRepository runs,
+        IUserRepository users,
+        IProjectResearchAssistantRepository assistants)
     {
         _projects = projects;
         _runs = runs;
+        _users = users;
+        _assistants = assistants;
     }
 
     public async Task<IReadOnlyList<ProjectParticipantDto>> Handle(
@@ -30,10 +37,14 @@ public sealed class ListProjectParticipantsQueryHandler
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Project {request.ProjectId} was not found.");
 
-        if (!request.IsAdmin && project.CreatedByUserId != request.CurrentUserId)
-        {
-            throw new UnauthorizedAccessException("You can only view participants for your own projects.");
-        }
+        await ProjectResearchAssistantAccess.EnsureCanReviewAsync(
+            project,
+            request.CurrentUserId,
+            request.IsAdmin,
+            _users,
+            _assistants,
+            "You can only view participants for a project you posted or assist.",
+            cancellationToken);
 
         var placements = await _runs.ListConfirmedByProjectAsync(project.Id, cancellationToken);
 

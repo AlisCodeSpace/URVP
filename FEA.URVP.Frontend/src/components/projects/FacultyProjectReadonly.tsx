@@ -7,7 +7,7 @@ import {
   ReadOnlyField,
   ReadOnlyValue,
 } from "@/components/ui/ReadOnlyField";
-import { editProjectHref, myProjectsHref } from "@/lib/auth";
+import { editProjectHref } from "@/lib/auth";
 import {
   facultyProjectEditLockMessage,
   isFacultyProjectEditable,
@@ -19,10 +19,17 @@ export function FacultyProjectReadonly({
   userId,
   project,
   children,
+  canEdit = true,
+  backHref,
+  backLabel,
 }: {
   userId: string;
   project: ProjectDto;
   children?: ReactNode;
+  /** Faculty who posted the project can open the editor. Research assistants cannot. */
+  canEdit?: boolean;
+  backHref: string;
+  backLabel: string;
 }) {
   return (
     <div className="flex flex-col gap-10">
@@ -161,11 +168,12 @@ export function FacultyProjectReadonly({
       {children}
 
       <div className="flex flex-wrap items-center gap-3 border-t border-primary/10 pt-8">
-        {!isFacultyProjectEditable(project) ? (
+        {canEdit && !isFacultyProjectEditable(project) ? (
           <Text as="p" size="2" className="!text-muted">
             {facultyProjectEditLockMessage(project)}
           </Text>
-        ) : (
+        ) : null}
+        {canEdit && isFacultyProjectEditable(project) ? (
           <Button
             href={editProjectHref(userId, project.id)}
             variant="primary"
@@ -174,13 +182,9 @@ export function FacultyProjectReadonly({
             <IconPencil />
             Edit project
           </Button>
-        )}
-        <Button
-          href={myProjectsHref(userId)}
-          variant="outline-secondary"
-          size="lg"
-        >
-          Back to my projects
+        ) : null}
+        <Button href={backHref} variant="outline-secondary" size="lg">
+          {backLabel}
         </Button>
       </div>
     </div>

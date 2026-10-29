@@ -14,19 +14,22 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
     private readonly IProjectRankingRepository _rankings;
     private readonly IMatchingRunRepository _placements;
     private readonly IProjectAlumniRepository _alumni;
+    private readonly IProjectResearchAssistantRepository _assistants;
 
     public GetFileByIdQueryHandler(
         IFileStorageRepository files,
         IUserRepository users,
         IProjectRankingRepository rankings,
         IMatchingRunRepository placements,
-        IProjectAlumniRepository alumni)
+        IProjectAlumniRepository alumni,
+        IProjectResearchAssistantRepository assistants)
     {
         _files = files;
         _users = users;
         _rankings = rankings;
         _placements = placements;
         _alumni = alumni;
+        _assistants = assistants;
     }
 
     public async Task<FileContentDto> Handle(GetFileByIdQuery request, CancellationToken cancellationToken)
@@ -45,7 +48,7 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
 
         if (!request.IsAdmin && !isOwner)
         {
-            await EnsureFacultyCanDownloadStudentFileAsync(request, file.EntityType, file.EntityId, cancellationToken);
+            await EnsureCanDownloadStudentFileAsync(request, file.EntityType, file.EntityId, cancellationToken);
         }
 
         return ToContent(file);
@@ -62,7 +65,7 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
             IsPublic = FileStorageCatalog.IsPublicFile(file.EntityType, file.FileCategory),
         };
 
-    private async Task EnsureFacultyCanDownloadStudentFileAsync(
+    private async Task EnsureCanDownloadStudentFileAsync(
         GetFileByIdQuery request,
         string entityType,
         Guid studentUserId,
@@ -76,17 +79,23 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
         var viewer = await _users.FindByIdAsync(request.CurrentUserId, cancellationToken)
             ?? throw new UnauthorizedAccessException("User not found.");
 
-        if (viewer.Role is not UserRole.Faculty)
+        var allowed = viewer.Role is UserRole.Faculty
+            && await StudentProfileAccess.FacultyMayViewStudentAsync(
+                viewer.Id,
+                studentUserId,
+                _rankings,
+                _placements,
+                _alumni,
+                cancellationToken);
+
+        if (!allowed)
+        {
+            allowed = await _assistants.CanViewStudentAsync(viewer.Email, studentUserId, cancellationToken);
+        }
+
+        if (!allowed)
         {
             throw new UnauthorizedAccessException("You do not have permission to access this file.");
         }
-
-        await StudentProfileAccess.EnsureFacultyMayViewStudentAsync(
-            viewer.Id,
-            studentUserId,
-            _rankings,
-            _placements,
-            _alumni,
-            cancellationToken);
     }
 }

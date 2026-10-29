@@ -231,9 +231,22 @@ export function projectsHref(): string {
   return "/projects";
 }
 
-/** Read-only list of projects the signed-in user is a research assistant on. */
+/** Projects the signed-in user assists. They can review each one and rank students. */
 export function researchAssistantHref(): string {
   return "/research-assistant";
+}
+
+export function assistedProjectHref(projectId: string): string {
+  return withParams("/research-assistant/project", {
+    [RouteParam.Project]: projectId,
+  });
+}
+
+export function assistedStudentHref(projectId: string, studentUserId: string): string {
+  return withParams("/research-assistant/project/student", {
+    [RouteParam.Project]: projectId,
+    [RouteParam.Student]: studentUserId,
+  });
 }
 
 export function projectDetailHref(projectId: string): string {

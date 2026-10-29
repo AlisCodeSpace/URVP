@@ -21,6 +21,20 @@ public interface IProjectResearchAssistantRepository
         IReadOnlyCollection<string> emails,
         CancellationToken cancellationToken = default);
 
+    /// <summary>True when this email is listed on the project.</summary>
+    Task<bool> IsListedOnProjectAsync(
+        Guid projectId,
+        string email,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// True when the student ranked, is assigned to, or was confirmed on a project this email assists.
+    /// </summary>
+    Task<bool> CanViewStudentAsync(
+        string email,
+        Guid studentUserId,
+        CancellationToken cancellationToken = default);
+
     Task<ProjectResearchAssistant?> FindTrackedAsync(
         Guid projectId,
         Guid assistantId,

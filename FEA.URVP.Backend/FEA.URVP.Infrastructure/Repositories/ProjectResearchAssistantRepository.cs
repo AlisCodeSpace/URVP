@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Domain.Entities.Projects;
+using FEA.URVP.Domain.Enums;
 using FEA.URVP.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,6 +60,65 @@ public sealed class ProjectResearchAssistantRepository : IProjectResearchAssista
             .ToDictionary(group => group.Key, group => group.First().Name);
     }
 
+    public Task<bool> IsListedOnProjectAsync(
+        Guid projectId,
+        string email,
+        CancellationToken cancellationToken = default)
+    {
+        var normalized = Normalize(email);
+        if (normalized.Length == 0)
+        {
+            return Task.FromResult(false);
+        }
+
+        return _db.ProjectResearchAssistants
+            .AsNoTracking()
+            .AnyAsync(
+                assistant => assistant.ProjectId == projectId && assistant.Email == normalized,
+                cancellationToken);
+    }
+
+    public async Task<bool> CanViewStudentAsync(
+        string email,
+        Guid studentUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var normalized = Normalize(email);
+        if (normalized.Length == 0)
+        {
+            return false;
+        }
+
+        var projectIds = _db.ProjectResearchAssistants
+            .AsNoTracking()
+            .Where(assistant => assistant.Email == normalized)
+            .Select(assistant => assistant.ProjectId);
+
+        if (await _db.ProjectRankings.AsNoTracking().AnyAsync(
+                ranking => ranking.StudentUserId == studentUserId
+                           && projectIds.Contains(ranking.ProjectId),
+                cancellationToken))
+        {
+            return true;
+        }
+
+        if (await _db.Placements.AsNoTracking().AnyAsync(
+                placement => placement.StudentUserId == studentUserId
+                             && placement.Status == PlacementStatus.Confirmed
+                             && placement.MatchingRun.SemesterId == placement.Project.SemesterId
+                             && projectIds.Contains(placement.ProjectId),
+                cancellationToken))
+        {
+            return true;
+        }
+
+        return await _db.ProjectAlumni.AsNoTracking().AnyAsync(
+            alumnus => alumnus.StudentUserId == studentUserId
+                       && alumnus.WasConfirmed
+                       && projectIds.Contains(alumnus.ProjectId),
+            cancellationToken);
+    }
+
     public Task<ProjectResearchAssistant?> FindTrackedAsync(
         Guid projectId,
         Guid assistantId,
@@ -72,4 +132,6 @@ public sealed class ProjectResearchAssistantRepository : IProjectResearchAssista
 
     public void Remove(ProjectResearchAssistant assistant) =>
         _db.ProjectResearchAssistants.Remove(assistant);
+
+    private static string Normalize(string email) => email.Trim().ToLowerInvariant();
 }

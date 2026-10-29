@@ -19,6 +19,7 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
     private readonly IProjectRepository _projects;
     private readonly IUserRepository _users;
     private readonly ISemesterRepository _semesters;
+    private readonly IProjectResearchAssistantRepository _assistants;
 
     public UpsertFacultyCandidateRankingCommandHandler(
         ILogger<UpsertFacultyCandidateRankingCommandHandler> logger,
@@ -27,7 +28,8 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
         IProjectRankingRepository projectRankings,
         IProjectRepository projects,
         IUserRepository users,
-        ISemesterRepository semesters)
+        ISemesterRepository semesters,
+        IProjectResearchAssistantRepository assistants)
         : base(logger, unitOfWork)
     {
         _candidateRankings = candidateRankings;
@@ -35,6 +37,7 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
         _projects = projects;
         _users = users;
         _semesters = semesters;
+        _assistants = assistants;
     }
 
     protected override bool UseTransaction => true;
@@ -51,17 +54,22 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
         var user = await _users.FindByIdAsync(request.CurrentUserId, cancellationToken)
             ?? throw new UnauthorizedAccessException("User not found.");
 
-        FacultyCandidateRankingAccess.EnsureCanRank(user.Role);
-
         var semester = await _semesters.FindActiveAsync(cancellationToken);
         ApplicationWindowRules.EnsureOpenForRanking(semester, DateTime.UtcNow);
 
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new ArgumentException("Project was not found.");
 
-        if (!request.IsAdmin && project.CreatedByUserId != user.Id)
+        var assists = await _assistants.IsListedOnProjectAsync(project.Id, user.Email, cancellationToken);
+        if (!request.IsAdmin && project.CreatedByUserId != user.Id && !assists)
         {
-            throw new UnauthorizedAccessException("You can only rank candidates for your own projects.");
+            throw new UnauthorizedAccessException(
+                "You can only rank candidates for a project you posted or assist.");
+        }
+
+        if (!assists)
+        {
+            FacultyCandidateRankingAccess.EnsureCanRank(user.Role);
         }
 
         if (semester is null || project.SemesterId != semester.Id || project.Status != ProjectStatus.Open)

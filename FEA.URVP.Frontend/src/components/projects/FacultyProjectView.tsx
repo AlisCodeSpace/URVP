@@ -12,10 +12,17 @@ import { FacultyProjectReadonly } from "@/components/projects/FacultyProjectRead
 import { ProjectResearchAssistants } from "@/components/projects/ProjectResearchAssistants";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useState } from "react";
+import { useAssistedProjects } from "@/hooks/useAssistedProjects";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import { ApiError } from "@/lib/api";
-import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
+import {
+  assistedStudentHref,
+  FACULTY_PORTAL_ROLES,
+  myProjectsHref,
+  researchAssistantHref,
+  viewRankedStudentHref,
+} from "@/lib/auth";
 import { getProjectRankings } from "@/lib/project-rankings-api";
 import { isFacultyCandidateRankingLocked } from "@/lib/project-form";
 import { getProject, getProjectAlumni, getProjectParticipants, reactivateProject } from "@/lib/projects-api";
@@ -24,15 +31,27 @@ import { ProjectDetailSkeleton } from "@/components/ui/SectionSkeletons";
 export function FacultyProjectView({
   userId,
   projectId,
+  mode = "owner",
 }: {
-  userId: string;
+  userId?: string;
   projectId: string;
+  /** Owner is the faculty member who posted it. Assistants review and rank, and cannot edit. */
+  mode?: "owner" | "assistant";
 }) {
+  const assisting = mode === "assistant";
+  const assistedQuery = useAssistedProjects(assisting);
+  const isListed =
+    assistedQuery.data?.some(
+      (item) => item.projectId.toLowerCase() === projectId.toLowerCase(),
+    ) ?? false;
   const projectQuery = useCancellableQuery(
     async () => {
       try {
         const next = await getProject(projectId);
-        if (next.createdByUserId.toLowerCase() !== userId.toLowerCase()) {
+        if (
+          !assisting &&
+          next.createdByUserId.toLowerCase() !== (userId ?? "").toLowerCase()
+        ) {
           return {
             project: null,
             message: "You can only view your own projects here.",
@@ -47,7 +66,8 @@ export function FacultyProjectView({
         };
       }
     },
-    [projectId, userId],
+    [projectId, userId, assisting],
+    { enabled: !assisting || isListed },
   );
   const project = projectQuery.data?.project ?? null;
   const error = projectQuery.data?.message ?? null;
@@ -85,7 +105,21 @@ export function FacultyProjectView({
   const rankingsError = rankingsQuery.error;
   const participants = participantsQuery.data;
   const participantsError = participantsQuery.error;
-  const canReactivate = inactive && !phase.loading && phase.registrationOpen;
+  const canReactivate = !assisting && inactive && !phase.loading && phase.registrationOpen;
+  const backHref = assisting ? researchAssistantHref() : myProjectsHref(userId ?? "");
+  const backLabel = assisting ? "Back to research assistant" : "Back to my projects";
+  const profileHref = (studentUserId: string) =>
+    assisting
+      ? assistedStudentHref(projectId, studentUserId)
+      : viewRankedStudentHref(userId ?? "", projectId, studentUserId);
+  const accessError = assisting
+    ? assistedQuery.error ??
+      (assistedQuery.data != null && !isListed
+        ? "You can only review projects where you are a research assistant."
+        : null)
+    : null;
+  const waitingForAccess =
+    assisting && assistedQuery.data == null && assistedQuery.error == null;
 
   async function handleReactivate() {
     setReactivating(true);
@@ -105,43 +139,58 @@ export function FacultyProjectView({
   }
 
   return (
-    <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
+    <RequireAuth
+      userId={assisting ? undefined : userId}
+      roles={assisting ? undefined : FACULTY_PORTAL_ROLES}
+    >
       <main className="flex-1 bg-background">
         <PageHeader
-          eyebrow="Faculty portal"
+          eyebrow={assisting ? "Research assistant" : "Faculty portal"}
           title="View project"
-          description="Review the details of your posted research opportunity."
+          description={
+            assisting
+              ? "Review this project and rank the students who applied."
+              : "Review the details of your posted research opportunity."
+          }
         >
           <Link
-            href={myProjectsHref(userId)}
+            href={backHref}
             className="inline-flex items-center gap-2 text-sm text-primary/70 transition hover:text-primary"
           >
             <span aria-hidden>←</span>
-            Back to my projects
+            {backLabel}
           </Link>
         </PageHeader>
 
         <section className="site-container py-14 sm:py-16">
-          {error ? (
+          {accessError || error ? (
             <Text
               as="p"
               size="3"
               role="alert"
               className="rounded-md bg-red-50 px-3 py-2 !text-red-800"
             >
-              {error}
+              {accessError ?? error}
             </Text>
-          ) : project == null ? (
+          ) : waitingForAccess || project == null ? (
             <ProjectDetailSkeleton />
           ) : (
-            <FacultyProjectReadonly userId={userId} project={project}>
+            <FacultyProjectReadonly
+              userId={userId ?? ""}
+              project={project}
+              canEdit={!assisting}
+              backHref={backHref}
+              backLabel={backLabel}
+            >
               {inactive ? (
                 <div className="rounded-md border border-primary/15 bg-primary/[0.03] px-4 py-4">
                   <Text as="p" size="3" className="!text-primary">
                     This project is from {project.semesterName || "a previous cycle"} and is hidden from students.
-                    {canReactivate
-                      ? ` Reactivate it to list it under ${phase.semesterName ?? "the current cycle"}. The current roster starts empty.`
-                      : " You can reactivate it when the registration window opens."}
+                    {assisting
+                      ? ""
+                      : canReactivate
+                        ? ` Reactivate it to list it under ${phase.semesterName ?? "the current cycle"}. The current roster starts empty.`
+                        : " You can reactivate it when the registration window opens."}
                   </Text>
                   {reactivateError ? (
                     <Text as="p" size="2" mt="3" role="alert" className="!text-red-800">
@@ -167,15 +216,13 @@ export function FacultyProjectView({
               ) : (
                 <>
                   <FacultyProjectParticipants
-                    userId={userId}
-                    projectId={projectId}
                     volunteersFilled={project.volunteersFilled}
                     participants={participants}
                     loading={participants == null && participantsError == null}
                     error={participantsError}
+                    profileHref={profileHref}
                   />
                   <FacultyProjectRankings
-                    userId={userId}
                     projectId={projectId}
                     volunteersRequired={project.volunteersRequired}
                     rankings={rankings}
@@ -183,6 +230,7 @@ export function FacultyProjectView({
                     error={rankingsError}
                     locked={isFacultyCandidateRankingLocked(project)}
                     applicationsClosed={!phase.loading && !phase.isOpen}
+                    profileHref={profileHref}
                     onRankingsChanged={() => {
                       void getProjectRankings(projectId)
                         .then((next) => {
@@ -200,14 +248,15 @@ export function FacultyProjectView({
                   />
                 </>
               )}
-              <ProjectResearchAssistants projectId={projectId} tone="faculty" />
+              {assisting ? null : (
+                <ProjectResearchAssistants projectId={projectId} tone="faculty" />
+              )}
               <FacultyProjectAlumni
-                userId={userId}
-                projectId={projectId}
                 projectStatus={project.status}
                 alumni={alumniQuery.data}
                 loading={alumniQuery.data == null && alumniQuery.error == null}
                 error={alumniQuery.error}
+                profileHref={profileHref}
               />
             </FacultyProjectReadonly>
           )}

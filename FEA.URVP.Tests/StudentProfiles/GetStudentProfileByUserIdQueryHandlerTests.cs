@@ -90,7 +90,7 @@ public sealed class GetStudentProfileByUserIdQueryHandlerTests
                 CancellationToken.None));
 
         Assert.Equal(
-            "You can only view profiles of students who ranked or were assigned to a project you posted.",
+            "You can only view profiles of students who ranked or were assigned to a project you posted or assist.",
             error.Message);
     }
 
@@ -119,7 +119,8 @@ public sealed class GetStudentProfileByUserIdQueryHandlerTests
             Substitute.For<IFileStorageRepository>(),
             rankings,
             placements,
-            alumni);
+            alumni,
+            Substitute.For<IProjectResearchAssistantRepository>());
 
         return (handler, rankings, placements, alumni);
     }

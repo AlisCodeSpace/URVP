@@ -1,8 +1,10 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import { RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
 import { Text } from "@/components/ui/Typography";
 import { useAssistedProjects } from "@/hooks/useAssistedProjects";
+import { assistedProjectHref } from "@/lib/auth";
 
 export function AssistedProjectsList() {
   const { data, error } = useAssistedProjects(true);
@@ -45,6 +47,15 @@ export function AssistedProjectsList() {
               {project.facultyEmail}
             </a>
           </p>
+          <div className="ranked-students-actions">
+            <Button
+              href={assistedProjectHref(project.projectId)}
+              variant="primary"
+              size="sm"
+            >
+              View
+            </Button>
+          </div>
         </li>
       ))}
     </ul>

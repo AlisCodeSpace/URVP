@@ -3,24 +3,21 @@
 import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
-import { viewRankedStudentHref } from "@/lib/auth";
 import { optionalRankLabel } from "@/lib/project-rankings-api";
 import type { ProjectParticipantDto } from "@/lib/projects-api";
 
 export function FacultyProjectParticipants({
-  userId,
-  projectId,
   volunteersFilled,
   participants,
   loading,
   error,
+  profileHref,
 }: {
-  userId: string;
-  projectId: string;
   volunteersFilled: number;
   participants: ProjectParticipantDto[] | null;
   loading: boolean;
   error: string | null;
+  profileHref: (studentUserId: string) => string;
 }) {
   const matchingDone = volunteersFilled > 0 || (participants?.length ?? 0) > 0;
 
@@ -84,11 +81,7 @@ export function FacultyProjectParticipants({
                 </p>
                 <div className="ranked-students-actions">
                   <Button
-                    href={viewRankedStudentHref(
-                      userId,
-                      projectId,
-                      participant.studentUserId,
-                    )}
+                    href={profileHref(participant.studentUserId)}
                     variant="outline-secondary"
                     size="sm"
                   >

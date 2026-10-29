@@ -197,6 +197,31 @@ export function FacultyStudentProfileRoute() {
   );
 }
 
+/** `/research-assistant/project?project=` */
+export function AssistedProjectRoute() {
+  const projectId = useRouteParam(RouteParam.Project);
+
+  if (!projectId) return <MissingParam />;
+
+  return <FacultyProjectView projectId={projectId} mode="assistant" />;
+}
+
+/** `/research-assistant/project/student?project=&student=` */
+export function AssistedStudentRoute() {
+  const projectId = useRouteParam(RouteParam.Project);
+  const studentUserId = useRouteParam(RouteParam.Student);
+
+  if (!projectId || !studentUserId) return <MissingParam />;
+
+  return (
+    <FacultyStudentProfileView
+      projectId={projectId}
+      studentUserId={studentUserId}
+      mode="assistant"
+    />
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /* Public site                                                                */
 /* -------------------------------------------------------------------------- */

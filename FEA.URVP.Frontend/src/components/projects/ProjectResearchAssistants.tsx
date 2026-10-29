@@ -16,9 +16,6 @@ import {
 } from "@/lib/research-assistants-api";
 import { ResearchAssistantChooser } from "@/components/projects/ResearchAssistantChooser";
 
-const SECTION_COPY =
-  "People helping run this project outside the portal. They do not take a volunteer seat and get no access here.";
-
 export function ProjectResearchAssistants({
   projectId,
   tone,
@@ -118,7 +115,6 @@ export function ProjectResearchAssistants({
           <h3 id="research-assistants-heading" className="admin-widget-title">
             Research assistants
           </h3>
-          <p className="admin-widget-sub">{SECTION_COPY}</p>
         </header>
         {body}
       </section>
@@ -136,9 +132,6 @@ export function ProjectResearchAssistants({
       >
         Research assistants
       </Heading>
-      <Text as="p" size="2" mt="2" className="!text-muted">
-        {SECTION_COPY}
-      </Text>
       {body}
     </section>
   );

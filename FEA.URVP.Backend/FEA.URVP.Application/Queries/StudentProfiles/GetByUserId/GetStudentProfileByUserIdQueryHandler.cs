@@ -16,6 +16,7 @@ public sealed class GetStudentProfileByUserIdQueryHandler
     private readonly IProjectRankingRepository _rankings;
     private readonly IMatchingRunRepository _placements;
     private readonly IProjectAlumniRepository _alumni;
+    private readonly IProjectResearchAssistantRepository _assistants;
 
     public GetStudentProfileByUserIdQueryHandler(
         IStudentProfileRepository profiles,
@@ -23,7 +24,8 @@ public sealed class GetStudentProfileByUserIdQueryHandler
         IFileStorageRepository files,
         IProjectRankingRepository rankings,
         IMatchingRunRepository placements,
-        IProjectAlumniRepository alumni)
+        IProjectAlumniRepository alumni,
+        IProjectResearchAssistantRepository assistants)
     {
         _profiles = profiles;
         _users = users;
@@ -31,6 +33,7 @@ public sealed class GetStudentProfileByUserIdQueryHandler
         _rankings = rankings;
         _placements = placements;
         _alumni = alumni;
+        _assistants = assistants;
     }
 
     public async Task<StudentProfileDto> Handle(
@@ -45,17 +48,30 @@ public sealed class GetStudentProfileByUserIdQueryHandler
         var viewer = await _users.FindByIdAsync(request.CurrentUserId, cancellationToken)
             ?? throw new UnauthorizedAccessException("User not found.");
 
-        StudentProfileAccess.EnsureCanViewRankedStudent(viewer.Role);
-
         if (viewer.Role is not UserRole.Admin)
         {
-            await StudentProfileAccess.EnsureFacultyMayViewStudentAsync(
-                viewer.Id,
-                request.StudentUserId,
-                _rankings,
-                _placements,
-                _alumni,
-                cancellationToken);
+            var allowed = viewer.Role is UserRole.Faculty
+                && await StudentProfileAccess.FacultyMayViewStudentAsync(
+                    viewer.Id,
+                    request.StudentUserId,
+                    _rankings,
+                    _placements,
+                    _alumni,
+                    cancellationToken);
+
+            if (!allowed)
+            {
+                allowed = await _assistants.CanViewStudentAsync(
+                    viewer.Email,
+                    request.StudentUserId,
+                    cancellationToken);
+            }
+
+            if (!allowed)
+            {
+                throw new UnauthorizedAccessException(
+                    "You can only view profiles of students who ranked or were assigned to a project you posted or assist.");
+            }
         }
 
         var student = await _users.FindByIdAsync(request.StudentUserId, cancellationToken)

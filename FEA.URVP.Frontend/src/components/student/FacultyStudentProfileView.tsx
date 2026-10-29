@@ -8,9 +8,14 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { FacultyCandidateRankModal } from "@/components/student/FacultyCandidateRankModal";
 import { StudentProfileReadonly } from "@/components/student/StudentProfileReadonly";
 import { Button } from "@/components/ui/Button";
+import { useAssistedProjects } from "@/hooks/useAssistedProjects";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { ApiError } from "@/lib/api";
-import { FACULTY_PORTAL_ROLES, viewProjectHref } from "@/lib/auth";
+import {
+  assistedProjectHref,
+  FACULTY_PORTAL_ROLES,
+  viewProjectHref,
+} from "@/lib/auth";
 import {
   getStudentProfile,
   toStudentProfileValues,
@@ -24,11 +29,27 @@ export function FacultyStudentProfileView({
   userId,
   projectId,
   studentUserId,
+  mode = "owner",
 }: {
-  userId: string;
+  userId?: string;
   projectId: string;
   studentUserId: string;
+  /** Owner is the faculty member who posted it. Assistants can rank, and cannot edit the project. */
+  mode?: "owner" | "assistant";
 }) {
+  const assisting = mode === "assistant";
+  const assistedQuery = useAssistedProjects(assisting);
+  const isListed =
+    assistedQuery.data?.some(
+      (item) => item.projectId.toLowerCase() === projectId.toLowerCase(),
+    ) ?? false;
+  const accessError = assisting
+    ? assistedQuery.error ??
+      (assistedQuery.data != null && !isListed
+        ? "You can only review projects where you are a research assistant."
+        : null)
+    : null;
+  const canLoad = !assisting || isListed;
   const [rankOpen, setRankOpen] = useState(false);
   const profileQuery = useCancellableQuery(
     async () => {
@@ -36,18 +57,27 @@ export function FacultyStudentProfileView({
       return { exists: dto.exists, values: toStudentProfileValues(dto) };
     },
     [studentUserId],
-    { fallbackError: "Could not load this student profile." },
+    {
+      enabled: canLoad,
+      fallbackError: "Could not load this student profile.",
+    },
   );
   const projectQuery = useCancellableQuery(
     async () => {
       const next = await getProject(projectId);
-      if (next.createdByUserId.toLowerCase() !== userId.toLowerCase()) {
+      if (
+        !assisting &&
+        next.createdByUserId.toLowerCase() !== (userId ?? "").toLowerCase()
+      ) {
         throw new Error("You can only rank candidates on your own projects.");
       }
       return next;
     },
-    [projectId, userId],
-    { fallbackError: "Could not load this project." },
+    [projectId, userId, assisting],
+    {
+      enabled: canLoad,
+      fallbackError: "Could not load this project.",
+    },
   );
   const project = projectQuery.data;
   const rankingsQuery = useCancellableQuery(
@@ -60,7 +90,10 @@ export function FacultyStudentProfileView({
   );
   const values = profileQuery.data?.values ?? null;
   const exists = profileQuery.data?.exists ?? true;
-  const error = profileQuery.error;
+  const error = accessError ?? profileQuery.error;
+  const backHref = assisting
+    ? assistedProjectHref(projectId)
+    : viewProjectHref(userId ?? "", projectId);
   const rankings = rankingsQuery.data;
   const rankingsError = projectQuery.error ?? rankingsQuery.error;
 
@@ -77,15 +110,22 @@ export function FacultyStudentProfileView({
     rankings?.filter((r) => r.facultyRank === 1).length ?? 0;
 
   return (
-    <RequireAuth userId={userId} roles={FACULTY_PORTAL_ROLES}>
+    <RequireAuth
+      userId={assisting ? undefined : userId}
+      roles={assisting ? undefined : FACULTY_PORTAL_ROLES}
+    >
       <main className="flex-1 bg-background">
         <PageHeader
-          eyebrow="Faculty portal"
+          eyebrow={assisting ? "Research assistant" : "Faculty portal"}
           title={error ? "Student profile" : displayName}
-          description="Review this student's qualifications for your project."
+          description={
+            assisting
+              ? "Review this student's qualifications and rank them for this project."
+              : "Review this student's qualifications for your project."
+          }
         >
           <Link
-            href={viewProjectHref(userId, projectId)}
+            href={backHref}
             className="inline-flex items-center gap-2 text-sm text-primary/70 transition hover:text-primary"
           >
             <span aria-hidden>←</span>

@@ -27,23 +27,12 @@ internal static class StudentProfileAccess
         throw new UnauthorizedAccessException("Only students can manage a student profile.");
     }
 
-    public static void EnsureCanViewRankedStudent(UserRole role)
-    {
-        if (role is UserRole.Faculty or UserRole.Admin)
-        {
-            return;
-        }
-
-        throw new UnauthorizedAccessException(
-            "Only faculty or admins can view a ranked student's profile.");
-    }
-
     /// <summary>
     /// Faculty may open a student profile when that student ranked one of their
     /// projects, is assigned to one in the current cycle, or was assigned in an
     /// earlier cycle that has been archived.
     /// </summary>
-    public static async Task EnsureFacultyMayViewStudentAsync(
+    public static async Task<bool> FacultyMayViewStudentAsync(
         Guid facultyUserId,
         Guid studentUserId,
         IProjectRankingRepository rankings,
@@ -56,7 +45,7 @@ internal static class StudentProfileAccess
                 facultyUserId,
                 cancellationToken))
         {
-            return;
+            return true;
         }
 
         if (await placements.StudentAssignedToFacultyProjectAsync(
@@ -64,12 +53,29 @@ internal static class StudentProfileAccess
                 facultyUserId,
                 cancellationToken))
         {
-            return;
+            return true;
         }
 
-        if (await alumni.StudentWasConfirmedOnFacultyProjectAsync(
-                studentUserId,
+        return await alumni.StudentWasConfirmedOnFacultyProjectAsync(
+            studentUserId,
+            facultyUserId,
+            cancellationToken);
+    }
+
+    public static async Task EnsureFacultyMayViewStudentAsync(
+        Guid facultyUserId,
+        Guid studentUserId,
+        IProjectRankingRepository rankings,
+        IMatchingRunRepository placements,
+        IProjectAlumniRepository alumni,
+        CancellationToken cancellationToken)
+    {
+        if (await FacultyMayViewStudentAsync(
                 facultyUserId,
+                studentUserId,
+                rankings,
+                placements,
+                alumni,
                 cancellationToken))
         {
             return;

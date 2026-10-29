@@ -140,7 +140,7 @@ public sealed class ProjectsController : ApiControllerBase
         return SuccessResponse(detail);
     }
 
-    /// <summary>Students who ranked this project. Project owner or admin only.</summary>
+    /// <summary>Students who ranked this project. Project owner, research assistant, or admin.</summary>
     [HttpGet("{id:guid}/rankings")]
     public async Task<IActionResult> ListRankings(Guid id, CancellationToken cancellationToken)
     {
@@ -156,7 +156,7 @@ public sealed class ProjectsController : ApiControllerBase
         return SuccessResponse(rankings);
     }
 
-    /// <summary>Students confirmed onto this project after matching. Project owner or admin only.</summary>
+    /// <summary>Students confirmed onto this project after matching. Project owner, research assistant, or admin.</summary>
     [HttpGet("{id:guid}/participants")]
     public async Task<IActionResult> ListParticipants(Guid id, CancellationToken cancellationToken)
     {
@@ -272,7 +272,7 @@ public sealed class ProjectsController : ApiControllerBase
     }
 
     /// <summary>
-    /// Students stored from earlier academic cycles. Project owner or admin only.
+    /// Students stored from earlier academic cycles. Project owner, research assistant, or admin.
     /// </summary>
     [HttpGet("{id:guid}/alumni")]
     public async Task<IActionResult> ListAlumni(Guid id, CancellationToken cancellationToken)

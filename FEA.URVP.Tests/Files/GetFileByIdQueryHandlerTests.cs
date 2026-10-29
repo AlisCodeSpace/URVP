@@ -76,7 +76,13 @@ public sealed class GetFileByIdQueryHandlerTests
                 Arg.Any<CancellationToken>())
             .Returns(false);
 
-        var handler = new GetFileByIdQueryHandler(files, users, rankings, placements, alumni);
+        var handler = new GetFileByIdQueryHandler(
+            files,
+            users,
+            rankings,
+            placements,
+            alumni,
+            Substitute.For<IProjectResearchAssistantRepository>());
         return (handler, rankings, placements);
     }
 

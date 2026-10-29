@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Heading, Text } from "@/components/ui/Typography";
 import { FacultyCandidateRankModal } from "@/components/student/FacultyCandidateRankModal";
 import { Button } from "@/components/ui/Button";
-import { viewRankedStudentHref } from "@/lib/auth";
 import {
   formatRankedAt,
   rankLabel,
@@ -13,7 +12,6 @@ import {
 import { RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
 
 export function FacultyProjectRankings({
-  userId,
   projectId,
   volunteersRequired,
   rankings,
@@ -21,9 +19,9 @@ export function FacultyProjectRankings({
   error,
   locked = false,
   applicationsClosed = false,
+  profileHref,
   onRankingsChanged,
 }: {
-  userId: string;
   projectId: string;
   volunteersRequired: number;
   rankings: ProjectRankingStudentDto[] | null;
@@ -31,6 +29,7 @@ export function FacultyProjectRankings({
   error: string | null;
   locked?: boolean;
   applicationsClosed?: boolean;
+  profileHref: (studentUserId: string) => string;
   onRankingsChanged?: () => void;
 }) {
   const [rankTarget, setRankTarget] = useState<ProjectRankingStudentDto | null>(
@@ -104,11 +103,7 @@ export function FacultyProjectRankings({
                   </Button>
                 )}
                 <Button
-                  href={viewRankedStudentHref(
-                    userId,
-                    projectId,
-                    ranking.studentUserId,
-                  )}
+                  href={profileHref(ranking.studentUserId)}
                   variant="outline-secondary"
                   size="sm"
                 >
