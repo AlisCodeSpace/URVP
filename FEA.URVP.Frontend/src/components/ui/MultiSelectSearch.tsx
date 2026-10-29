@@ -182,6 +182,7 @@ export function MultiSelectSearch({
               <button
                 type="button"
                 role="option"
+                aria-selected={false}
                 className="multi-select-option"
                 disabled={creating}
                 onClick={createFromQuery}
@@ -198,6 +199,7 @@ export function MultiSelectSearch({
                 <button
                   type="button"
                   role="option"
+                  aria-selected={false}
                   className="multi-select-option"
                   onClick={() => add(item)}
                 >

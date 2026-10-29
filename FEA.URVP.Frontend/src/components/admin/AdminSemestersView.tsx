@@ -8,7 +8,7 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { adminSemesterEditHref } from "@/lib/auth";
 import {
   ALLOW_OVERLAPPING_WINDOWS,
@@ -74,7 +74,7 @@ function ActiveSemesterPanel({
       await setSemesterActive(semester.id, false);
       await onReload();
     } catch (err) {
-      onError(err instanceof ApiError ? err.message : "Failed to end cycle.");
+      onError(apiErrorMessage(err, "Failed to end cycle."));
     } finally {
       setBusyCycle(false);
     }
@@ -90,7 +90,7 @@ function ActiveSemesterPanel({
       await onReload();
     } catch (err) {
       onError(
-        err instanceof ApiError ? err.message : "Failed to open registration.",
+        apiErrorMessage(err, "Failed to open registration."),
       );
     } finally {
       setBusyRegistration(false);
@@ -108,7 +108,7 @@ function ActiveSemesterPanel({
       await onReload();
     } catch (err) {
       onError(
-        err instanceof ApiError ? err.message : "Failed to close registration.",
+        apiErrorMessage(err, "Failed to close registration."),
       );
     } finally {
       setBusyRegistration(false);
@@ -125,7 +125,7 @@ function ActiveSemesterPanel({
       await onReload();
     } catch (err) {
       onError(
-        err instanceof ApiError ? err.message : "Failed to open applications.",
+        apiErrorMessage(err, "Failed to open applications."),
       );
     } finally {
       setBusyWindow(false);
@@ -142,7 +142,7 @@ function ActiveSemesterPanel({
       await onReload();
     } catch (err) {
       onError(
-        err instanceof ApiError ? err.message : "Failed to close applications.",
+        apiErrorMessage(err, "Failed to close applications."),
       );
     } finally {
       setBusyWindow(false);
@@ -360,7 +360,7 @@ export function AdminSemestersView() {
       await load();
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Failed to delete URVP cycle.",
+        apiErrorMessage(err, "Failed to delete URVP cycle."),
       );
     } finally {
       setDeleting(false);
@@ -374,7 +374,7 @@ export function AdminSemestersView() {
       await setSemesterActive(semester.id, true);
       await load({ silent: true });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to start cycle.");
+      setError(apiErrorMessage(err, "Failed to start cycle."));
     } finally {
       setStartingId(null);
     }

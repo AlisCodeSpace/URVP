@@ -5,7 +5,7 @@ import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { useScrollLock } from "@/hooks/useScrollLock";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { studentRankingsHref } from "@/lib/auth";
 import {
   getMyProjectRankings,
@@ -90,9 +90,7 @@ export function ExpressInterestModal({
       onChanged?.();
     } catch (err) {
       setError(
-        err instanceof ApiError
-          ? err.message
-          : "Could not save this ranking. Please try again.",
+        apiErrorMessage(err, "Could not save this ranking. Please try again."),
       );
     } finally {
       setSubmitting(null);
@@ -110,9 +108,7 @@ export function ExpressInterestModal({
       onClose();
     } catch (err) {
       setError(
-        err instanceof ApiError
-          ? err.message
-          : "Could not remove this ranking. Please try again.",
+        apiErrorMessage(err, "Could not remove this ranking. Please try again."),
       );
     } finally {
       setRemoving(false);

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { FacultyProjectAlumni } from "@/components/projects/FacultyProjectAlumni";
@@ -12,10 +13,10 @@ import { FacultyProjectReadonly } from "@/components/projects/FacultyProjectRead
 import { ProjectResearchAssistants } from "@/components/projects/ProjectResearchAssistants";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useState } from "react";
-import { useAssistedProjects } from "@/hooks/useAssistedProjects";
+import { useAssistantAccess } from "@/hooks/useAssistedProjects";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import {
   assistedStudentHref,
   FACULTY_PORTAL_ROLES,
@@ -24,7 +25,7 @@ import {
   viewRankedStudentHref,
 } from "@/lib/auth";
 import { getProjectRankings } from "@/lib/project-rankings-api";
-import { isFacultyCandidateRankingLocked } from "@/lib/project-form";
+import { isFacultyCandidateRankingLocked, isProjectOwner } from "@/lib/project-form";
 import { getProject, getProjectAlumni, getProjectParticipants, reactivateProject } from "@/lib/projects-api";
 import { ProjectDetailSkeleton } from "@/components/ui/SectionSkeletons";
 
@@ -39,19 +40,12 @@ export function FacultyProjectView({
   mode?: "owner" | "assistant";
 }) {
   const assisting = mode === "assistant";
-  const assistedQuery = useAssistedProjects(assisting);
-  const isListed =
-    assistedQuery.data?.some(
-      (item) => item.projectId.toLowerCase() === projectId.toLowerCase(),
-    ) ?? false;
+  const access = useAssistantAccess(projectId, assisting);
   const projectQuery = useCancellableQuery(
     async () => {
       try {
         const next = await getProject(projectId);
-        if (
-          !assisting &&
-          next.createdByUserId.toLowerCase() !== (userId ?? "").toLowerCase()
-        ) {
+        if (!assisting && !isProjectOwner(next, userId)) {
           return {
             project: null,
             message: "You can only view your own projects here.",
@@ -61,13 +55,12 @@ export function FacultyProjectView({
       } catch (err) {
         return {
           project: null,
-          message:
-            err instanceof ApiError ? err.message : "Could not load project.",
+          message: apiErrorMessage(err, "Could not load project."),
         };
       }
     },
     [projectId, userId, assisting],
-    { enabled: !assisting || isListed },
+    { enabled: access.allowed },
   );
   const project = projectQuery.data?.project ?? null;
   const error = projectQuery.data?.message ?? null;
@@ -82,6 +75,7 @@ export function FacultyProjectView({
     {
       enabled: Boolean(project) && !inactive,
       fallbackError: "Could not load ranked students.",
+      keepDataOnError: true,
     },
   );
   const participantsQuery = useCancellableQuery(
@@ -112,15 +106,6 @@ export function FacultyProjectView({
     assisting
       ? assistedStudentHref(projectId, studentUserId)
       : viewRankedStudentHref(userId ?? "", projectId, studentUserId);
-  const accessError = assisting
-    ? assistedQuery.error ??
-      (assistedQuery.data != null && !isListed
-        ? "You can only review projects where you are a research assistant."
-        : null)
-    : null;
-  const waitingForAccess =
-    assisting && assistedQuery.data == null && assistedQuery.error == null;
-
   async function handleReactivate() {
     setReactivating(true);
     setReactivateError(null);
@@ -130,9 +115,7 @@ export function FacultyProjectView({
       setReactivateOpen(false);
       await alumniQuery.reload();
     } catch (err) {
-      setReactivateError(
-        err instanceof ApiError ? err.message : "Could not reactivate this project.",
-      );
+      setReactivateError(apiErrorMessage(err, "Could not reactivate this project."));
     } finally {
       setReactivating(false);
     }
@@ -163,16 +146,9 @@ export function FacultyProjectView({
         </PageHeader>
 
         <section className="site-container py-14 sm:py-16">
-          {accessError || error ? (
-            <Text
-              as="p"
-              size="3"
-              role="alert"
-              className="rounded-md bg-red-50 px-3 py-2 !text-red-800"
-            >
-              {accessError ?? error}
-            </Text>
-          ) : waitingForAccess || project == null ? (
+          {access.error || error ? (
+            <ErrorAlert>{access.error ?? error}</ErrorAlert>
+          ) : access.checking || project == null ? (
             <ProjectDetailSkeleton />
           ) : (
             <FacultyProjectReadonly
@@ -231,20 +207,7 @@ export function FacultyProjectView({
                     locked={isFacultyCandidateRankingLocked(project)}
                     applicationsClosed={!phase.loading && !phase.isOpen}
                     profileHref={profileHref}
-                    onRankingsChanged={() => {
-                      void getProjectRankings(projectId)
-                        .then((next) => {
-                          rankingsQuery.setData(next);
-                          rankingsQuery.setError(null);
-                        })
-                        .catch((err: unknown) => {
-                          rankingsQuery.setError(
-                            err instanceof ApiError
-                              ? err.message
-                              : "Could not refresh ranked students.",
-                          );
-                        });
-                    }}
+                    onRankingsChanged={() => void rankingsQuery.reload({ silent: true })}
                   />
                 </>
               )}

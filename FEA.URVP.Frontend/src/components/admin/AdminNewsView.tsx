@@ -8,7 +8,7 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { adminNewsEditHref } from "@/lib/auth";
 import {
   deleteNews,
@@ -63,7 +63,7 @@ export function AdminNewsView() {
       setPendingDelete(null);
       await load();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to delete article.");
+      setError(apiErrorMessage(err, "Failed to delete article."));
     } finally {
       setDeleting(false);
     }

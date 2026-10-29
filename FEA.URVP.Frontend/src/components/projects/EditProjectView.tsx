@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { Text } from "@/components/ui/Typography";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { PostProjectForm } from "@/components/projects/PostProjectForm";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { FACULTY_PORTAL_ROLES, myProjectsHref } from "@/lib/auth";
 import {
   facultyProjectEditLockMessage,
   isFacultyProjectEditable,
+  isProjectOwner,
 } from "@/lib/project-form";
 import { getProject, toFormValues } from "@/lib/projects-api";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
@@ -26,7 +27,7 @@ export function EditProjectView({
     async () => {
       try {
         const project = await getProject(projectId);
-        if (project.createdByUserId.toLowerCase() !== userId.toLowerCase()) {
+        if (!isProjectOwner(project, userId)) {
           return { values: null, message: "You can only edit your own projects." };
         }
         if (!isFacultyProjectEditable(project)) {
@@ -36,7 +37,7 @@ export function EditProjectView({
       } catch (err) {
         return {
           values: null,
-          message: err instanceof ApiError ? err.message : "Could not load project.",
+          message: apiErrorMessage(err, "Could not load project."),
         };
       }
     },
@@ -64,14 +65,7 @@ export function EditProjectView({
 
         <section className="site-container py-14 sm:py-16">
           {error ? (
-            <Text
-              as="p"
-              size="3"
-              role="alert"
-              className="rounded-md bg-red-50 px-3 py-2 !text-red-800"
-            >
-              {error}
-            </Text>
+            <ErrorAlert>{error}</ErrorAlert>
           ) : initialValues == null ? (
             <AdminFormSkeleton fields={8} />
           ) : (

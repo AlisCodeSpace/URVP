@@ -29,7 +29,6 @@ public sealed class ListAssignmentCandidatesQueryHandler
         if (!request.RecommendedOnly)
         {
             var (items, totalCount) = await _candidates.PageEligibleAsync(
-                project.Id,
                 request.Search,
                 request.RankedProjectsOnly,
                 request.PageNumber,
@@ -43,7 +42,6 @@ public sealed class ListAssignmentCandidatesQueryHandler
         }
 
         var eligible = await _candidates.ListEligibleAsync(
-            project.Id,
             request.Search,
             request.RankedProjectsOnly,
             cancellationToken);

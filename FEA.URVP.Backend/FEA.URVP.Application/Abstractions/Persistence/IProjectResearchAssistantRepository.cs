@@ -40,7 +40,13 @@ public interface IProjectResearchAssistantRepository
         Guid assistantId,
         CancellationToken cancellationToken = default);
 
-    void Add(ProjectResearchAssistant assistant);
+    /// <summary>
+    /// Inserts the assistant. Returns false when that email is already listed on the project,
+    /// including when two adds arrive together and the unique index rejects the second.
+    /// </summary>
+    Task<bool> TryAddAsync(
+        ProjectResearchAssistant assistant,
+        CancellationToken cancellationToken = default);
 
     void Remove(ProjectResearchAssistant assistant);
 }

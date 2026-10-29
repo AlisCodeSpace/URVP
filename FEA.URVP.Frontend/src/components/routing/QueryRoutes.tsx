@@ -50,6 +50,17 @@ function useRouteParam(name: string): string {
   return useSearchParams().get(name)?.trim() ?? "";
 }
 
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Reads an identifier parameter, or "" when it is not a GUID. Identifiers are interpolated into
+ * API paths, so anything else (such as `../`) must never reach a request.
+ */
+function useIdParam(name: string): string {
+  const value = useRouteParam(name);
+  return GUID.test(value) ? value : "";
+}
+
 /** Shown when a link or a hand-typed URL omits a required identifier. */
 function MissingParam() {
   return <NotFoundView />;
@@ -65,7 +76,7 @@ function MissingParam() {
  */
 export function MyProjectsRoute() {
   const router = useRouter();
-  const userId = useRouteParam(RouteParam.User);
+  const userId = useIdParam(RouteParam.User);
   const { status, loading } = useAuth();
   const phase = useApplicationWindow();
   const canPost = !phase.loading && phase.registrationOpen;
@@ -131,7 +142,7 @@ export function MyProjectsRoute() {
 
 /** `/my-projects/new?user=` */
 export function NewProjectRoute() {
-  const userId = useRouteParam(RouteParam.User);
+  const userId = useIdParam(RouteParam.User);
 
   if (!userId) return <MissingParam />;
 
@@ -162,8 +173,8 @@ export function NewProjectRoute() {
 
 /** `/my-projects/project?user=&project=` */
 export function FacultyProjectRoute() {
-  const userId = useRouteParam(RouteParam.User);
-  const projectId = useRouteParam(RouteParam.Project);
+  const userId = useIdParam(RouteParam.User);
+  const projectId = useIdParam(RouteParam.Project);
 
   if (!userId || !projectId) return <MissingParam />;
 
@@ -172,8 +183,8 @@ export function FacultyProjectRoute() {
 
 /** `/my-projects/project/edit?user=&project=` */
 export function EditProjectRoute() {
-  const userId = useRouteParam(RouteParam.User);
-  const projectId = useRouteParam(RouteParam.Project);
+  const userId = useIdParam(RouteParam.User);
+  const projectId = useIdParam(RouteParam.Project);
 
   if (!userId || !projectId) return <MissingParam />;
 
@@ -182,9 +193,9 @@ export function EditProjectRoute() {
 
 /** `/my-projects/project/student?user=&project=&student=` */
 export function FacultyStudentProfileRoute() {
-  const userId = useRouteParam(RouteParam.User);
-  const projectId = useRouteParam(RouteParam.Project);
-  const studentUserId = useRouteParam(RouteParam.Student);
+  const userId = useIdParam(RouteParam.User);
+  const projectId = useIdParam(RouteParam.Project);
+  const studentUserId = useIdParam(RouteParam.Student);
 
   if (!userId || !projectId || !studentUserId) return <MissingParam />;
 
@@ -199,7 +210,7 @@ export function FacultyStudentProfileRoute() {
 
 /** `/research-assistant/project?project=` */
 export function AssistedProjectRoute() {
-  const projectId = useRouteParam(RouteParam.Project);
+  const projectId = useIdParam(RouteParam.Project);
 
   if (!projectId) return <MissingParam />;
 
@@ -208,8 +219,8 @@ export function AssistedProjectRoute() {
 
 /** `/research-assistant/project/student?project=&student=` */
 export function AssistedStudentRoute() {
-  const projectId = useRouteParam(RouteParam.Project);
-  const studentUserId = useRouteParam(RouteParam.Student);
+  const projectId = useIdParam(RouteParam.Project);
+  const studentUserId = useIdParam(RouteParam.Student);
 
   if (!projectId || !studentUserId) return <MissingParam />;
 
@@ -228,7 +239,7 @@ export function AssistedStudentRoute() {
 
 /** `/projects/detail?id=` */
 export function ProjectDetailRoute() {
-  const projectId = useRouteParam(RouteParam.Id);
+  const projectId = useIdParam(RouteParam.Id);
 
   if (!projectId) return <MissingParam />;
 
@@ -256,7 +267,7 @@ export function NewsArticleRoute() {
 
 /** `/admin/projects/detail?id=` */
 export function AdminProjectRoute() {
-  const projectId = useRouteParam(RouteParam.Id);
+  const projectId = useIdParam(RouteParam.Id);
 
   if (!projectId) return <MissingParam />;
 
@@ -265,7 +276,7 @@ export function AdminProjectRoute() {
 
 /** `/admin/projects/assign?id=` */
 export function AdminAssignStudentsRoute() {
-  const projectId = useRouteParam(RouteParam.Id);
+  const projectId = useIdParam(RouteParam.Id);
 
   if (!projectId) return <MissingParam />;
 
@@ -274,8 +285,8 @@ export function AdminAssignStudentsRoute() {
 
 /** `/admin/projects/student?id=&student=` */
 export function AdminStudentProfileRoute() {
-  const projectId = useRouteParam(RouteParam.Id);
-  const studentUserId = useRouteParam(RouteParam.Student);
+  const projectId = useIdParam(RouteParam.Id);
+  const studentUserId = useIdParam(RouteParam.Student);
 
   if (!projectId || !studentUserId) return <MissingParam />;
 
@@ -289,7 +300,7 @@ export function AdminStudentProfileRoute() {
 
 /** `/admin/users/student?student=` */
 export function AdminUserStudentProfileRoute() {
-  const studentUserId = useRouteParam(RouteParam.Student);
+  const studentUserId = useIdParam(RouteParam.Student);
 
   if (!studentUserId) return <MissingParam />;
 
@@ -298,7 +309,7 @@ export function AdminUserStudentProfileRoute() {
 
 /** `/admin/matching/run?id=` */
 export function AdminMatchingRunRoute() {
-  const runId = useRouteParam(RouteParam.Id);
+  const runId = useIdParam(RouteParam.Id);
 
   if (!runId) return <MissingParam />;
 
@@ -307,7 +318,7 @@ export function AdminMatchingRunRoute() {
 
 /** `/admin/news/edit?id=` */
 export function AdminNewsEditRoute() {
-  const newsId = useRouteParam(RouteParam.Id);
+  const newsId = useIdParam(RouteParam.Id);
 
   if (!newsId) return <MissingParam />;
 
@@ -316,7 +327,7 @@ export function AdminNewsEditRoute() {
 
 /** `/admin/semesters/edit?id=` */
 export function AdminSemesterEditRoute() {
-  const semesterId = useRouteParam(RouteParam.Id);
+  const semesterId = useIdParam(RouteParam.Id);
 
   if (!semesterId) return <MissingParam />;
 
@@ -325,7 +336,7 @@ export function AdminSemesterEditRoute() {
 
 /** `/admin/workshops/edit?id=` */
 export function AdminWorkshopEditRoute() {
-  const workshopId = useRouteParam(RouteParam.Id);
+  const workshopId = useIdParam(RouteParam.Id);
 
   if (!workshopId) return <MissingParam />;
 

@@ -12,21 +12,18 @@ public sealed class ListProjectRankingsQueryHandler
     private readonly IProjectRepository _projects;
     private readonly IProjectRankingRepository _rankings;
     private readonly IFacultyCandidateRankingRepository _candidateRankings;
-    private readonly IUserRepository _users;
-    private readonly IProjectResearchAssistantRepository _assistants;
+    private readonly ProjectResearchAssistantAccess _access;
 
     public ListProjectRankingsQueryHandler(
         IProjectRepository projects,
         IProjectRankingRepository rankings,
         IFacultyCandidateRankingRepository candidateRankings,
-        IUserRepository users,
-        IProjectResearchAssistantRepository assistants)
+        ProjectResearchAssistantAccess access)
     {
         _projects = projects;
         _rankings = rankings;
         _candidateRankings = candidateRankings;
-        _users = users;
-        _assistants = assistants;
+        _access = access;
     }
 
     public async Task<IReadOnlyList<ProjectRankingStudentDto>> Handle(
@@ -41,12 +38,10 @@ public sealed class ListProjectRankingsQueryHandler
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Project {request.ProjectId} was not found.");
 
-        await ProjectResearchAssistantAccess.EnsureCanReviewAsync(
+        await _access.EnsureCanReviewAsync(
             project,
             request.CurrentUserId,
             request.IsAdmin,
-            _users,
-            _assistants,
             "You can only view rankings for a project you posted or assist.",
             cancellationToken);
 

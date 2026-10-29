@@ -8,7 +8,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { DateField } from "@/components/ui/DateField";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { fromAppDatetimeInput, toAppDatetimeInput } from "@/lib/datetime";
 import {
   ALLOW_OVERLAPPING_WINDOWS,
@@ -237,9 +237,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
       router.refresh();
     } catch (err) {
       setError(
-        err instanceof ApiError
-          ? (err.errors?.[0] ?? err.message)
-          : "Could not save this URVP cycle.",
+        apiErrorMessage(err, "Could not save this URVP cycle."),
       );
     } finally {
       setSaving(false);

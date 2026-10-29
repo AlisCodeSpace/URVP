@@ -11,14 +11,12 @@ public interface IAssignmentCandidateReadRepository
 {
     /// <summary>Every eligible student, for scoring the recommended list.</summary>
     Task<IReadOnlyList<AssignmentStudentSource>> ListEligibleAsync(
-        Guid projectId,
         string? search,
         bool rankedProjectsOnly,
         CancellationToken cancellationToken = default);
 
     /// <summary>One page of eligible students, ordered by name.</summary>
     Task<(IReadOnlyList<AssignmentStudentSource> Items, int TotalCount)> PageEligibleAsync(
-        Guid projectId,
         string? search,
         bool rankedProjectsOnly,
         int pageNumber,

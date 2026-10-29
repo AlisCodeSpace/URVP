@@ -10,7 +10,7 @@ import { FieldSelect } from "@/components/ui/FieldSelect";
 import { IconDownload } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { adminUserStudentProfileHref } from "@/lib/auth";
 import {
   assignUserRole,
@@ -202,9 +202,7 @@ export function AdminUsersView() {
     } catch (err) {
       setDraftRoles((prev) => ({ ...prev, [user.id]: user.role }));
       setRowError(
-        err instanceof ApiError
-          ? err.message
-          : "Failed to update role.",
+        apiErrorMessage(err, "Failed to update role."),
       );
     } finally {
       setSavingId(null);
@@ -230,9 +228,7 @@ export function AdminUsersView() {
       setExportOpen(false);
     } catch (err) {
       setExportError(
-        err instanceof ApiError
-          ? err.message
-          : "Failed to export users.",
+        apiErrorMessage(err, "Failed to export users."),
       );
     } finally {
       setExporting(null);
@@ -328,18 +324,21 @@ export function AdminUsersView() {
                   {SORTABLE.map((col) => {
                     const active = sortBy === col.field;
                     return (
-                      <th key={col.field} scope="col">
+                      <th
+                        key={col.field}
+                        scope="col"
+                        aria-sort={
+                          active
+                            ? sortDir === "Asc"
+                              ? "ascending"
+                              : "descending"
+                            : "none"
+                        }
+                      >
                         <button
                           type="button"
                           className={`admin-sort-btn${active ? " is-active" : ""}`}
                           onClick={() => toggleSort(col.field)}
-                          aria-sort={
-                            active
-                              ? sortDir === "Asc"
-                                ? "ascending"
-                                : "descending"
-                              : "none"
-                          }
                         >
                           <span>{col.label}</span>
                           <span className="admin-sort-indicator" aria-hidden>

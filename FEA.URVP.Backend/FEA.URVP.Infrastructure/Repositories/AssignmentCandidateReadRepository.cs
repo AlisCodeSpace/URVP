@@ -16,12 +16,11 @@ public sealed class AssignmentCandidateReadRepository : IAssignmentCandidateRead
     }
 
     public async Task<IReadOnlyList<AssignmentStudentSource>> ListEligibleAsync(
-        Guid projectId,
         string? search,
         bool rankedProjectsOnly,
         CancellationToken cancellationToken = default)
     {
-        var rows = await ApplySearch(Eligible(projectId, rankedProjectsOnly), search)
+        var rows = await ApplySearch(Eligible(rankedProjectsOnly), search)
             .OrderBy(row => row.Name)
             .ThenBy(row => row.UserId)
             .ToListAsync(cancellationToken);
@@ -30,14 +29,13 @@ public sealed class AssignmentCandidateReadRepository : IAssignmentCandidateRead
     }
 
     public async Task<(IReadOnlyList<AssignmentStudentSource> Items, int TotalCount)> PageEligibleAsync(
-        Guid projectId,
         string? search,
         bool rankedProjectsOnly,
         int pageNumber,
         int pageSize,
         CancellationToken cancellationToken = default)
     {
-        var query = ApplySearch(Eligible(projectId, rankedProjectsOnly), search);
+        var query = ApplySearch(Eligible(rankedProjectsOnly), search);
         var totalCount = await query.CountAsync(cancellationToken);
         var rows = await query
             .OrderBy(row => row.Name)
@@ -85,9 +83,8 @@ public sealed class AssignmentCandidateReadRepository : IAssignmentCandidateRead
     /// current-cycle project. Profile columns are projected so the rest of the
     /// profile stays in the database.
     /// </summary>
-    private IQueryable<CandidateRow> Eligible(Guid projectId, bool rankedProjectsOnly)
+    private IQueryable<CandidateRow> Eligible(bool rankedProjectsOnly)
     {
-        _ = projectId;
         var users = _db.Users.AsNoTracking().Where(user => user.Role == UserRole.Student);
         if (rankedProjectsOnly)
         {

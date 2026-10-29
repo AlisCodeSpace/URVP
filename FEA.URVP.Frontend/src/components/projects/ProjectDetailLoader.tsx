@@ -7,7 +7,7 @@ import { ApplicationWindowClosedNotice } from "@/components/projects/Application
 import { ProjectDetail } from "@/components/projects/ProjectDetail";
 import { useStudentProjectsLocked } from "@/hooks/useApplicationWindow";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
-import { ApiError } from "@/lib/api";
+import { ApiError, apiErrorMessage } from "@/lib/api";
 import { projectsHref, studentMatchedProjectsHref } from "@/lib/auth";
 import { getProject, toCatalogProject } from "@/lib/projects-api";
 import { NotFoundView } from "@/components/ui/NotFoundView";
@@ -31,7 +31,7 @@ export function ProjectDetailLoader({ id }: { id: string }) {
           kind: "error" as const,
           project: null,
           message:
-            err instanceof ApiError ? err.message : "Could not load this project.",
+            apiErrorMessage(err, "Could not load this project."),
         };
       }
     },

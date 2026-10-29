@@ -8,7 +8,7 @@ import { RunStatusBadge } from "@/components/admin/MatchingStatusBadge";
 import { Button } from "@/components/ui/Button";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { adminMatchingRunHref } from "@/lib/auth";
 import {
   confirmMatchingRun,
@@ -73,7 +73,7 @@ export function AdminMatchingView() {
       }
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Test matching run failed.",
+        apiErrorMessage(err, "Test matching run failed."),
       );
     } finally {
       setTestBusy(null);

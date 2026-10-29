@@ -55,12 +55,11 @@ public sealed class ProjectRankingRepository : IProjectRankingRepository
         Guid studentUserId,
         Guid facultyUserId,
         CancellationToken cancellationToken = default) =>
-        _db.ProjectRankings
-            .AsNoTracking()
-            .AnyAsync(
-                r => r.StudentUserId == studentUserId
-                     && r.Project.CreatedByUserId == facultyUserId,
-                cancellationToken);
+        StudentProjectLinks.HasRankedAsync(
+            _db,
+            studentUserId,
+            StudentProjectLinks.PostedBy(_db, facultyUserId),
+            cancellationToken);
 
     public async Task<IReadOnlyList<ProjectRanking>> ListByProjectIdsAsync(
         IReadOnlyCollection<Guid> projectIds,

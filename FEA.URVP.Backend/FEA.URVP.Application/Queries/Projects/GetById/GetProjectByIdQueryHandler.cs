@@ -12,9 +12,8 @@ public sealed class GetProjectByIdQueryHandler : IRequestHandler<GetProjectByIdQ
     private readonly IProjectRepository _projects;
     private readonly ISemesterRepository _semesters;
     private readonly IMatchingRunRepository _runs;
-    private readonly IUserRepository _users;
-    private readonly IProjectResearchAssistantRepository _assistants;
     private readonly FacultyProjectMutationAccess _mutationAccess;
+    private readonly ProjectResearchAssistantAccess _reviewAccess;
     private readonly ProjectCycleClosure _cycleClosure;
 
     public GetProjectByIdQueryHandler(
@@ -23,16 +22,14 @@ public sealed class GetProjectByIdQueryHandler : IRequestHandler<GetProjectByIdQ
         FacultyProjectMutationAccess mutationAccess,
         ProjectCycleClosure cycleClosure,
         IMatchingRunRepository runs,
-        IUserRepository users,
-        IProjectResearchAssistantRepository assistants)
+        ProjectResearchAssistantAccess reviewAccess)
     {
         _projects = projects;
         _semesters = semesters;
         _mutationAccess = mutationAccess;
         _cycleClosure = cycleClosure;
         _runs = runs;
-        _users = users;
-        _assistants = assistants;
+        _reviewAccess = reviewAccess;
     }
 
     public async Task<ProjectDto> Handle(GetProjectByIdQuery request, CancellationToken cancellationToken)
@@ -45,15 +42,11 @@ public sealed class GetProjectByIdQueryHandler : IRequestHandler<GetProjectByIdQ
         var now = DateTime.UtcNow;
         var active = await _semesters.FindActiveAsync(cancellationToken);
         var onCurrentCycle = ProjectVisibility.IsOnCurrentCycle(project, active, now);
-        var assists = await ProjectResearchAssistantAccess.IsListedAsync(
-            _users,
-            _assistants,
+        var canSeePreviousCycle = await _reviewAccess.CanReviewAsync(
+            project,
             request.ViewerUserId,
-            project.Id,
+            request.ViewerIsAdmin,
             cancellationToken);
-        var canSeePreviousCycle = request.ViewerIsAdmin
-            || project.CreatedByUserId == request.ViewerUserId
-            || assists;
 
         if (!onCurrentCycle && !canSeePreviousCycle)
         {

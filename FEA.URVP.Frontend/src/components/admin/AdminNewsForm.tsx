@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { DateField } from "@/components/ui/DateField";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { toAppDateInput, todayAppDateInput } from "@/lib/datetime";
 import {
   MAX_NEWS_IMAGES,
@@ -190,11 +190,7 @@ export function AdminNewsForm({ newsId }: { newsId?: string }) {
       router.push("/admin/news");
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? (err.errors[0] ?? err.message)
-          : "Could not save this article.",
-      );
+      setError(apiErrorMessage(err, "Could not save this article."));
     } finally {
       setSaving(false);
     }

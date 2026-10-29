@@ -9,7 +9,7 @@ import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { getAdminProject } from "@/lib/admin-projects-api";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { getAssignmentGate } from "@/lib/assignment-gate";
 import { adminProjectHref, adminStudentProfileHref } from "@/lib/auth";
 import {
@@ -23,6 +23,17 @@ import { getActiveSemester } from "@/lib/semesters-api";
 const PAGE_SIZE = 6;
 
 type CandidateList = "recommended" | "all";
+
+function emptyCandidatesMessage(list: CandidateList, hideUnranked: boolean): string {
+  if (list === "recommended") {
+    return hideUnranked
+      ? "No recommended students have ranked a project."
+      : "No students match this project's research interests or qualifications.";
+  }
+  return hideUnranked
+    ? "No students who ranked a project match this search."
+    : "No students match this search.";
+}
 
 export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
   const searchId = useId();
@@ -131,13 +142,7 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
       } catch (err) {
         const name =
           candidates.find((c) => c.userId === studentUserId)?.name ?? "Student";
-        failures.push(
-          `${name}: ${
-            err instanceof ApiError
-              ? (err.errors[0] ?? err.message)
-              : "Failed to assign."
-          }`,
-        );
+        failures.push(`${name}: ${apiErrorMessage(err, "Failed to assign.")}`);
       }
     }
     setSelected((current) => new Set([...current].filter((id) => !done.has(id))));
@@ -322,13 +327,7 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
             </div>
           ) : candidates.length === 0 ? (
             <p className="admin-users-status">
-              {hideUnranked && list === "recommended"
-                ? "No recommended students have ranked a project."
-                : hideUnranked
-                  ? "No students who ranked a project match this search."
-                  : list === "recommended"
-                    ? "No students match this project's research interests or qualifications."
-                    : "No students match this search."}
+              {emptyCandidatesMessage(list, hideUnranked)}
             </p>
           ) : (
             <div className="admin-people" aria-busy={loading}>

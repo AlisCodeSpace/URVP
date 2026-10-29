@@ -10,22 +10,19 @@ public sealed class ListProjectAlumniQueryHandler
 {
     private readonly IProjectRepository _projects;
     private readonly IProjectAlumniRepository _alumni;
-    private readonly IUserRepository _users;
-    private readonly IProjectResearchAssistantRepository _assistants;
+    private readonly ProjectResearchAssistantAccess _access;
     private readonly ProjectCycleClosure _cycleClosure;
 
     public ListProjectAlumniQueryHandler(
         IProjectRepository projects,
         IProjectAlumniRepository alumni,
         ProjectCycleClosure cycleClosure,
-        IUserRepository users,
-        IProjectResearchAssistantRepository assistants)
+        ProjectResearchAssistantAccess access)
     {
         _projects = projects;
         _alumni = alumni;
         _cycleClosure = cycleClosure;
-        _users = users;
-        _assistants = assistants;
+        _access = access;
     }
 
     public async Task<IReadOnlyList<ProjectAlumniDto>> Handle(
@@ -42,12 +39,10 @@ public sealed class ListProjectAlumniQueryHandler
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Project {request.ProjectId} was not found.");
 
-        await ProjectResearchAssistantAccess.EnsureCanReviewAsync(
+        await _access.EnsureCanReviewAsync(
             project,
             request.CurrentUserId,
             request.IsAdmin,
-            _users,
-            _assistants,
             "You can only view previous students for a project you posted or assist.",
             cancellationToken);
 

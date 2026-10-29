@@ -2,7 +2,6 @@ using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.DTOs.Files;
 using FEA.URVP.Application.StudentProfiles;
 using FEA.URVP.Domain.Catalog;
-using FEA.URVP.Domain.Enums;
 using MediatR;
 
 namespace FEA.URVP.Application.Queries.Files.GetById;
@@ -11,25 +10,16 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
 {
     private readonly IFileStorageRepository _files;
     private readonly IUserRepository _users;
-    private readonly IProjectRankingRepository _rankings;
-    private readonly IMatchingRunRepository _placements;
-    private readonly IProjectAlumniRepository _alumni;
-    private readonly IProjectResearchAssistantRepository _assistants;
+    private readonly StudentProfileViewAccess _viewAccess;
 
     public GetFileByIdQueryHandler(
         IFileStorageRepository files,
         IUserRepository users,
-        IProjectRankingRepository rankings,
-        IMatchingRunRepository placements,
-        IProjectAlumniRepository alumni,
-        IProjectResearchAssistantRepository assistants)
+        StudentProfileViewAccess viewAccess)
     {
         _files = files;
         _users = users;
-        _rankings = rankings;
-        _placements = placements;
-        _alumni = alumni;
-        _assistants = assistants;
+        _viewAccess = viewAccess;
     }
 
     public async Task<FileContentDto> Handle(GetFileByIdQuery request, CancellationToken cancellationToken)
@@ -79,21 +69,7 @@ public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, 
         var viewer = await _users.FindByIdAsync(request.CurrentUserId, cancellationToken)
             ?? throw new UnauthorizedAccessException("User not found.");
 
-        var allowed = viewer.Role is UserRole.Faculty
-            && await StudentProfileAccess.FacultyMayViewStudentAsync(
-                viewer.Id,
-                studentUserId,
-                _rankings,
-                _placements,
-                _alumni,
-                cancellationToken);
-
-        if (!allowed)
-        {
-            allowed = await _assistants.CanViewStudentAsync(viewer.Email, studentUserId, cancellationToken);
-        }
-
-        if (!allowed)
+        if (!await _viewAccess.CanViewAsync(viewer, studentUserId, cancellationToken))
         {
             throw new UnauthorizedAccessException("You do not have permission to access this file.");
         }

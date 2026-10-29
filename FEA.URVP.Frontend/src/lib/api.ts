@@ -19,6 +19,11 @@ export class ApiError extends Error {
   }
 }
 
+/** The most specific message the backend sent, or `fallback` for anything that is not an API error. */
+export function apiErrorMessage(err: unknown, fallback: string): string {
+  return err instanceof ApiError ? (err.errors[0] ?? err.message) : fallback;
+}
+
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 /** Must match AntiforgeryConfiguration.HeaderName on the backend. */

@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminFormSkeleton, AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import {
   confirmMatchingRun,
   discardMatchingRun,
@@ -84,7 +84,7 @@ export function AdminMatchingRunDetailView({ runId }: { runId: string }) {
       }
       setPending(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Action failed.");
+      setError(apiErrorMessage(err, "Action failed."));
     } finally {
       setBusy(false);
     }

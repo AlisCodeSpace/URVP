@@ -52,17 +52,13 @@ export function TourProvider({ children }: { children: ReactNode }) {
     },
     [router],
   );
-  const goRef = useRef(go);
-  goRef.current = go;
-
+  const role = status?.role;
+  const userId = status?.userId;
   const steps = useMemo(() => {
-    const navigate = (href: string) => goRef.current(href);
-    if (status?.role === UserRole.Student) return studentTourSteps(navigate);
-    if (status?.role === UserRole.Faculty && status.userId) {
-      return facultyTourSteps(navigate, status.userId);
-    }
+    if (role === UserRole.Student) return studentTourSteps(go);
+    if (role === UserRole.Faculty && userId) return facultyTourSteps(go, userId);
     return [];
-  }, [status?.role, status?.userId]);
+  }, [go, role, userId]);
 
   const { controls, state, Tour } = useJoyride({
     steps: steps.length > 0 ? steps : fallbackSteps,
@@ -105,7 +101,9 @@ export function TourProvider({ children }: { children: ReactNode }) {
   });
 
   const controlsRef = useRef(controls);
-  controlsRef.current = controls;
+  useEffect(() => {
+    controlsRef.current = controls;
+  }, [controls]);
 
   useEffect(() => {
     autoStarted.current = false;

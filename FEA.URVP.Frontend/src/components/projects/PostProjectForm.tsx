@@ -11,10 +11,11 @@ import {
 import { Heading, Text } from "@/components/ui/Typography";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { FieldSelect } from "@/components/ui/FieldSelect";
 import { MultiSelectSearch } from "@/components/ui/MultiSelectSearch";
 import { useValueListOptions } from "@/hooks/useValueListOptions";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { myProjectsHref } from "@/lib/auth";
 import {
   emptyProjectFormValues,
@@ -178,11 +179,7 @@ export function PostProjectForm({
       router.push(myProjectsHref(userId));
       router.refresh();
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.errors[0] ?? err.message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+      setError(apiErrorMessage(err, "Something went wrong. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -443,14 +440,7 @@ export function PostProjectForm({
       </section>
 
       {error ? (
-        <Text
-          as="p"
-          size="2"
-          role="alert"
-          className="rounded-md bg-red-50 px-3 py-2 !text-red-800"
-        >
-          {error}
-        </Text>
+        <ErrorAlert size="2">{error}</ErrorAlert>
       ) : null}
 
       <div className="flex flex-wrap items-center gap-3 border-t border-primary/10 pt-8">

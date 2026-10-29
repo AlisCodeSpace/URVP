@@ -9,7 +9,7 @@ import {
   ReadOnlyField,
   ReadOnlyValue,
 } from "@/components/ui/ReadOnlyField";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { downloadStudentDocument } from "@/lib/student-profile-api";
 import {
   TIME_SLOTS,
@@ -64,7 +64,7 @@ function DocumentDownload({
       await downloadStudentDocument(fileId, fileName);
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Could not download the file.",
+        apiErrorMessage(err, "Could not download the file."),
       );
     } finally {
       setBusy(false);

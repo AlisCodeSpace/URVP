@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Queries.StudentProfiles.GetByUserId;
+using FEA.URVP.Application.StudentProfiles;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 using NSubstitute;
@@ -117,10 +118,11 @@ public sealed class GetStudentProfileByUserIdQueryHandlerTests
             Substitute.For<IStudentProfileRepository>(),
             users,
             Substitute.For<IFileStorageRepository>(),
-            rankings,
-            placements,
-            alumni,
-            Substitute.For<IProjectResearchAssistantRepository>());
+            new StudentProfileViewAccess(
+                rankings,
+                placements,
+                alumni,
+                Substitute.For<IProjectResearchAssistantRepository>()));
 
         return (handler, rankings, placements, alumni);
     }

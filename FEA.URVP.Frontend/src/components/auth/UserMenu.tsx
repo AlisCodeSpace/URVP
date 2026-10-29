@@ -160,7 +160,7 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
               <Link
                 href={researchAssistantHref()}
                 role="menuitem"
-                className="btn btn-sm w-full border border-white/25 bg-white/10 text-white hover:bg-white/20"
+                className="btn btn-outline btn-sm w-full"
                 onClick={() => {
                   setOpen(false);
                   onNavigate?.();

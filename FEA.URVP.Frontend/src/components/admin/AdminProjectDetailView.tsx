@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminFormSkeleton, RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import {
   getAdminProject,
   type ProjectRankingStudentDto,
@@ -133,9 +133,6 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
     return counts;
   }, [data]);
 
-  const actionMessage = (err: unknown, fallback: string) =>
-    err instanceof ApiError ? (err.errors[0] ?? err.message) : fallback;
-
   async function assign(studentUserId: string) {
     setBusyStudentId(studentUserId);
     setActionError(null);
@@ -143,7 +140,7 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
       await assignStudentToProject({ projectId, studentUserId });
       await load();
     } catch (err) {
-      setActionError(actionMessage(err, "Failed to assign student."));
+      setActionError(apiErrorMessage(err, "Failed to assign student."));
     } finally {
       setBusyStudentId(null);
     }
@@ -158,7 +155,7 @@ export function AdminProjectDetailView({ projectId }: { projectId: string }) {
       setRemoveTarget(null);
       await load();
     } catch (err) {
-      setActionError(actionMessage(err, "Failed to remove student."));
+      setActionError(apiErrorMessage(err, "Failed to remove student."));
     } finally {
       setRemoving(false);
     }

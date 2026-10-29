@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { Tag } from "@/components/ui/Tag";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import {
   getEmailSettings,
   updateEmailSettings,
@@ -63,7 +63,7 @@ export function AdminEmailSettingsView() {
       setSaved(true);
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Failed to save email settings.",
+        apiErrorMessage(err, "Failed to save email settings."),
       );
     } finally {
       setSaving(false);
@@ -83,9 +83,7 @@ export function AdminEmailSettingsView() {
       setSaved(true);
     } catch (err) {
       setError(
-        err instanceof ApiError
-          ? err.message
-          : "Failed to remove the stored password.",
+        apiErrorMessage(err, "Failed to remove the stored password."),
       );
     } finally {
       setClearing(false);

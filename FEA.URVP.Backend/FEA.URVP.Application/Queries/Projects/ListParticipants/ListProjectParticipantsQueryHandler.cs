@@ -10,19 +10,16 @@ public sealed class ListProjectParticipantsQueryHandler
 {
     private readonly IProjectRepository _projects;
     private readonly IMatchingRunRepository _runs;
-    private readonly IUserRepository _users;
-    private readonly IProjectResearchAssistantRepository _assistants;
+    private readonly ProjectResearchAssistantAccess _access;
 
     public ListProjectParticipantsQueryHandler(
         IProjectRepository projects,
         IMatchingRunRepository runs,
-        IUserRepository users,
-        IProjectResearchAssistantRepository assistants)
+        ProjectResearchAssistantAccess access)
     {
         _projects = projects;
         _runs = runs;
-        _users = users;
-        _assistants = assistants;
+        _access = access;
     }
 
     public async Task<IReadOnlyList<ProjectParticipantDto>> Handle(
@@ -37,12 +34,10 @@ public sealed class ListProjectParticipantsQueryHandler
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new KeyNotFoundException($"Project {request.ProjectId} was not found.");
 
-        await ProjectResearchAssistantAccess.EnsureCanReviewAsync(
+        await _access.EnsureCanReviewAsync(
             project,
             request.CurrentUserId,
             request.IsAdmin,
-            _users,
-            _assistants,
             "You can only view participants for a project you posted or assist.",
             cancellationToken);
 

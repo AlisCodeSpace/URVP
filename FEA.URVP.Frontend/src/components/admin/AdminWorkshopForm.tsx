@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { DateField } from "@/components/ui/DateField";
 import { TimeField } from "@/components/ui/TimeField";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import {
   createWorkshop,
   getWorkshop,
@@ -154,11 +154,7 @@ export function AdminWorkshopForm({ workshopId }: { workshopId?: string }) {
       router.push("/admin/workshops");
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? (err.errors[0] ?? err.message)
-          : "Could not save this workshop.",
-      );
+      setError(apiErrorMessage(err, "Could not save this workshop."));
     } finally {
       setSaving(false);
     }

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { IconDownload } from "@/components/ui/Icons";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { exportAdminOverview, getAdminOverview } from "@/lib/admin-overview-api";
 import {
   buildAdminKpis,
@@ -44,7 +44,7 @@ export function AdminOverview() {
       await exportAdminOverview();
     } catch (err) {
       setExportError(
-        err instanceof ApiError ? err.message : "Failed to export overview.",
+        apiErrorMessage(err, "Failed to export overview."),
       );
     } finally {
       setExporting(false);

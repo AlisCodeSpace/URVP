@@ -8,7 +8,7 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { adminWorkshopEditHref } from "@/lib/auth";
 import { formatAppDate } from "@/lib/datetime";
 import { formatTimeDisplay } from "@/lib/time";
@@ -65,7 +65,7 @@ export function AdminWorkshopsView() {
       await load();
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Failed to delete workshop.",
+        apiErrorMessage(err, "Failed to delete workshop."),
       );
     } finally {
       setDeleting(false);

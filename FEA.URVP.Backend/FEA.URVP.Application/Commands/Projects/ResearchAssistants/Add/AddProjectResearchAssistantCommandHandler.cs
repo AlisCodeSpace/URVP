@@ -42,10 +42,10 @@ public sealed class AddProjectResearchAssistantCommandHandler
                 "The faculty member who posted this project cannot also be its research assistant.");
         }
 
-        var existing = await _assistants.ListByProjectAsync(project.Id, cancellationToken);
-        if (existing.Any(assistant => assistant.Email == email))
+        const string alreadyListed = "This person is already a research assistant on this project.";
+        if (await _assistants.IsListedOnProjectAsync(project.Id, email, cancellationToken))
         {
-            throw new InvalidOperationException("This person is already a research assistant on this project.");
+            throw new InvalidOperationException(alreadyListed);
         }
 
         var assistant = new ProjectResearchAssistant
@@ -56,8 +56,10 @@ public sealed class AddProjectResearchAssistantCommandHandler
             CreatedAt = DateTime.UtcNow,
         };
 
-        _assistants.Add(assistant);
-        await UnitOfWork.SaveChangesAsync(cancellationToken);
+        if (!await _assistants.TryAddAsync(assistant, cancellationToken))
+        {
+            throw new InvalidOperationException(alreadyListed);
+        }
 
         var names = await _assistants.NamesForEmailsAsync([email], cancellationToken);
         return assistant.ToDto(names);

@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { Heading, Text } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { IconPencil, IconPlus } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { useApplicationWindow } from "@/hooks/useApplicationWindow";
 import { editProjectHref, newProjectHref, viewProjectHref } from "@/lib/auth";
@@ -148,7 +149,7 @@ export function MyProjectsList({ userId }: { userId: string }) {
       setData((prev) => (prev ?? []).filter((project) => project.id !== id));
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Could not delete project.",
+        apiErrorMessage(err, "Could not delete project."),
       );
     } finally {
       setBusyId(null);
@@ -169,7 +170,7 @@ export function MyProjectsList({ userId }: { userId: string }) {
       );
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Could not reactivate project.",
+        apiErrorMessage(err, "Could not reactivate project."),
       );
     } finally {
       setBusyId(null);
@@ -241,15 +242,9 @@ export function MyProjectsList({ userId }: { userId: string }) {
   return (
     <div>
       {error ? (
-        <Text
-          as="p"
-          size="2"
-          mb="4"
-          role="alert"
-          className="rounded-md bg-red-50 px-3 py-2 !text-red-800"
-        >
+        <ErrorAlert size="2" mb="4">
           {error}
-        </Text>
+        </ErrorAlert>
       ) : null}
 
       <div className="mb-4 flex justify-end">

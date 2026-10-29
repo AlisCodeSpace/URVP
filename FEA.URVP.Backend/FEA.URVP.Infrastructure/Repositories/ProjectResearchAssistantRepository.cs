@@ -1,7 +1,7 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Domain.Entities.Projects;
-using FEA.URVP.Domain.Enums;
 using FEA.URVP.Infrastructure.Data.Context;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace FEA.URVP.Infrastructure.Repositories;
@@ -29,7 +29,7 @@ public sealed class ProjectResearchAssistantRepository : IProjectResearchAssista
         string email,
         CancellationToken cancellationToken = default)
     {
-        var normalized = email.Trim().ToLowerInvariant();
+        var normalized = Normalize(email);
         return await _db.ProjectResearchAssistants
             .AsNoTracking()
             .Include(assistant => assistant.Project)
@@ -48,7 +48,7 @@ public sealed class ProjectResearchAssistantRepository : IProjectResearchAssista
             return new Dictionary<string, string>();
         }
 
-        var normalized = emails.Select(email => email.Trim().ToLowerInvariant()).Distinct().ToList();
+        var normalized = emails.Select(Normalize).Distinct().ToList();
         var rows = await _db.Users
             .AsNoTracking()
             .Where(user => normalized.Contains(user.Email))
@@ -94,29 +94,7 @@ public sealed class ProjectResearchAssistantRepository : IProjectResearchAssista
             .Where(assistant => assistant.Email == normalized)
             .Select(assistant => assistant.ProjectId);
 
-        if (await _db.ProjectRankings.AsNoTracking().AnyAsync(
-                ranking => ranking.StudentUserId == studentUserId
-                           && projectIds.Contains(ranking.ProjectId),
-                cancellationToken))
-        {
-            return true;
-        }
-
-        if (await _db.Placements.AsNoTracking().AnyAsync(
-                placement => placement.StudentUserId == studentUserId
-                             && placement.Status == PlacementStatus.Confirmed
-                             && placement.MatchingRun.SemesterId == placement.Project.SemesterId
-                             && projectIds.Contains(placement.ProjectId),
-                cancellationToken))
-        {
-            return true;
-        }
-
-        return await _db.ProjectAlumni.AsNoTracking().AnyAsync(
-            alumnus => alumnus.StudentUserId == studentUserId
-                       && alumnus.WasConfirmed
-                       && projectIds.Contains(alumnus.ProjectId),
-            cancellationToken);
+        return await StudentProjectLinks.AnyAsync(_db, studentUserId, projectIds, cancellationToken);
     }
 
     public Task<ProjectResearchAssistant?> FindTrackedAsync(
@@ -127,8 +105,35 @@ public sealed class ProjectResearchAssistantRepository : IProjectResearchAssista
             assistant => assistant.ProjectId == projectId && assistant.Id == assistantId,
             cancellationToken);
 
-    public void Add(ProjectResearchAssistant assistant) =>
+    public async Task<bool> TryAddAsync(
+        ProjectResearchAssistant assistant,
+        CancellationToken cancellationToken = default)
+    {
         _db.ProjectResearchAssistants.Add(assistant);
+        try
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+        catch (DbUpdateException exception) when (IsDuplicateEmail(exception))
+        {
+            _db.Entry(assistant).State = EntityState.Detached;
+            return false;
+        }
+    }
+
+    private static bool IsDuplicateEmail(DbUpdateException exception)
+    {
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is SqlException sql && sql.Number is 2601 or 2627)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public void Remove(ProjectResearchAssistant assistant) =>
         _db.ProjectResearchAssistants.Remove(assistant);

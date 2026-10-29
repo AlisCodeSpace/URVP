@@ -8,9 +8,9 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { FacultyCandidateRankModal } from "@/components/student/FacultyCandidateRankModal";
 import { StudentProfileReadonly } from "@/components/student/StudentProfileReadonly";
 import { Button } from "@/components/ui/Button";
-import { useAssistedProjects } from "@/hooks/useAssistedProjects";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
+import { useAssistantAccess } from "@/hooks/useAssistedProjects";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
-import { ApiError } from "@/lib/api";
 import {
   assistedProjectHref,
   FACULTY_PORTAL_ROLES,
@@ -22,7 +22,7 @@ import {
 } from "@/lib/student-profile-api";
 import { ProfileFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { getProjectRankings, rankLabel } from "@/lib/project-rankings-api";
-import { isFacultyCandidateRankingLocked } from "@/lib/project-form";
+import { isFacultyCandidateRankingLocked, isProjectOwner } from "@/lib/project-form";
 import { getProject } from "@/lib/projects-api";
 
 export function FacultyStudentProfileView({
@@ -38,18 +38,8 @@ export function FacultyStudentProfileView({
   mode?: "owner" | "assistant";
 }) {
   const assisting = mode === "assistant";
-  const assistedQuery = useAssistedProjects(assisting);
-  const isListed =
-    assistedQuery.data?.some(
-      (item) => item.projectId.toLowerCase() === projectId.toLowerCase(),
-    ) ?? false;
-  const accessError = assisting
-    ? assistedQuery.error ??
-      (assistedQuery.data != null && !isListed
-        ? "You can only review projects where you are a research assistant."
-        : null)
-    : null;
-  const canLoad = !assisting || isListed;
+  const access = useAssistantAccess(projectId, assisting);
+  const canLoad = access.allowed;
   const [rankOpen, setRankOpen] = useState(false);
   const profileQuery = useCancellableQuery(
     async () => {
@@ -65,10 +55,7 @@ export function FacultyStudentProfileView({
   const projectQuery = useCancellableQuery(
     async () => {
       const next = await getProject(projectId);
-      if (
-        !assisting &&
-        next.createdByUserId.toLowerCase() !== (userId ?? "").toLowerCase()
-      ) {
+      if (!assisting && !isProjectOwner(next, userId)) {
         throw new Error("You can only rank candidates on your own projects.");
       }
       return next;
@@ -86,11 +73,12 @@ export function FacultyStudentProfileView({
     {
       enabled: Boolean(project),
       fallbackError: "Could not load candidate rankings.",
+      keepDataOnError: true,
     },
   );
   const values = profileQuery.data?.values ?? null;
   const exists = profileQuery.data?.exists ?? true;
-  const error = accessError ?? profileQuery.error;
+  const error = access.error ?? profileQuery.error;
   const backHref = assisting
     ? assistedProjectHref(projectId)
     : viewProjectHref(userId ?? "", projectId);
@@ -102,9 +90,8 @@ export function FacultyStudentProfileView({
     : "Student profile";
   const current = rankings?.find((r) => r.studentUserId === studentUserId);
   const facultyRank = current?.facultyRank ?? null;
-  const canRank = Boolean(
-    project && current && !isFacultyCandidateRankingLocked(project),
-  );
+  const locked = project != null && isFacultyCandidateRankingLocked(project);
+  const canRank = Boolean(project && current && !locked);
   const seats = project?.volunteersRequired ?? 0;
   const firstChoiceUsed =
     rankings?.filter((r) => r.facultyRank === 1).length ?? 0;
@@ -135,27 +122,13 @@ export function FacultyStudentProfileView({
 
         <section className="site-container py-14 sm:py-16">
           {error ? (
-            <Text
-              as="p"
-              size="3"
-              role="alert"
-              className="rounded-md bg-red-50 px-3 py-2 !text-red-800"
-            >
-              {error}
-            </Text>
+            <ErrorAlert>{error}</ErrorAlert>
           ) : values == null ? (
             <ProfileFormSkeleton />
           ) : (
             <div className="flex flex-col gap-8">
               {rankingsError ? (
-                <Text
-                  as="p"
-                  size="3"
-                  role="alert"
-                  className="rounded-md bg-red-50 px-3 py-2 !text-red-800"
-                >
-                  {rankingsError}
-                </Text>
+                <ErrorAlert>{rankingsError}</ErrorAlert>
               ) : project && current ? (
                 <section className="rounded-[var(--radius-lg)] border border-primary/12 bg-surface p-5 sm:p-7">
                   <Heading
@@ -178,9 +151,7 @@ export function FacultyStudentProfileView({
                       ? ` (${firstChoiceUsed} of ${seats} used)`
                       : ""}
                     .
-                    {project && isFacultyCandidateRankingLocked(project)
-                      ? " Rankings are locked after matching."
-                      : ""}
+                    {locked ? " Rankings are locked after matching." : ""}
                   </Text>
                   <Text
                     as="p"
@@ -194,7 +165,7 @@ export function FacultyStudentProfileView({
                       : "Not yet ranked"}
                   </Text>
                   <div className="mt-5">
-                    {project && isFacultyCandidateRankingLocked(project) ? null : (
+                    {locked ? null : (
                       <Button
                         type="button"
                         variant="primary"
@@ -231,20 +202,7 @@ export function FacultyStudentProfileView({
             studentUserId={studentUserId}
             studentName={displayName}
             volunteersRequired={project.volunteersRequired}
-            onChanged={() => {
-              void getProjectRankings(projectId)
-                .then((next) => {
-                  rankingsQuery.setData(next);
-                  rankingsQuery.setError(null);
-                })
-                .catch((err: unknown) => {
-                  rankingsQuery.setError(
-                    err instanceof ApiError
-                      ? err.message
-                      : "Could not refresh candidate rankings.",
-                  );
-                });
-            }}
+            onChanged={() => void rankingsQuery.reload({ silent: true })}
           />
         ) : null}
       </main>

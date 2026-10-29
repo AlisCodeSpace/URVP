@@ -1,7 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Commands.Base;
 using FEA.URVP.Application.Commands.Semesters;
-using FEA.URVP.Application.FacultyCandidateRankings;
 using FEA.URVP.Application.Projects;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +13,7 @@ public sealed class RemoveFacultyCandidateRankingCommandHandler
     private readonly IProjectRepository _projects;
     private readonly IUserRepository _users;
     private readonly ISemesterRepository _semesters;
-    private readonly IProjectResearchAssistantRepository _assistants;
+    private readonly ProjectResearchAssistantAccess _access;
 
     public RemoveFacultyCandidateRankingCommandHandler(
         ILogger<RemoveFacultyCandidateRankingCommandHandler> logger,
@@ -23,14 +22,14 @@ public sealed class RemoveFacultyCandidateRankingCommandHandler
         IProjectRepository projects,
         IUserRepository users,
         ISemesterRepository semesters,
-        IProjectResearchAssistantRepository assistants)
+        ProjectResearchAssistantAccess access)
         : base(logger, unitOfWork)
     {
         _candidateRankings = candidateRankings;
         _projects = projects;
         _users = users;
         _semesters = semesters;
-        _assistants = assistants;
+        _access = access;
     }
 
     protected override async Task HandleCommandAsync(
@@ -51,18 +50,7 @@ public sealed class RemoveFacultyCandidateRankingCommandHandler
         var project = await _projects.FindByIdAsync(request.ProjectId, cancellationToken)
             ?? throw new ArgumentException("Project was not found.");
 
-        var assists = await _assistants.IsListedOnProjectAsync(project.Id, user.Email, cancellationToken);
-        if (!request.IsAdmin && project.CreatedByUserId != user.Id && !assists)
-        {
-            throw new UnauthorizedAccessException(
-                "You can only rank candidates for a project you posted or assist.");
-        }
-
-        if (!assists)
-        {
-            FacultyCandidateRankingAccess.EnsureCanRank(user.Role);
-        }
-
+        await _access.EnsureCanRankCandidatesAsync(project, user, request.IsAdmin, cancellationToken);
         FacultyProjectMutationAccess.EnsureCanRankCandidates(project, request.IsAdmin);
 
         var ranking = await _candidateRankings.FindByProjectAndStudentAsync(

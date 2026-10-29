@@ -7,7 +7,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { Button } from "@/components/ui/Button";
 import { IconPlus, IconTrash } from "@/components/ui/Icons";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import {
   HOME_INTRO_DESCRIPTION_MAX_LENGTH,
   HOME_INTRO_HEADLINE_MAX_LENGTH,
@@ -83,7 +83,7 @@ export function AdminHomeIntroView() {
       setSaved(true);
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Failed to save home intro.",
+        apiErrorMessage(err, "Failed to save home intro."),
       );
     } finally {
       setSaving(false);

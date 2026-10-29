@@ -99,8 +99,9 @@ public sealed class GetProjectByIdQueryHandlerTests
             access,
             closure,
             runs,
-            Substitute.For<IUserRepository>(),
-            Substitute.For<IProjectResearchAssistantRepository>());
+            new ProjectResearchAssistantAccess(
+                Substitute.For<IUserRepository>(),
+                Substitute.For<IProjectResearchAssistantRepository>()));
 
         await Task.CompletedTask;
         return (handler, runs, project, semester);

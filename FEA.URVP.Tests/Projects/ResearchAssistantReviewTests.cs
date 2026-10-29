@@ -5,6 +5,7 @@ using FEA.URVP.Application.Projects;
 using FEA.URVP.Application.Queries.ProjectRankings.ListByProject;
 using FEA.URVP.Application.Queries.Projects.GetById;
 using FEA.URVP.Application.Queries.StudentProfiles.GetByUserId;
+using FEA.URVP.Application.StudentProfiles;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;
@@ -98,6 +99,7 @@ public sealed class ResearchAssistantReviewTests : IDisposable
         var alumni = new ProjectAlumniRepository(_db);
         var closure = new ProjectCycleClosure(projects, rankings, candidateRankings, runs, alumni, _db);
         var access = new FacultyProjectMutationAccess(semesters, rankings);
+        var reviewAccess = new ProjectResearchAssistantAccess(users, assistants);
 
         _rank = new UpsertFacultyCandidateRankingCommandHandler(
             NullLogger<UpsertFacultyCandidateRankingCommandHandler>.Instance,
@@ -107,19 +109,16 @@ public sealed class ResearchAssistantReviewTests : IDisposable
             projects,
             users,
             semesters,
-            assistants);
+            reviewAccess);
         _listRankings = new ListProjectRankingsQueryHandler(
-            projects, rankings, candidateRankings, users, assistants);
+            projects, rankings, candidateRankings, reviewAccess);
         _getProject = new GetProjectByIdQueryHandler(
-            projects, semesters, access, closure, runs, users, assistants);
+            projects, semesters, access, closure, runs, reviewAccess);
         _profile = new GetStudentProfileByUserIdQueryHandler(
             new StudentProfileRepository(_db),
             users,
             new FileStorageRepository(_db),
-            rankings,
-            runs,
-            alumni,
-            assistants);
+            new StudentProfileViewAccess(rankings, runs, alumni, assistants));
         _update = new UpdateProjectCommandHandler(
             NullLogger<UpdateProjectCommandHandler>.Instance,
             _db,
@@ -172,6 +171,30 @@ public sealed class ResearchAssistantReviewTests : IDisposable
                 CurrentUserId = _bystander.Id,
             },
             CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Assistant_who_applied_cannot_rank_themselves()
+    {
+        _db.ProjectRankings.Add(new ProjectRanking
+        {
+            ProjectId = _project.Id,
+            StudentUserId = _assistant.Id,
+            Rank = 2,
+        });
+        _db.SaveChanges();
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _rank.Handle(
+            new UpsertFacultyCandidateRankingCommand
+            {
+                ProjectId = _project.Id,
+                StudentUserId = _assistant.Id,
+                Rank = 1,
+                CurrentUserId = _assistant.Id,
+            },
+            CancellationToken.None));
+
+        Assert.False(await _db.FacultyCandidateRankings.AnyAsync());
     }
 
     [Fact]

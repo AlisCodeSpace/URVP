@@ -9,7 +9,7 @@ import { FieldSelect } from "@/components/ui/FieldSelect";
 import { IconDownload } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import { adminProjectHref } from "@/lib/auth";
 import {
   exportAdminProjects,
@@ -95,7 +95,7 @@ export function AdminProjectsView() {
       setExportOpen(false);
     } catch (err) {
       setExportError(
-        err instanceof ApiError ? err.message : "Failed to export projects.",
+        apiErrorMessage(err, "Failed to export projects."),
       );
     } finally {
       setExporting(false);

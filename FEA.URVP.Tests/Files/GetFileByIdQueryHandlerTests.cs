@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Queries.Files.GetById;
+using FEA.URVP.Application.StudentProfiles;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.Files;
 using FEA.URVP.Domain.Entities.Users;
@@ -79,10 +80,11 @@ public sealed class GetFileByIdQueryHandlerTests
         var handler = new GetFileByIdQueryHandler(
             files,
             users,
-            rankings,
-            placements,
-            alumni,
-            Substitute.For<IProjectResearchAssistantRepository>());
+            new StudentProfileViewAccess(
+                rankings,
+                placements,
+                alumni,
+                Substitute.For<IProjectResearchAssistantRepository>()));
         return (handler, rankings, placements);
     }
 

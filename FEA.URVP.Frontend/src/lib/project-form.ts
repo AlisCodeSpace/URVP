@@ -29,6 +29,14 @@ export function projectStatusClass(status: MyProjectStatus): string {
   return "";
 }
 
+/** Whether `userId` posted the project. Display only; the backend enforces ownership. */
+export function isProjectOwner(
+  project: { createdByUserId: string },
+  userId: string | undefined,
+): boolean {
+  return project.createdByUserId.toLowerCase() === (userId ?? "").toLowerCase();
+}
+
 export function isFacultyCandidateRankingLocked(project: {
   status: MyProjectStatus;
   volunteersFilled: number;

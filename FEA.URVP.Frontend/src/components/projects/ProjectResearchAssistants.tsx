@@ -7,7 +7,7 @@ import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { RankingsListSkeleton } from "@/components/ui/SectionSkeletons";
 import { Heading, Text } from "@/components/ui/Typography";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import {
   addResearchAssistant,
   listResearchAssistants,
@@ -36,10 +36,6 @@ export function ProjectResearchAssistants({
   const assistants = query.data;
   const busy = adding || removing;
 
-  function messageFor(err: unknown, fallback: string) {
-    return err instanceof ApiError ? (err.errors[0] ?? err.message) : fallback;
-  }
-
   /** Resolves true when saved, so the form can clear itself. */
   async function add({ email }: { email: string }): Promise<boolean> {
     setAdding(true);
@@ -49,7 +45,7 @@ export function ProjectResearchAssistants({
       await query.reload({ silent: true });
       return true;
     } catch (err) {
-      setActionError(messageFor(err, "Could not add this research assistant."));
+      setActionError(apiErrorMessage(err, "Could not add this research assistant."));
       return false;
     } finally {
       setAdding(false);
@@ -65,7 +61,7 @@ export function ProjectResearchAssistants({
       setRemoveTarget(null);
       await query.reload({ silent: true });
     } catch (err) {
-      setActionError(messageFor(err, "Could not remove this research assistant."));
+      setActionError(apiErrorMessage(err, "Could not remove this research assistant."));
       setRemoveTarget(null);
     } finally {
       setRemoving(false);

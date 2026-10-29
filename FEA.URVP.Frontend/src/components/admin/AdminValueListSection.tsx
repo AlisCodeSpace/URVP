@@ -9,7 +9,7 @@ import { DeleteIconButton } from "@/components/ui/DeleteIconButton";
 import { IconPencil, IconPlus } from "@/components/ui/Icons";
 import { RefreshIconButton } from "@/components/ui/RefreshIconButton";
 import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
-import { ApiError } from "@/lib/api";
+import { apiErrorMessage } from "@/lib/api";
 import {
   createValueListItem,
   deleteValueListItem,
@@ -123,7 +123,7 @@ export function AdminValueListSection({
         setPageNumber(1);
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to add value.");
+      setError(apiErrorMessage(err, "Failed to add value."));
     } finally {
       setAdding(false);
     }
@@ -146,7 +146,7 @@ export function AdminValueListSection({
       await load();
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Failed to update value.",
+        apiErrorMessage(err, "Failed to update value."),
       );
     } finally {
       setBusyId(null);
@@ -167,7 +167,7 @@ export function AdminValueListSection({
       await load();
     } catch (err) {
       setError(
-        err instanceof ApiError ? err.message : "Failed to delete value.",
+        apiErrorMessage(err, "Failed to delete value."),
       );
     } finally {
       setBusyId(null);
