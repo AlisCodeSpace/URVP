@@ -7,5 +7,6 @@ public sealed record ListAssignmentCandidatesQuery(
     Guid ProjectId,
     string? Search,
     bool RecommendedOnly,
+    bool RankedProjectsOnly,
     int PageNumber,
     int PageSize) : IRequest<(IReadOnlyList<AssignmentCandidateDto> Items, int TotalCount)>;

@@ -1,5 +1,6 @@
 using FEA.URVP.Application.Queries.Matching.ListAssignmentCandidates;
 using FEA.URVP.Domain.Entities.Matching;
+using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Entities.StudentProfiles;
@@ -52,13 +53,13 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests : IDisposable
         await _db.SaveChangesAsync();
 
         var recommended = await _handler.Handle(
-            new ListAssignmentCandidatesQuery(project.Id, null, true, 1, 10),
+            new ListAssignmentCandidatesQuery(project.Id, null, true, false, 1, 10),
             CancellationToken.None);
         var all = await _handler.Handle(
-            new ListAssignmentCandidatesQuery(project.Id, null, false, 1, 10),
+            new ListAssignmentCandidatesQuery(project.Id, null, false, false, 1, 10),
             CancellationToken.None);
         var searched = await _handler.Handle(
-            new ListAssignmentCandidatesQuery(project.Id, "biology", false, 1, 10),
+            new ListAssignmentCandidatesQuery(project.Id, "biology", false, false, 1, 10),
             CancellationToken.None);
 
         Assert.Equal(1, recommended.TotalCount);
@@ -92,7 +93,7 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests : IDisposable
         Place(assigned.Id, otherProject);
 
         var result = await _handler.Handle(
-            new ListAssignmentCandidatesQuery(project.Id, null, false, 1, 10),
+            new ListAssignmentCandidatesQuery(project.Id, null, false, false, 1, 10),
             CancellationToken.None);
 
         Assert.Equal(free.Id, Assert.Single(result.Items).UserId);
@@ -118,12 +119,47 @@ public sealed class ListAssignmentCandidatesQueryHandlerTests : IDisposable
         Place(assigned.Id, project);
 
         var page = await _handler.Handle(
-            new ListAssignmentCandidatesQuery(project.Id, null, false, 1, 6),
+            new ListAssignmentCandidatesQuery(project.Id, null, false, false, 1, 6),
             CancellationToken.None);
 
         Assert.Equal(7, page.TotalCount);
         Assert.Equal(6, page.Items.Count);
         Assert.DoesNotContain(page.Items, item => item.UserId == assigned.Id);
+    }
+
+    [Fact]
+    public async Task Ranked_projects_filter_hides_students_who_ranked_nothing()
+    {
+        var project = Project("Water systems", ["Water"], null);
+        var other = Project("Bridge sensors", ["Structures"], null);
+        var ranked = Student("Ada Lovelace", "ada@mail.aub.edu");
+        var unranked = Student("Grace Hopper", "grace@mail.aub.edu");
+        _db.Projects.AddRange(project, other);
+        _db.Users.AddRange(ranked, unranked);
+        _db.StudentProfiles.AddRange(
+            Profile(ranked.Id, "FEA", "Civil Engineering", ["Water"]),
+            Profile(unranked.Id, "FEA", "Civil Engineering", ["Biology"]));
+        _db.ProjectRankings.Add(new ProjectRanking
+        {
+            StudentUserId = ranked.Id,
+            ProjectId = other.Id,
+            Rank = 1,
+        });
+        await _db.SaveChangesAsync();
+
+        var hidden = await _handler.Handle(
+            new ListAssignmentCandidatesQuery(project.Id, null, false, true, 1, 10),
+            CancellationToken.None);
+        var shown = await _handler.Handle(
+            new ListAssignmentCandidatesQuery(project.Id, null, false, false, 1, 10),
+            CancellationToken.None);
+        var recommended = await _handler.Handle(
+            new ListAssignmentCandidatesQuery(project.Id, null, true, true, 1, 10),
+            CancellationToken.None);
+
+        Assert.Equal(ranked.Id, Assert.Single(hidden.Items).UserId);
+        Assert.Equal(2, shown.TotalCount);
+        Assert.Equal(ranked.Id, Assert.Single(recommended.Items).UserId);
     }
 
     private Project Project(string title, List<string> areas, string? qualifications) => new()

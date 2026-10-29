@@ -35,6 +35,8 @@ public class AppDbContext : DbContext, IUnitOfWork, IDataProtectionKeyContext
 
     public DbSet<ProjectAlumni> ProjectAlumni => Set<ProjectAlumni>();
 
+    public DbSet<ProjectResearchAssistant> ProjectResearchAssistants => Set<ProjectResearchAssistant>();
+
     public DbSet<StudentProfile> StudentProfiles => Set<StudentProfile>();
 
     public DbSet<ProjectRanking> ProjectRankings => Set<ProjectRanking>();

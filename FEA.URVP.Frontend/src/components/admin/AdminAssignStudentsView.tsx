@@ -6,6 +6,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPlaceholder";
 import { BackLink } from "@/components/ui/BackLink";
 import { Button } from "@/components/ui/Button";
 import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { useCancellableQuery } from "@/hooks/useCancellableQuery";
 import { getAdminProject } from "@/lib/admin-projects-api";
 import { ApiError } from "@/lib/api";
@@ -26,6 +27,7 @@ type CandidateList = "recommended" | "all";
 export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
   const searchId = useId();
   const [list, setList] = useState<CandidateList>("recommended");
+  const [hideUnranked, setHideUnranked] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
@@ -68,10 +70,11 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
         projectId,
         search,
         recommendedOnly: list === "recommended",
+        rankedProjectsOnly: hideUnranked,
         pageNumber,
         pageSize: PAGE_SIZE,
       }),
-    [projectId, search, list, pageNumber],
+    [projectId, search, list, hideUnranked, pageNumber],
     { fallbackError: "Failed to load students.", keepDataOnError: true },
   );
 
@@ -288,6 +291,17 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
                 </button>
               ))}
             </div>
+            <Checkbox
+              className="assign-student-rank-filter"
+              checked={hideUnranked}
+              onCheckedChange={(checked) => {
+                setHideUnranked(checked);
+                setPageNumber(1);
+                setActionError(null);
+              }}
+            >
+              Hide students who didn&apos;t rank any projects
+            </Checkbox>
           </div>
 
           {actionError ? (
@@ -308,9 +322,13 @@ export function AdminAssignStudentsView({ projectId }: { projectId: string }) {
             </div>
           ) : candidates.length === 0 ? (
             <p className="admin-users-status">
-              {list === "recommended"
-                ? "No students match this project's research interests or qualifications."
-                : "No students match this search."}
+              {hideUnranked && list === "recommended"
+                ? "No recommended students have ranked a project."
+                : hideUnranked
+                  ? "No students who ranked a project match this search."
+                  : list === "recommended"
+                    ? "No students match this project's research interests or qualifications."
+                    : "No students match this search."}
             </p>
           ) : (
             <div className="admin-people" aria-busy={loading}>

@@ -121,12 +121,14 @@ export async function listAssignmentCandidates(params: {
   projectId: string;
   search?: string;
   recommendedOnly?: boolean;
+  rankedProjectsOnly?: boolean;
   pageNumber?: number;
   pageSize?: number;
 }): Promise<PaginatedAssignmentCandidates> {
   const query = new URLSearchParams();
   if (params.search?.trim()) query.set("search", params.search.trim());
   if (params.recommendedOnly) query.set("recommendedOnly", "true");
+  if (params.rankedProjectsOnly) query.set("rankedProjectsOnly", "true");
   query.set("pageNumber", String(params.pageNumber ?? 1));
   query.set("pageSize", String(params.pageSize ?? 8));
 
