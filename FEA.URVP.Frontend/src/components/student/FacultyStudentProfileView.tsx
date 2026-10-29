@@ -86,7 +86,7 @@ export function FacultyStudentProfileView({
         >
           <Link
             href={viewProjectHref(userId, projectId)}
-            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+            className="inline-flex items-center gap-2 text-sm text-primary/70 transition hover:text-primary"
           >
             <span aria-hidden>←</span>
             Back to project

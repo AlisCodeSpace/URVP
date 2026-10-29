@@ -17,12 +17,12 @@ export function NewsArticleView({
 
   return (
     <article className="flex-1 bg-background">
-      <header className="news-article-hero relative overflow-hidden text-white">
+      <header className="news-article-hero relative overflow-hidden text-primary">
         <div className="news-article-hero-grid absolute inset-0" aria-hidden />
         <div className="relative z-10 site-container site-container--narrow pb-16 pt-[calc(7rem+env(safe-area-inset-top,0px))] sm:pb-20 sm:pt-[calc(8rem+env(safe-area-inset-top,0px))]">
           <Link
             href="/news"
-            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+            className="inline-flex items-center gap-2 text-sm text-primary/70 transition hover:text-primary"
           >
             <span aria-hidden>←</span>
             All news
@@ -37,12 +37,12 @@ export function NewsArticleView({
             >
               {article.category}
             </Text>
-            <span className="hidden text-white/30 sm:inline" aria-hidden>
+            <span className="hidden text-primary/30 sm:inline" aria-hidden>
               ·
             </span>
             <time
               dateTime={article.dateISO}
-              className="text-sm uppercase tracking-[0.14em] text-white/60"
+              className="text-sm uppercase tracking-[0.14em] text-primary/70"
             >
               {article.date}
             </time>
@@ -53,7 +53,7 @@ export function NewsArticleView({
             size="8"
             weight="medium"
             mt="4"
-            className="animate-fade-up !font-[family-name:var(--font-display)] !uppercase !tracking-[0.02em] !leading-[1.1] !text-white"
+            className="animate-fade-up !font-[family-name:var(--font-display)] !uppercase !tracking-[0.02em] !leading-[1.1] !text-primary"
           >
             {article.title}
           </Heading>
@@ -62,14 +62,14 @@ export function NewsArticleView({
             as="p"
             size="4"
             mt="5"
-            className="animate-fade-up-delay max-w-2xl !leading-relaxed !text-white/75"
+            className="animate-fade-up-delay max-w-2xl !leading-relaxed !text-primary/80"
           >
             {article.excerpt}
           </Text>
 
-          <p className="animate-fade-up-delay-2 mt-8 text-sm text-white/55">
+          <p className="animate-fade-up-delay-2 mt-8 text-sm text-primary/70">
             By{" "}
-            <span className="font-medium text-white/80">{article.author}</span>
+            <span className="font-medium text-primary">{article.author}</span>
           </p>
         </div>
       </header>

@@ -50,18 +50,18 @@ export function NewsListSkeleton() {
 export function NewsArticleSkeleton() {
   return (
     <div aria-busy="true" aria-label="Loading story">
-      <header className="news-article-hero relative overflow-hidden text-white">
+      <header className="news-article-hero relative overflow-hidden text-primary">
         <div className="news-article-hero-grid absolute inset-0" aria-hidden />
         <div className="relative z-10 site-container site-container--narrow pb-16 pt-[calc(7rem+env(safe-area-inset-top,0px))] sm:pb-20 sm:pt-[calc(8rem+env(safe-area-inset-top,0px))]">
-          <Skeleton tone="dark" className="h-4 w-24" />
+          <Skeleton className="h-4 w-24" />
           <div className="mt-8 flex gap-3">
-            <Skeleton tone="dark" className="h-3 w-28" />
-            <Skeleton tone="dark" className="h-3 w-20" />
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-3 w-20" />
           </div>
-          <Skeleton tone="dark" className="mt-6 h-12 w-full max-w-xl" />
-          <Skeleton tone="dark" className="mt-5 h-5 w-full max-w-lg" />
-          <Skeleton tone="dark" className="mt-3 h-5 w-2/3 max-w-md" />
-          <Skeleton tone="dark" className="mt-8 h-4 w-40" />
+          <Skeleton className="mt-6 h-12 w-full max-w-xl" />
+          <Skeleton className="mt-5 h-5 w-full max-w-lg" />
+          <Skeleton className="mt-3 h-5 w-2/3 max-w-md" />
+          <Skeleton className="mt-8 h-4 w-40" />
         </div>
       </header>
       <div className="site-container site-container--narrow space-y-4 py-14 sm:py-16">

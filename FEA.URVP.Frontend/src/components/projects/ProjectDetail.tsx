@@ -153,7 +153,7 @@ export function ProjectDetail({
       >
         <Link
           href={assigned ? studentMatchedProjectsHref() : projectsHref()}
-          className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+          className="inline-flex items-center gap-2 text-sm text-primary/70 transition hover:text-primary"
         >
           <span aria-hidden>←</span>
           {assigned ? "Back to matched projects" : "Back to projects"}

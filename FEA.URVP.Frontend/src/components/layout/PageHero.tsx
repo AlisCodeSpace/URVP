@@ -22,9 +22,9 @@ type PageHeroProps = {
 
 const titleScaleClass = {
   brand:
-    "max-w-5xl xl:max-w-6xl 2xl:max-w-7xl text-[clamp(2.15rem,7vw+0.6rem,5.5rem)] !leading-[0.95]",
+    "max-w-5xl xl:max-w-6xl 2xl:max-w-7xl text-[clamp(1.85rem,5.2vw+0.35rem,4.25rem)] !leading-[0.95]",
   page:
-    "text-[clamp(2.35rem,8vw+0.75rem,8rem)]",
+    "text-[clamp(2rem,6vw+0.5rem,6.25rem)]",
 } as const;
 
 export function PageHero({
@@ -36,11 +36,11 @@ export function PageHero({
   titleScale = "page",
 }: PageHeroProps) {
   return (
-    <section className="hero-plane relative min-h-[100svh] overflow-hidden text-white">
+    <section className="hero-plane relative min-h-[100svh] overflow-hidden text-primary">
       <div className="hero-grid absolute inset-0" aria-hidden />
       <Container className="relative z-10 flex min-h-[100svh] flex-col justify-end pb-16 pt-[calc(6rem+env(safe-area-inset-top,0px))] sm:justify-center sm:pb-24 sm:pt-[calc(7rem+env(safe-area-inset-top,0px))]">
         <p
-          className={`animate-fade-up font-[family-name:var(--font-display)] font-semibold uppercase leading-[0.9] tracking-[0.02em] text-white ${titleScaleClass[titleScale]}`}
+          className={`animate-fade-up font-[family-name:var(--font-display)] font-semibold uppercase leading-[0.9] tracking-[0.02em] text-primary ${titleScaleClass[titleScale]}`}
         >
           {title}
         </p>
@@ -49,7 +49,7 @@ export function PageHero({
           size="7"
           weight="medium"
           mt="5"
-          className="animate-fade-up-delay max-w-xl xl:max-w-2xl !font-[family-name:var(--font-display)] !leading-tight !text-white"
+          className="animate-fade-up-delay whitespace-nowrap !font-[family-name:var(--font-display)] !text-[min(1.65rem,2.5vw)] !leading-tight !text-primary"
         >
           {headline}
         </Heading>
@@ -69,7 +69,7 @@ export function PageHero({
             as="p"
             size="4"
             mt="3"
-            className="animate-fade-up-delay max-w-lg xl:max-w-xl !leading-relaxed !text-white/80"
+            className="animate-fade-up-delay max-w-lg xl:max-w-xl !leading-relaxed !text-primary/80"
           >
             {description}
           </Text>
@@ -80,10 +80,6 @@ export function PageHero({
           </Flex>
         ) : null}
       </Container>
-      <div
-        className="pointer-events-none absolute -right-20 bottom-0 h-[55%] w-[55%] bg-[radial-gradient(circle_at_center,rgba(235,159,0,0.12),transparent_65%)]"
-        aria-hidden
-      />
     </section>
   );
 }

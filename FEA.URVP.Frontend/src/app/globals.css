@@ -82,6 +82,8 @@
   --primary-soft: #8b3a9e;
   --secondary: #eb9f00;
   --secondary-deep: #c48400;
+  /* AUB institutional burgundy — affiliation only, not a UI state color */
+  --aub: #840132;
   --surface: #ffffff;
   --muted: #5c4d66;
 
@@ -175,6 +177,7 @@
   --color-primary-soft: var(--primary-soft);
   --color-secondary: var(--secondary);
   --color-secondary-deep: var(--secondary-deep);
+  --color-aub: var(--aub);
   --color-surface: var(--surface);
   --color-muted: var(--muted);
   --font-sans: var(--font-sans-stack);
@@ -457,20 +460,32 @@ select:disabled {
   padding: 0.65rem;
 }
 
-/* Hero atmosphere */
-.hero-plane {
-  background:
-    radial-gradient(ellipse 80% 60% at 70% 20%, rgba(235, 159, 0, 0.18), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 15% 80%, rgba(139, 58, 158, 0.35), transparent 50%),
-    linear-gradient(155deg, #3d1248 0%, #662076 48%, #4a1858 100%);
+/* Hero atmosphere — light field, IAID pattern as a watermark */
+.hero-plane,
+.page-header,
+.news-article-hero {
+  background: var(--background);
+  color: var(--primary);
 }
 
-.hero-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+.hero-grid,
+.page-header-grid,
+.news-article-hero-grid {
+  background-image: url("/IAID_grey_pattern.png");
+  background-repeat: repeat;
+  background-position: center;
+  background-size: 18rem auto;
+  mix-blend-mode: multiply;
+  opacity: 0.18;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 48%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 48%, transparent 100%);
+}
+
+/* White lockup recolored to violet on the light hero */
+.site-nav-logo {
+  filter: brightness(0) saturate(100%) invert(14%) sepia(42%) saturate(3200%)
+    hue-rotate(286deg) brightness(0.72) contrast(1.05);
 }
 
 /* Motion */
@@ -537,9 +552,28 @@ select:disabled {
 }
 
 .sign-in-brand {
-  background:
+  background-color: #2a0d32;
+  background-image:
     radial-gradient(ellipse 70% 55% at 85% 15%, rgba(235, 159, 0, 0.22), transparent 55%),
-    radial-gradient(ellipse 55% 45% at 10% 90%, rgba(139, 58, 158, 0.4), transparent 50%),
+    radial-gradient(
+      140% 100% at 78% 118%,
+      var(--aub) 0%,
+      color-mix(in srgb, var(--aub) 74%, #4a1858) 28%,
+      transparent 68%
+    ),
+    radial-gradient(
+      110% 85% at 0% 115%,
+      color-mix(in srgb, var(--aub) 88%, black) 0%,
+      transparent 58%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 42%,
+      color-mix(in srgb, var(--aub) 38%, transparent) 62%,
+      color-mix(in srgb, var(--aub) 84%, #3d1248) 82%,
+      var(--aub) 100%
+    ),
     linear-gradient(155deg, #2a0d32 0%, #662076 45%, #4a1858 100%);
 }
 
@@ -1447,22 +1481,6 @@ select:disabled {
   border-radius: var(--radius-md);
 }
 
-/* Compact subpage headers — blends with sticky primary-deep navbar */
-.page-header,
-.news-article-hero {
-  background:
-    radial-gradient(ellipse 65% 50% at 80% 0%, rgba(235, 159, 0, 0.18), transparent 50%),
-    linear-gradient(165deg, #2a0d32 0%, #551a61 45%, #3d1248 100%);
-}
-
-.page-header-grid,
-.news-article-hero-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
-}
 
 .news-article-body {
   display: flex;
@@ -3817,6 +3835,11 @@ body.admin-drawer-open {
   background: var(--background);
 }
 
+.site-footer {
+  background: var(--aub);
+  color: #fff;
+}
+
 /* Nested loading UI sits inside layouts that keep nav/sidebar mounted. */
 body:has(.page-loader) {
   overflow: hidden;
@@ -4136,14 +4159,14 @@ body:has(.page-loader) .admin-menu-btn {
   min-width: var(--nav-profile-trigger-size);
   height: 100%;
   min-height: var(--nav-profile-trigger-size);
-  border: 1px solid color-mix(in srgb, white 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, transparent);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, white 8%, transparent);
-  color: white;
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+  color: var(--primary);
 }
 
 .notification-bell-btn:hover {
-  background: color-mix(in srgb, white 14%, transparent);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 .notification-bell-badge {

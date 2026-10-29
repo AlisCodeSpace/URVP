@@ -95,7 +95,7 @@ export default function ContactPage() {
           >
             Follow AUB
           </Heading>
-          <Text as="p" size="3" mt="2" className="!text-muted">
+          <Text as="p" size="3" mt="2" className="!text-aub">
             Official American University of Beirut channels.
           </Text>
           <div className="mt-6 flex flex-wrap gap-3">

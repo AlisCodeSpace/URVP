@@ -19,7 +19,7 @@ export function PageHeader({
   children,
 }: PageHeaderProps) {
   return (
-    <section className="page-header relative overflow-hidden text-white">
+    <section className="page-header relative overflow-hidden text-primary">
       <div className="page-header-grid absolute inset-0" aria-hidden />
       <Container className="relative z-10 pb-14 pt-[calc(7rem+env(safe-area-inset-top,0px))] sm:pb-16 sm:pt-[calc(8rem+env(safe-area-inset-top,0px))]">
         {children}
@@ -36,10 +36,10 @@ export function PageHeader({
           ) : null}
           <Heading
             as="h1"
-            size="8"
+            size="7"
             weight="medium"
             mt={eyebrow ? "3" : "0"}
-            className="!font-[family-name:var(--font-display)] !uppercase !tracking-[0.02em] !text-white"
+            className="!font-[family-name:var(--font-display)] !uppercase !tracking-[0.02em] !text-primary"
           >
             {title}
           </Heading>
@@ -47,7 +47,7 @@ export function PageHeader({
             as="p"
             size="4"
             mt="3"
-            className="max-w-2xl xl:max-w-3xl !leading-relaxed !text-white/75"
+            className="whitespace-nowrap !text-[min(1.125rem,1.15vw)] !leading-relaxed !text-primary/80"
           >
             {description}
           </Text>

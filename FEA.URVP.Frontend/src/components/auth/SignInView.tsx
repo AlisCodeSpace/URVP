@@ -86,14 +86,6 @@ export function SignInView() {
             <li>Office of the Provost initiative</li>
           </ul>
         </div>
-
-        <Text
-          as="p"
-          size="1"
-          className="sign-in-enter relative z-10 shrink-0 !uppercase !tracking-[0.2em] !text-white/40"
-        >
-          American University of Beirut
-        </Text>
       </section>
 
       <section className="flex min-h-0 flex-1 items-center justify-center px-6 py-7 sm:px-8 lg:px-10">

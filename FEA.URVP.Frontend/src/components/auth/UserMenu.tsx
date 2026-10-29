@@ -101,7 +101,7 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
     <div ref={rootRef} className="relative inline-flex self-stretch overflow-visible">
       <button
         type="button"
-        className="inline-flex h-full items-center gap-2 rounded-md border border-white/25 bg-white/5 px-2.5 py-1.5 text-sm font-semibold text-white transition hover:bg-white/10"
+        className="inline-flex h-full items-center gap-2 rounded-md border border-primary/25 bg-primary/5 px-2.5 py-1.5 text-sm font-semibold text-primary transition hover:bg-primary/10"
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={menuId}
@@ -114,7 +114,7 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
           {initial}
         </span>
         Profile
-        <span aria-hidden className="text-white/70">
+        <span aria-hidden className="text-primary/70">
           {open ? "▴" : "▾"}
         </span>
       </button>
@@ -123,11 +123,11 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
         <div
           id={menuId}
           role="menu"
-          className="absolute top-full right-0 left-auto z-50 mt-2 w-64 overflow-hidden rounded-lg border border-white/25 bg-white/10 shadow-lg backdrop-blur-md"
+          className="absolute top-full right-0 left-auto z-50 mt-2 w-64 overflow-hidden rounded-lg border border-primary/15 bg-surface text-foreground shadow-lg"
         >
-          <div className="border-b border-white/15 px-4 py-3">
-            <p className="truncate text-sm font-semibold text-white">{name}</p>
-            <p className="truncate text-xs text-white/65">{email}</p>
+          <div className="border-b border-primary/10 px-4 py-3">
+            <p className="truncate text-sm font-semibold text-foreground">{name}</p>
+            <p className="truncate text-xs text-muted">{email}</p>
             <p className="mt-1 text-xs font-medium uppercase tracking-wide text-secondary">
               {role}
             </p>
@@ -148,13 +148,13 @@ export function UserMenu({ status, variant = "desktop", onNavigate }: UserMenuPr
               <button
                 type="button"
                 role="menuitem"
-                className="btn btn-sm w-full border border-white/25 bg-white/10 text-white hover:bg-white/20"
+                className="btn btn-outline btn-sm w-full"
                 onClick={startTour}
               >
                 Take a tour
               </button>
             ) : null}
-            <div className="mt-1 border-t border-white/20 pt-2">
+            <div className="mt-1 border-t border-primary/10 pt-2">
               <button
                 type="button"
                 role="menuitem"

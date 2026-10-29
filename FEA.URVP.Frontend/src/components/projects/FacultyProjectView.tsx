@@ -113,7 +113,7 @@ export function FacultyProjectView({
         >
           <Link
             href={myProjectsHref(userId)}
-            className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-secondary"
+            className="inline-flex items-center gap-2 text-sm text-primary/70 transition hover:text-primary"
           >
             <span aria-hidden>←</span>
             Back to my projects

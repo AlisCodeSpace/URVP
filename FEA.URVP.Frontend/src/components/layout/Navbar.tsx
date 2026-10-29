@@ -27,7 +27,7 @@ export function Navbar() {
           size={64}
           width={263}
           showWordmark={false}
-          imageClassName="h-11 w-auto sm:h-14 lg:h-16"
+          imageClassName="site-nav-logo h-11 w-auto sm:h-14 lg:h-16"
           className="shrink-0"
           onClick={() => setOpen(false)}
         />
@@ -40,8 +40,8 @@ export function Navbar() {
             href="/"
             className={`rounded-md px-3 py-2 text-[0.95rem] font-semibold transition ${
               pathname === "/"
-                ? "text-secondary"
-                : "text-white/85 hover:text-white"
+                ? "text-secondary-deep"
+                : "text-primary/80 hover:text-primary"
             }`}
           >
             Home
@@ -52,8 +52,8 @@ export function Navbar() {
               href={link.href}
               className={`rounded-md px-3 py-2 text-[0.95rem] font-semibold transition ${
                 pathname === link.href || pathname.startsWith(`${link.href}/`)
-                  ? "text-secondary"
-                  : "text-white/85 hover:text-white"
+                  ? "text-secondary-deep"
+                  : "text-primary/80 hover:text-primary"
               }`}
             >
               {link.label}
@@ -77,7 +77,7 @@ export function Navbar() {
 
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-white/25 text-white lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-primary/25 text-primary lg:hidden"
             aria-expanded={open}
             aria-controls="mobile-nav"
             aria-label={open ? "Close menu" : "Open menu"}
@@ -102,7 +102,7 @@ export function Navbar() {
       {open ? (
         <div
           id="mobile-nav"
-          className="border-t border-white/10 bg-primary-deep lg:hidden"
+          className="border-t border-white/15 bg-aub lg:hidden"
         >
           <div className="site-container py-5">
             <nav aria-label="Mobile" className="flex flex-col gap-1">

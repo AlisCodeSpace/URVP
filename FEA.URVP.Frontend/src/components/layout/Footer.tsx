@@ -33,7 +33,7 @@ export function Footer() {
       : "Student Success Unit";
 
   return (
-    <footer className="site-footer mt-auto border-t border-secondary/30 bg-primary-deep text-white">
+    <footer className="site-footer mt-auto text-white">
       <div className="site-container grid gap-12 py-14 sm:py-16 lg:grid-cols-[1.2fr_1fr_1fr] xl:gap-16">
         <div>
           <Logo
@@ -46,14 +46,14 @@ export function Footer() {
             imageClassName="h-11 w-auto sm:h-14 lg:h-16"
             className="shrink-0"
           />
-          <Text as="p" size="2" mt="2" className="!text-white/65">
+          <Text as="p" size="2" mt="2" className="!text-white">
             Undergraduate Research Volunteer Program
           </Text>
           <Text
             as="p"
             size="2"
             mt="4"
-            className="max-w-sm !leading-relaxed !text-white/60"
+            className="max-w-sm !leading-relaxed !text-white"
           >
             Hosted within the Student Success Unit under the Institute for
             Academic Innovation and Development.
@@ -68,7 +68,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={social.label}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/20 text-white/75 transition hover:border-secondary hover:text-secondary"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/35 text-white transition hover:border-white hover:bg-white/10"
                 >
                   <Icon className="h-4 w-4" />
                 </a>
@@ -82,14 +82,14 @@ export function Footer() {
             as="h2"
             size="2"
             weight="medium"
-            className="!uppercase !tracking-[0.18em] !text-secondary"
+            className="!uppercase !tracking-[0.18em] !text-white"
           >
             Portal
           </Heading>
           <nav aria-label="Footer" className="mt-5 flex flex-col gap-3">
             <Link
               href="/"
-              className="text-sm text-white/75 transition hover:text-secondary"
+              className="text-sm text-white transition hover:underline"
             >
               Home
             </Link>
@@ -97,7 +97,7 @@ export function Footer() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-white/75 transition hover:text-secondary"
+                className="text-sm text-white transition hover:underline"
               >
                 {link.label}
               </Link>
@@ -110,22 +110,22 @@ export function Footer() {
             as="h2"
             size="2"
             weight="medium"
-            className="!uppercase !tracking-[0.18em] !text-secondary"
+            className="!uppercase !tracking-[0.18em] !text-white"
           >
             Contact
           </Heading>
           <ul className="mt-5 flex flex-col gap-5">
             {contacts.map((contact) => (
               <li key={contact.email} className="flex flex-col">
-                <Text as="p" size="2" className="!text-white/85">
+                <Text as="p" size="2" className="!text-white">
                   {contact.name}
                 </Text>
-                <Text as="p" size="2" mt="1" className="!text-white/60">
+                <Text as="p" size="2" mt="1" className="!text-white">
                   {contact.affiliation}
                 </Text>
                 <a
                   href={`mailto:${contact.email}`}
-                  className="mt-2 text-sm text-secondary transition hover:underline"
+                  className="mt-2 text-sm text-white transition hover:underline"
                 >
                   {contact.email}
                 </a>
@@ -143,12 +143,14 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10">
-        <div className="site-container flex flex-col gap-2 py-5 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {new Date().getFullYear()} American University of Beirut · URVP
+      <div>
+        <div className="site-container flex flex-col gap-1 py-6 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <p className="font-medium uppercase tracking-[0.16em]">
+            American University of Beirut
           </p>
-          <p>{cycleLine}</p>
+          <p className="text-white">
+            © {new Date().getFullYear()} URVP · {cycleLine}
+          </p>
         </div>
       </div>
     </footer>

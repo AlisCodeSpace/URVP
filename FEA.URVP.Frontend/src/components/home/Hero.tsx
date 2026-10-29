@@ -44,7 +44,7 @@ export function Hero() {
                 {" "}
                 <Link
                   href={applyHref}
-                  className="underline decoration-secondary/70 underline-offset-4 transition hover:text-white hover:decoration-white"
+                  className="underline decoration-secondary/70 underline-offset-4 transition hover:text-primary hover:decoration-primary"
                 >
                   Apply now!
                 </Link>
@@ -59,7 +59,7 @@ export function Hero() {
             <Button href={primaryHref(role, userId)} variant="secondary" size="lg">
               {primaryLabel(role)}
             </Button>
-            <Button href={projectsHref()} variant="outline-light" size="lg">
+            <Button href={projectsHref()} variant="outline" size="lg">
               {isStudent(role) ? "Apply to Projects" : "Browse Projects"}
             </Button>
           </>
@@ -68,7 +68,7 @@ export function Hero() {
             <Button href="/sign-in" variant="secondary" size="lg">
               Log In
             </Button>
-            <Button href="/news" variant="outline-light" size="lg">
+            <Button href="/news" variant="outline" size="lg">
               News
             </Button>
           </>
