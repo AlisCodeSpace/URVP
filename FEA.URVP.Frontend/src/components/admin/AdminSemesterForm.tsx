@@ -11,7 +11,6 @@ import { AdminFormSkeleton } from "@/components/ui/SectionSkeletons";
 import { apiErrorMessage } from "@/lib/api";
 import { fromAppDatetimeInput, toAppDatetimeInput } from "@/lib/datetime";
 import {
-  ALLOW_OVERLAPPING_WINDOWS,
   createSemester,
   formatScheduleRange,
   getActiveSemester,
@@ -197,7 +196,7 @@ export function AdminSemesterForm({ semesterId }: { semesterId?: string }) {
       setError("The registration window cannot close after the academic cycle ends.");
       return;
     }
-    if (!ALLOW_OVERLAPPING_WINDOWS && registrationStart && windowStart) {
+    if (registrationStart && windowStart) {
       const registrationUntil = registrationEnd
         ? new Date(registrationEnd).getTime()
         : Number.POSITIVE_INFINITY;

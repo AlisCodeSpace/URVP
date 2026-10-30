@@ -65,6 +65,9 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                     b.Property<byte>("Rank")
                         .HasColumnType("tinyint");
 
+                    b.Property<Guid>("RankedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("StudentUserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -72,6 +75,8 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RankedByUserId");
 
                     b.HasIndex("StudentUserId");
 
@@ -1099,6 +1104,12 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("FEA.URVP.Domain.Entities.Users.User", "RankedByUser")
+                        .WithMany()
+                        .HasForeignKey("RankedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("FEA.URVP.Domain.Entities.Users.User", "StudentUser")
                         .WithMany()
                         .HasForeignKey("StudentUserId")
@@ -1106,6 +1117,8 @@ namespace FEA.URVP.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
+
+                    b.Navigation("RankedByUser");
 
                     b.Navigation("StudentUser");
                 });

@@ -31,6 +31,12 @@ public class FacultyCandidateRanking
     [Required]
     public byte Rank { get; set; }
 
+    /// <summary>Who last set this rank. An assistant's update replaces the previous one and is recorded here.</summary>
+    [Required]
+    public Guid RankedByUserId { get; set; }
+
+    public User RankedByUser { get; set; } = null!;
+
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

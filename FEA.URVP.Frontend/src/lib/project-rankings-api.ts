@@ -9,6 +9,8 @@ export type ProjectRankingStudentDto = {
   studentUserName?: string | null;
   rank: number;
   facultyRank?: number | null;
+  rankedByUserId?: string | null;
+  rankedByName?: string | null;
   assignedPlacementId?: string | null;
   assignedProjectId?: string | null;
   assignedProjectTitle?: string | null;

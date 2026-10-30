@@ -20,6 +20,7 @@ public sealed class FacultyCandidateRankingRepository : IFacultyCandidateRanking
         await _db.FacultyCandidateRankings
             .AsNoTracking()
             .Include(r => r.StudentUser)
+            .Include(r => r.RankedByUser)
             .Where(r => r.ProjectId == projectId)
             .OrderBy(r => r.Rank)
             .ThenBy(r => r.CreatedAt)

@@ -77,7 +77,7 @@ public sealed class UpsertProjectRankingCommandHandler
         var user = await _users.FindByIdAsync(request.CurrentUserId, cancellationToken)
             ?? throw new UnauthorizedAccessException("User not found.");
 
-        ProjectRankingAccess.EnsureCanRank(user.Role, user.Email);
+        ProjectRankingAccess.EnsureCanRank(user.Role);
 
         var now = DateTime.UtcNow;
         var semester = await _semesters.FindActiveAsync(cancellationToken);

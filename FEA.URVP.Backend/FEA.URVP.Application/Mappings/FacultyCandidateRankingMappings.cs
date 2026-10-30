@@ -12,6 +12,7 @@ public static class FacultyCandidateRankingMappings
             ProjectId = ranking.ProjectId,
             StudentUserId = ranking.StudentUserId,
             Rank = ranking.Rank,
+            RankedByUserId = ranking.RankedByUserId,
             RankedAt = ranking.CreatedAt,
             UpdatedAt = ranking.UpdatedAt,
         };

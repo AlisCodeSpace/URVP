@@ -148,11 +148,17 @@ public sealed class ResearchAssistantReviewTests : IDisposable
         }, CancellationToken.None);
 
         Assert.Equal((byte)1, saved.Rank);
+        Assert.Equal(_assistant.Id, saved.RankedByUserId);
+
+        var stored = await _db.FacultyCandidateRankings.SingleAsync();
+        Assert.Equal(_assistant.Id, stored.RankedByUserId);
 
         var after = await _listRankings.Handle(
             new ListProjectRankingsQuery(_project.Id, _assistant.Id, false),
             CancellationToken.None);
-        Assert.Equal((byte)1, Assert.Single(after).FacultyRank);
+        var ranked = Assert.Single(after);
+        Assert.Equal((byte)1, ranked.FacultyRank);
+        Assert.Equal("Lab Aide", ranked.RankedByName);
     }
 
     [Fact]

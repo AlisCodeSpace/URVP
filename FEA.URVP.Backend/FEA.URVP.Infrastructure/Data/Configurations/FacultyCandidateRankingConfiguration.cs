@@ -26,6 +26,11 @@ public sealed class FacultyCandidateRankingConfiguration : IEntityTypeConfigurat
             .HasForeignKey(r => r.StudentUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(r => r.RankedByUser)
+            .WithMany()
+            .HasForeignKey(r => r.RankedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // One faculty ranking per student–project pair.
         builder.HasIndex(r => new { r.ProjectId, r.StudentUserId }).IsUnique();
 

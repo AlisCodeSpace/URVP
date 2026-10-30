@@ -105,6 +105,7 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
                 ProjectId = project.Id,
                 StudentUserId = request.StudentUserId,
                 Rank = request.Rank,
+                RankedByUserId = user.Id,
                 CreatedAt = now,
                 UpdatedAt = now,
             };
@@ -121,6 +122,7 @@ public sealed class UpsertFacultyCandidateRankingCommandHandler
         }
 
         existing.Rank = request.Rank;
+        existing.RankedByUserId = user.Id;
         existing.UpdatedAt = now;
 
         Logger.LogInformation(

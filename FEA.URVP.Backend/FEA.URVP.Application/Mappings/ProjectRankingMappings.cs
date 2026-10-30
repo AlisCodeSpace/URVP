@@ -31,6 +31,8 @@ public static class ProjectRankingMappings
     public static ProjectRankingStudentDto ToStudentDto(
         this ProjectRanking ranking,
         byte? facultyRank = null,
+        Guid? rankedByUserId = null,
+        string? rankedByName = null,
         Guid? assignedPlacementId = null,
         Guid? assignedProjectId = null,
         string? assignedProjectTitle = null)
@@ -46,6 +48,8 @@ public static class ProjectRankingMappings
             StudentUserName = student?.UserName,
             Rank = ranking.Rank,
             FacultyRank = facultyRank,
+            RankedByUserId = rankedByUserId,
+            RankedByName = rankedByName,
             AssignedPlacementId = assignedPlacementId,
             AssignedProjectId = assignedProjectId,
             AssignedProjectTitle = assignedProjectTitle,
@@ -59,15 +63,18 @@ public static class ProjectRankingMappings
         IEnumerable<FacultyCandidateRanking> facultyRanks,
         IReadOnlyDictionary<Guid, Placement>? assignmentsByStudent = null)
     {
-        var facultyByStudent = facultyRanks.ToDictionary(r => r.StudentUserId, r => r.Rank);
+        var facultyByStudent = facultyRanks.ToDictionary(r => r.StudentUserId);
 
         return rankings
             .Select(r =>
             {
                 Placement? assignment = null;
                 assignmentsByStudent?.TryGetValue(r.StudentUserId, out assignment);
+                facultyByStudent.TryGetValue(r.StudentUserId, out var facultyRank);
                 return r.ToStudentDto(
-                    facultyByStudent.TryGetValue(r.StudentUserId, out var facultyRank) ? facultyRank : null,
+                    facultyRank?.Rank,
+                    facultyRank?.RankedByUserId,
+                    facultyRank?.RankedByUser?.Name,
                     assignment?.Id,
                     assignment?.ProjectId,
                     assignment?.Project?.Title);

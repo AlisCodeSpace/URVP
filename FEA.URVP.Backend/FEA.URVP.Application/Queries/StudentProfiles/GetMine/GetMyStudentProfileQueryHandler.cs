@@ -35,7 +35,7 @@ public sealed class GetMyStudentProfileQueryHandler
         var user = await _users.FindByIdAsync(request.CurrentUserId, cancellationToken)
             ?? throw new UnauthorizedAccessException("User not found.");
 
-        StudentProfileAccess.EnsureCanManage(user.Role, user.Email);
+        StudentProfileAccess.EnsureCanManage(user.Role);
 
         var profile = await _profiles.FindByUserIdAsync(user.Id, cancellationToken);
         if (profile is null)

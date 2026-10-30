@@ -79,10 +79,11 @@ export function FacultyProjectRankings({
                 </span>
                 {ranking.facultyRank != null ? (
                   <span className="rank-badge is-faculty">
-                    Your {rankLabel(ranking.facultyRank)}
+                    {rankLabel(ranking.facultyRank)}
+                    {ranking.rankedByName ? ` · ${ranking.rankedByName}` : ""}
                   </span>
                 ) : (
-                  <span className="rank-badge is-muted">Not ranked by you</span>
+                  <span className="rank-badge is-muted">Not ranked yet</span>
                 )}
               </div>
               <p className="ranked-students-name">{ranking.studentName}</p>

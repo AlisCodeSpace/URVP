@@ -574,6 +574,7 @@ function RankedCard({
           {ranking.facultyRank != null ? (
             <span className="admin-rank-badge is-faculty">
               Faculty {rankLabel(ranking.facultyRank)}
+              {ranking.rankedByName ? ` · ${ranking.rankedByName}` : ""}
             </span>
           ) : (
             <span className="admin-rank-badge is-muted">Not ranked by faculty</span>

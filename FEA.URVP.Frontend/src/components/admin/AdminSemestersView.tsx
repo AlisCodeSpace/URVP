@@ -11,7 +11,6 @@ import { AdminTableSkeleton } from "@/components/ui/SectionSkeletons";
 import { apiErrorMessage } from "@/lib/api";
 import { adminSemesterEditHref } from "@/lib/auth";
 import {
-  ALLOW_OVERLAPPING_WINDOWS,
   deleteSemester,
   formatScheduleRange,
   listSemesters,
@@ -224,12 +223,9 @@ function ActiveSemesterPanel({
                 type="button"
                 variant="primary"
                 size="sm"
-                disabled={
-                  busyRegistration ||
-                  (!ALLOW_OVERLAPPING_WINDOWS && semester.isApplicationWindowOpen)
-                }
+                disabled={busyRegistration || semester.isApplicationWindowOpen}
                 title={
-                  !ALLOW_OVERLAPPING_WINDOWS && semester.isApplicationWindowOpen
+                  semester.isApplicationWindowOpen
                     ? "Close applications before opening registration."
                     : undefined
                 }
@@ -289,12 +285,9 @@ function ActiveSemesterPanel({
                 type="button"
                 variant="primary"
                 size="sm"
-                disabled={
-                  busyWindow ||
-                  (!ALLOW_OVERLAPPING_WINDOWS && semester.isRegistrationWindowOpen)
-                }
+                disabled={busyWindow || semester.isRegistrationWindowOpen}
                 title={
-                  !ALLOW_OVERLAPPING_WINDOWS && semester.isRegistrationWindowOpen
+                  semester.isRegistrationWindowOpen
                     ? "Close registration before opening applications."
                     : undefined
                 }

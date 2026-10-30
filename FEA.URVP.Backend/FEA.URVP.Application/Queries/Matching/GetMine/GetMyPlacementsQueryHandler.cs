@@ -36,7 +36,7 @@ public sealed class GetMyPlacementsQueryHandler
         var user = await _users.FindByIdAsync(request.CurrentUserId, cancellationToken)
             ?? throw new UnauthorizedAccessException("User not found.");
 
-        ProjectRankingAccess.EnsureCanRank(user.Role, user.Email);
+        ProjectRankingAccess.EnsureCanRank(user.Role);
 
         var placements = await _runs.ListCurrentConfirmedByStudentAsync(user.Id, cancellationToken);
         _logger.LogDebug(

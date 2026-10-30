@@ -6,6 +6,7 @@ public sealed class FacultyCandidateRankingDto
     public Guid ProjectId { get; init; }
     public Guid StudentUserId { get; init; }
     public byte Rank { get; init; }
+    public Guid RankedByUserId { get; init; }
     public DateTime RankedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 }

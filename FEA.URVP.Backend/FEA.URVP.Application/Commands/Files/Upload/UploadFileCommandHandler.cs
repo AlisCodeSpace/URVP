@@ -62,7 +62,7 @@ public sealed class UploadFileCommandHandler
 
         if (request.EntityType == FileStorageCatalog.EntityStudentProfile)
         {
-            StudentProfileAccess.EnsureCanManage(user.Role, user.Email);
+            StudentProfileAccess.EnsureCanManage(user.Role);
 
             if (request.EntityId != user.Id)
             {

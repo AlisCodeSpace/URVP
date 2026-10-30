@@ -161,7 +161,9 @@ export function FacultyStudentProfileView({
                     className="!text-primary"
                   >
                     {facultyRank != null
-                      ? `Currently ${rankLabel(facultyRank)}`
+                      ? `Currently ${rankLabel(facultyRank)}${
+                          current?.rankedByName ? `, set by ${current.rankedByName}` : ""
+                        }`
                       : "Not yet ranked"}
                   </Text>
                   <div className="mt-5">
