@@ -1,4 +1,4 @@
-using FEA.URVP.Application.News;
+using FEA.URVP.Application.Features.News;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.Files;
 using FEA.URVP.Domain.Entities.News;

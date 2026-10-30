@@ -1,27 +1,27 @@
-using FEA.URVP.Application.Commands.Notifications.Create;
-using FEA.URVP.Application.Commands.Notifications.Delete;
-using FEA.URVP.Application.Commands.Notifications.DeleteAll;
-using FEA.URVP.Application.Commands.Notifications.MarkAllAsRead;
-using FEA.URVP.Application.Commands.Notifications.MarkAsRead;
-using FEA.URVP.Application.Commands.Notifications.NotifyApplicationWindowClosed;
-using FEA.URVP.Application.Commands.Notifications.NotifyApplicationWindowOpened;
-using FEA.URVP.Application.Commands.Notifications.NotifyNewsPublished;
-using FEA.URVP.Application.Commands.Notifications.NotifyPlacementCancelled;
-using FEA.URVP.Application.Commands.Notifications.NotifyPlacementDeclined;
-using FEA.URVP.Application.Commands.Notifications.NotifyProjectClosed;
-using FEA.URVP.Application.Commands.Notifications.NotifyProjectDeleted;
-using FEA.URVP.Application.Commands.Notifications.NotifyProjectOpen;
-using FEA.URVP.Application.Commands.Notifications.NotifyRankingRemoved;
-using FEA.URVP.Application.Commands.Notifications.NotifyRankingSubmitted;
-using FEA.URVP.Application.Commands.Notifications.NotifyRoleAssigned;
-using FEA.URVP.Application.Commands.Notifications.NotifySemesterCycleStarted;
-using FEA.URVP.Application.Commands.Notifications.NotifyStudentProfileSubmitted;
-using FEA.URVP.Application.Commands.Notifications.NotifyWorkshopAnnounced;
-using FEA.URVP.Application.Commands.Notifications.UpdateSettings;
+using FEA.URVP.Application.Features.Notifications.Commands.Create;
+using FEA.URVP.Application.Features.Notifications.Commands.Delete;
+using FEA.URVP.Application.Features.Notifications.Commands.DeleteAll;
+using FEA.URVP.Application.Features.Notifications.Commands.MarkAllAsRead;
+using FEA.URVP.Application.Features.Notifications.Commands.MarkAsRead;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyApplicationWindowClosed;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyApplicationWindowOpened;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyNewsPublished;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyPlacementCancelled;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyPlacementDeclined;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyProjectClosed;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyProjectDeleted;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyProjectOpen;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyRankingRemoved;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyRankingSubmitted;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyRoleAssigned;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifySemesterCycleStarted;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyStudentProfileSubmitted;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyWorkshopAnnounced;
+using FEA.URVP.Application.Features.Notifications.Commands.UpdateSettings;
 using FEA.URVP.Domain.Entities.Notifications;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.Notifications;
+namespace FEA.URVP.Application.Features.Notifications.Validators;
 
 public sealed class CreateNotificationCommandValidator : AbstractValidator<CreateNotificationCommand>
 {

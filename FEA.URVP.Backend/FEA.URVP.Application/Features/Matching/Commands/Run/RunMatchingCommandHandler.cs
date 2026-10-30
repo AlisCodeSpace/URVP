@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Commands.Semesters;
-using FEA.URVP.Application.DTOs.Matching;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Matching.DTOs;
+using FEA.URVP.Application.Features.Matching.Mappings;
+using FEA.URVP.Application.Features.Projects;
+using FEA.URVP.Application.Features.Semesters;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.ProjectRankings;
@@ -12,7 +12,7 @@ using FEA.URVP.Domain.Enums;
 using FEA.URVP.Domain.Matching;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Matching.Run;
+namespace FEA.URVP.Application.Features.Matching.Commands.Run;
 
 public sealed class RunMatchingCommandHandler
     : BaseCommandHandler<RunMatchingCommand, MatchingRunDetailDto>

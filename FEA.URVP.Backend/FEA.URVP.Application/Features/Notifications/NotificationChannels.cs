@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.Notifications;
+namespace FEA.URVP.Application.Features.Notifications;
 
 public static class NotificationChannels
 {

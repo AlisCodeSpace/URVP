@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.FacultyCandidateRankings;
+namespace FEA.URVP.Application.Features.FacultyCandidateRankings.DTOs;
 
 public sealed class FacultyCandidateRankingDto
 {

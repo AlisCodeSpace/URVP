@@ -1,5 +1,5 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Queries.Matching.ListAssignmentCandidates;
+using FEA.URVP.Application.Features.Matching.Queries.ListAssignmentCandidates;
 using FEA.URVP.Domain.Enums;
 using FEA.URVP.Infrastructure.Data.Context;
 using Microsoft.EntityFrameworkCore;

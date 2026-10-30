@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Notifications;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.Notifications.DTOs;
+using FEA.URVP.Application.Features.Notifications.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Notifications.GetSettings;
+namespace FEA.URVP.Application.Features.Notifications.Queries.GetSettings;
 
 public sealed class GetNotificationSettingsQueryHandler
     : IRequestHandler<GetNotificationSettingsQuery, UserNotificationSettingsDto?>

@@ -1,8 +1,8 @@
-using FEA.URVP.Application.Commands.Workshops.Create;
-using FEA.URVP.Application.Commands.Workshops.Update;
+using FEA.URVP.Application.Features.Workshops.Commands.Create;
+using FEA.URVP.Application.Features.Workshops.Commands.Update;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.Workshops;
+namespace FEA.URVP.Application.Features.Workshops.Validators;
 
 public sealed class CreateWorkshopCommandValidator
     : AbstractValidator<CreateWorkshopCommand>

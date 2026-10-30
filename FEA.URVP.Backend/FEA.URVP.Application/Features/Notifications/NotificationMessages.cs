@@ -1,6 +1,6 @@
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Notifications;
+namespace FEA.URVP.Application.Features.Notifications;
 
 /// <summary>
 /// Single source of in-app and email copy. Handlers must not hardcode titles or messages.

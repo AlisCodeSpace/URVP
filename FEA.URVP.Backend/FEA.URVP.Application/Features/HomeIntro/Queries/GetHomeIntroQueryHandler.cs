@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.HomeIntro;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.HomeIntro.DTOs;
+using FEA.URVP.Application.Features.HomeIntro.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.HomeIntro;
+namespace FEA.URVP.Application.Features.HomeIntro.Queries;
 
 public sealed class GetHomeIntroQueryHandler
     : IRequestHandler<GetHomeIntroQuery, HomeIntroDto>

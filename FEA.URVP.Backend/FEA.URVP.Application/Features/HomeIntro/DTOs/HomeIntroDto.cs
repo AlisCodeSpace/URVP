@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.HomeIntro;
+namespace FEA.URVP.Application.Features.HomeIntro.DTOs;
 
 public sealed class HomeIntroDto
 {

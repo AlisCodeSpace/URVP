@@ -1,8 +1,8 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Common;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Workshops.Delete;
+namespace FEA.URVP.Application.Features.Workshops.Commands.Delete;
 
 public sealed class DeleteWorkshopCommandHandler
     : BaseCommandHandler<DeleteWorkshopCommand>

@@ -2,7 +2,7 @@ using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.StudentProfiles;
+namespace FEA.URVP.Application.Features.StudentProfiles;
 
 /// <summary>
 /// Who may open another user's student profile and its files.

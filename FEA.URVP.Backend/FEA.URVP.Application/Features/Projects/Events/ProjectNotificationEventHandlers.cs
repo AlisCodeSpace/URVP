@@ -1,11 +1,11 @@
 using FEA.URVP.Application.Abstractions.Events;
-using FEA.URVP.Application.Commands.Notifications.NotifyProjectClosed;
-using FEA.URVP.Application.Commands.Notifications.NotifyProjectDeleted;
-using FEA.URVP.Application.Commands.Notifications.NotifyProjectOpen;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyProjectClosed;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyProjectDeleted;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyProjectOpen;
 using FEA.URVP.Domain.Events.Projects;
 using MediatR;
 
-namespace FEA.URVP.Application.Events.Projects;
+namespace FEA.URVP.Application.Features.Projects.Events;
 
 public sealed class ProjectOpenedEventHandler : IEventHandler<ProjectOpenedEvent>
 {

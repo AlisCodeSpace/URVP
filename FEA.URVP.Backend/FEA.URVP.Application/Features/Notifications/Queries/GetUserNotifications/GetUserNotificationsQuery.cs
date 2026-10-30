@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Notifications;
+using FEA.URVP.Application.Features.Notifications.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Notifications.GetUserNotifications;
+namespace FEA.URVP.Application.Features.Notifications.Queries.GetUserNotifications;
 
 public sealed record GetUserNotificationsQuery(
     Guid UserId,

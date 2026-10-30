@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Auth;
+namespace FEA.URVP.Application.Features.Auth.DTOs;
 
 public sealed class AuthStatusResponseDto
 {

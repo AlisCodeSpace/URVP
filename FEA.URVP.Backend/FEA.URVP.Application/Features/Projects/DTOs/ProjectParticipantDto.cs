@@ -1,6 +1,6 @@
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.DTOs.Projects;
+namespace FEA.URVP.Application.Features.Projects.DTOs;
 
 /// <summary>A student confirmed onto a project.</summary>
 public sealed class ProjectParticipantDto

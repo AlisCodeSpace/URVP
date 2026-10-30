@@ -1,9 +1,9 @@
 using System.Globalization;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.Users.Mappings;
 using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Entities.Users;
 
-namespace FEA.URVP.Application.Exports;
+namespace FEA.URVP.Application.Features.Users.Exports;
 
 public static class UserExportMapper
 {

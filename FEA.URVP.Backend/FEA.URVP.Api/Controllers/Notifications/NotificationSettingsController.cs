@@ -1,7 +1,7 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.Notifications.UpdateSettings;
-using FEA.URVP.Application.DTOs.Notifications;
-using FEA.URVP.Application.Queries.Notifications.GetSettings;
+using FEA.URVP.Application.Features.Notifications.Commands.UpdateSettings;
+using FEA.URVP.Application.Features.Notifications.DTOs;
+using FEA.URVP.Application.Features.Notifications.Queries.GetSettings;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

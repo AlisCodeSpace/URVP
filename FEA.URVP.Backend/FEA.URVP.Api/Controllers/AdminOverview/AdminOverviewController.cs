@@ -1,6 +1,6 @@
 using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Queries.AdminOverview;
+using FEA.URVP.Application.Features.AdminOverview.Queries;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

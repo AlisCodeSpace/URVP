@@ -1,6 +1,6 @@
-using FEA.URVP.Application.Commands.Files.Upload;
-using FEA.URVP.Application.Options;
-using FEA.URVP.Application.Validators.Files;
+using FEA.URVP.Application.Common.Options;
+using FEA.URVP.Application.Features.Files.Commands.Upload;
+using FEA.URVP.Application.Features.Files.Validators;
 using FEA.URVP.Domain.Catalog;
 using Microsoft.Extensions.Options;
 

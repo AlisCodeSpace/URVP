@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Matching;
+namespace FEA.URVP.Application.Features.Matching.DTOs;
 
 /// <summary>
 /// A project the signed-in student is participating in. Rank is 0 when the

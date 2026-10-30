@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.ValueLists;
+using FEA.URVP.Application.Features.ValueLists.DTOs;
 using FEA.URVP.Domain.Entities.ValueLists;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.ValueLists.Mappings;
 
 public static class ValueListMappings
 {

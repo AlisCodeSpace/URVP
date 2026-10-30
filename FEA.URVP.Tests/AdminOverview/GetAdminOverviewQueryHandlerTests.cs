@@ -1,5 +1,5 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Queries.AdminOverview;
+using FEA.URVP.Application.Features.AdminOverview.Queries;
 using NSubstitute;
 
 namespace FEA.URVP.Tests.AdminOverview;

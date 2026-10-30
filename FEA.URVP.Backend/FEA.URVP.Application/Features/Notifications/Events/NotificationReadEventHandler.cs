@@ -1,10 +1,9 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Notifications;
-using FEA.URVP.Application.Notifications;
 using FEA.URVP.Domain.Events.Notifications;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Events.Notifications;
+namespace FEA.URVP.Application.Features.Notifications.Events;
 
 public sealed class NotificationReadEventHandler : IEventHandler<NotificationReadEvent>
 {

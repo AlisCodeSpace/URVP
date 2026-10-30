@@ -1,6 +1,6 @@
-using FEA.URVP.Application.DTOs.Semesters;
+using FEA.URVP.Application.Features.Semesters.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Semesters.GetById;
+namespace FEA.URVP.Application.Features.Semesters.Queries.GetById;
 
 public sealed record GetSemesterByIdQuery(Guid Id) : IRequest<SemesterDto>;

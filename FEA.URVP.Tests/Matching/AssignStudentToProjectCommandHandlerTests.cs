@@ -1,7 +1,7 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Matching.Assign;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Features.Matching.Commands.Assign;
+using FEA.URVP.Application.Features.Projects;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;

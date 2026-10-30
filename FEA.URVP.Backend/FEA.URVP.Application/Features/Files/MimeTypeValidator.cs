@@ -2,7 +2,7 @@ using AUB.MimeDetective;
 using FEA.URVP.Application.Abstractions.Files;
 using Microsoft.AspNetCore.Http;
 
-namespace FEA.URVP.Application.Files;
+namespace FEA.URVP.Application.Features.Files;
 
 /// <summary>
 /// Magic-byte MIME detection via AUB.MimeDetective. Exceptions, empty files,

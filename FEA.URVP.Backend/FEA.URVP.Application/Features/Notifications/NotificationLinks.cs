@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.Notifications;
+namespace FEA.URVP.Application.Features.Notifications;
 
 internal static class NotificationLinks
 {

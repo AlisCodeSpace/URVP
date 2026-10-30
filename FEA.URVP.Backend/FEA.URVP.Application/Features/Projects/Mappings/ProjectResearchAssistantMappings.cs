@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Projects;
+using FEA.URVP.Application.Features.Projects.DTOs;
 using FEA.URVP.Domain.Entities.Projects;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.Projects.Mappings;
 
 public static class ProjectResearchAssistantMappings
 {

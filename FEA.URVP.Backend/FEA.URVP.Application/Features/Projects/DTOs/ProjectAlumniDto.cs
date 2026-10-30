@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Projects;
+namespace FEA.URVP.Application.Features.Projects.DTOs;
 
 public sealed class ProjectAlumniDto
 {

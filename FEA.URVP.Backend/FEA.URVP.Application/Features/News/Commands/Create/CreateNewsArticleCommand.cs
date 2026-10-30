@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.News;
+using FEA.URVP.Application.Features.News.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.News.Create;
+namespace FEA.URVP.Application.Features.News.Commands.Create;
 
 public sealed class CreateNewsArticleCommand : IRequest<NewsArticleDto>
 {

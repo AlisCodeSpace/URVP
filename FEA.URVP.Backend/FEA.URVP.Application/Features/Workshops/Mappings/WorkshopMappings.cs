@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Workshops;
+using FEA.URVP.Application.Features.Workshops.DTOs;
 using FEA.URVP.Domain.Entities.Workshops;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.Workshops.Mappings;
 
 public static class WorkshopMappings
 {

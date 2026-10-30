@@ -1,12 +1,11 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Notifications;
-using FEA.URVP.Application.Options;
+using FEA.URVP.Application.Common.Options;
 using FEA.URVP.Domain.Entities.Notifications;
 using FEA.URVP.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace FEA.URVP.Application.Services.Notifications;
+namespace FEA.URVP.Application.Features.Notifications.Services;
 
 public sealed class NotificationBusinessRulesService
 {

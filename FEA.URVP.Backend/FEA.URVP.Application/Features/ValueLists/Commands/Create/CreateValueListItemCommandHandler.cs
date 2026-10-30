@@ -1,11 +1,11 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.ValueLists;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.ValueLists.DTOs;
+using FEA.URVP.Application.Features.ValueLists.Mappings;
 using FEA.URVP.Domain.Entities.ValueLists;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.ValueLists.Create;
+namespace FEA.URVP.Application.Features.ValueLists.Commands.Create;
 
 public sealed class CreateValueListItemCommandHandler
     : BaseCommandHandler<CreateValueListItemCommand, ValueListItemDto>

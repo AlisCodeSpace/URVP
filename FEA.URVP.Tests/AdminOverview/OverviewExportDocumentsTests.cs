@@ -1,10 +1,10 @@
 using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
-using FEA.URVP.Application.DTOs.AdminOverview;
-using FEA.URVP.Application.DTOs.Matching;
-using FEA.URVP.Application.DTOs.Semesters;
-using FEA.URVP.Application.Exports;
+using FEA.URVP.Application.Features.AdminOverview.DTOs;
+using FEA.URVP.Application.Features.AdminOverview.Exports;
+using FEA.URVP.Application.Features.Matching.DTOs;
+using FEA.URVP.Application.Features.Semesters.DTOs;
 using FEA.URVP.Domain.Enums;
 
 namespace FEA.URVP.Tests.AdminOverview;

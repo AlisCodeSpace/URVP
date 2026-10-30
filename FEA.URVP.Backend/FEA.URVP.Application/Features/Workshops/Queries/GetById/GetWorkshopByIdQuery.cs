@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Workshops;
+using FEA.URVP.Application.Features.Workshops.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Workshops.GetById;
+namespace FEA.URVP.Application.Features.Workshops.Queries.GetById;
 
 public sealed class GetWorkshopByIdQuery : IRequest<WorkshopDto>
 {

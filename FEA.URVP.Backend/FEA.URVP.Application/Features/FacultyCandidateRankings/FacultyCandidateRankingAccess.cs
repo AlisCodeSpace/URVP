@@ -1,6 +1,6 @@
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.FacultyCandidateRankings;
+namespace FEA.URVP.Application.Features.FacultyCandidateRankings;
 
 internal static class FacultyCandidateRankingAccess
 {

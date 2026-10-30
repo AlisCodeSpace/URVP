@@ -1,5 +1,5 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Queries.Users.GetProjectActivity;
+using FEA.URVP.Application.Features.Users.Queries.GetProjectActivity;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.Projects;

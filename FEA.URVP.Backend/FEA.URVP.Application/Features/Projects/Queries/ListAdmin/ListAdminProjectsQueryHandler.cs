@@ -1,10 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Projects;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Features.Projects.DTOs;
+using FEA.URVP.Application.Features.Projects.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Projects.ListAdmin;
+namespace FEA.URVP.Application.Features.Projects.Queries.ListAdmin;
 
 public sealed class ListAdminProjectsQueryHandler
     : IRequestHandler<ListAdminProjectsQuery, (IReadOnlyList<AdminProjectListItemDto> Items, int TotalCount)>

@@ -1,8 +1,8 @@
-using FEA.URVP.Application.Commands.Notifications.Create;
+using FEA.URVP.Application.Features.Notifications.Commands.Create;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Notifications;
+namespace FEA.URVP.Application.Features.Notifications;
 
 /// <summary>
 /// Sends <see cref="CreateNotificationCommand"/> per recipient. Not an email helper.

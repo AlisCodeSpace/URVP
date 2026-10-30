@@ -1,8 +1,8 @@
-using FEA.URVP.Application.DTOs.HomeIntro;
+using FEA.URVP.Application.Features.HomeIntro.DTOs;
 using FEA.URVP.Domain.Catalog;
 using HomeIntroRow = FEA.URVP.Domain.Entities.HomeIntro.HomeIntro;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.HomeIntro.Mappings;
 
 public static class HomeIntroMappings
 {

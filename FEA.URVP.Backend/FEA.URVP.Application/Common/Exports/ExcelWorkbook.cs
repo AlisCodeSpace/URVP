@@ -2,7 +2,7 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Text;
 
-namespace FEA.URVP.Application.Exports;
+namespace FEA.URVP.Application.Common.Exports;
 
 /// <summary>
 /// Builds a single-sheet .xlsx file without third-party document libraries.

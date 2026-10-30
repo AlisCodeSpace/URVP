@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Matching;
+namespace FEA.URVP.Application.Features.Matching.DTOs;
 
 public sealed class AssignmentCandidateDto
 {

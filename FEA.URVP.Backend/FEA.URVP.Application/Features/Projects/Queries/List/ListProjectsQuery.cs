@@ -1,8 +1,8 @@
-using FEA.URVP.Application.DTOs.Projects;
+using FEA.URVP.Application.Features.Projects.DTOs;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Projects.List;
+namespace FEA.URVP.Application.Features.Projects.Queries.List;
 
 public sealed class ListProjectsQuery : IRequest<(IReadOnlyList<ProjectDto> Items, int TotalCount)>
 {

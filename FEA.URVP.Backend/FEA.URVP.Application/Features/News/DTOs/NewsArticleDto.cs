@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.News;
+namespace FEA.URVP.Application.Features.News.DTOs;
 
 public sealed class NewsArticleDto
 {

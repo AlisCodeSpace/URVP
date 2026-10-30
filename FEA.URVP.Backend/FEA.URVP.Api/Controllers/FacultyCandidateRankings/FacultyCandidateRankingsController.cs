@@ -1,6 +1,6 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.FacultyCandidateRankings.Remove;
-using FEA.URVP.Application.Commands.FacultyCandidateRankings.Upsert;
+using FEA.URVP.Application.Features.FacultyCandidateRankings.Commands.Remove;
+using FEA.URVP.Application.Features.FacultyCandidateRankings.Commands.Upsert;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

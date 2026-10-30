@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Events;
-using FEA.URVP.Application.Commands.Notifications.NotifyWorkshopAnnounced;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyWorkshopAnnounced;
 using FEA.URVP.Domain.Events.Workshops;
 using MediatR;
 
-namespace FEA.URVP.Application.Events.Workshops;
+namespace FEA.URVP.Application.Features.Workshops.Events;
 
 public sealed class WorkshopAnnouncedEventHandler : IEventHandler<WorkshopAnnouncedEvent>
 {

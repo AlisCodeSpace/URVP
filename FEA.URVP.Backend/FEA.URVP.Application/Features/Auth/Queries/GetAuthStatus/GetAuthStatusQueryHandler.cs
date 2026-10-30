@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Auth;
+using FEA.URVP.Application.Features.Auth.DTOs;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Queries.Auth.GetAuthStatus;
+namespace FEA.URVP.Application.Features.Auth.Queries.GetAuthStatus;
 
 public sealed class GetAuthStatusQueryHandler : IRequestHandler<GetAuthStatusQuery, AuthStatusResponseDto>
 {

@@ -1,8 +1,8 @@
-using FEA.URVP.Application.DTOs.Projects;
+using FEA.URVP.Application.Features.Projects.DTOs;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Projects.ListAdmin;
+namespace FEA.URVP.Application.Features.Projects.Queries.ListAdmin;
 
 public sealed class ListAdminProjectsQuery
     : IRequest<(IReadOnlyList<AdminProjectListItemDto> Items, int TotalCount)>

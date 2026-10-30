@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Projects.Delete;
+namespace FEA.URVP.Application.Features.Projects.Commands.Delete;
 
 public sealed class DeleteProjectCommand : IRequest<Unit>
 {

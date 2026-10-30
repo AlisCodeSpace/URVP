@@ -1,8 +1,8 @@
 using System.IO.Compression;
 using System.Text;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Exports;
-using FEA.URVP.Application.Queries.AdminOverview;
+using FEA.URVP.Application.Common.Exports;
+using FEA.URVP.Application.Features.AdminOverview.Queries;
 using NSubstitute;
 
 namespace FEA.URVP.Tests.AdminOverview;

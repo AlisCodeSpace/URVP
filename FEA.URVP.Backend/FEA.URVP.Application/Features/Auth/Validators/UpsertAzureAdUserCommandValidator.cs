@@ -1,7 +1,7 @@
-using FEA.URVP.Application.Commands.Auth.AzureAd;
+using FEA.URVP.Application.Features.Auth.Commands.AzureAd;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.Auth;
+namespace FEA.URVP.Application.Features.Auth.Validators;
 
 public sealed class UpsertAzureAdUserCommandValidator : AbstractValidator<UpsertAzureAdUserCommand>
 {

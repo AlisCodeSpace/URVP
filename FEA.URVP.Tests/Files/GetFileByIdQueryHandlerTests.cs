@@ -1,6 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Queries.Files.GetById;
-using FEA.URVP.Application.StudentProfiles;
+using FEA.URVP.Application.Features.Files.Queries.GetById;
+using FEA.URVP.Application.Features.StudentProfiles;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.Files;
 using FEA.URVP.Domain.Entities.Users;

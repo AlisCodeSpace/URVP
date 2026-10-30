@@ -1,11 +1,11 @@
 using FEA.URVP.Application.Abstractions.Events;
-using FEA.URVP.Application.Commands.Notifications.NotifyApplicationWindowClosed;
-using FEA.URVP.Application.Commands.Notifications.NotifyApplicationWindowOpened;
-using FEA.URVP.Application.Commands.Notifications.NotifySemesterCycleStarted;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyApplicationWindowClosed;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyApplicationWindowOpened;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifySemesterCycleStarted;
 using FEA.URVP.Domain.Events.Semesters;
 using MediatR;
 
-namespace FEA.URVP.Application.Events.Semesters;
+namespace FEA.URVP.Application.Features.Semesters.Events;
 
 public sealed class ApplicationWindowOpenedEventHandler : IEventHandler<ApplicationWindowOpenedEvent>
 {

@@ -1,4 +1,4 @@
-using FEA.URVP.Application.Queries.Matching.ListAssignmentCandidates;
+using FEA.URVP.Application.Features.Matching.Queries.ListAssignmentCandidates;
 
 namespace FEA.URVP.Application.Abstractions.Persistence;
 

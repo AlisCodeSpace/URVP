@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Files;
+namespace FEA.URVP.Application.Features.Files.DTOs;
 
 public sealed class FileMetadataDto
 {

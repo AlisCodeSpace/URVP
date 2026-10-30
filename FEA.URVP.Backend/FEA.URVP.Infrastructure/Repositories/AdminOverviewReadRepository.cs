@@ -1,5 +1,5 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Queries.AdminOverview;
+using FEA.URVP.Application.Features.AdminOverview.Queries;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.StudentProfiles;

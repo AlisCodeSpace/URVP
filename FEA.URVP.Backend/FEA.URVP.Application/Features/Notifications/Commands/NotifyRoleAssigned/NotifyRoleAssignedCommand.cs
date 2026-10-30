@@ -1,12 +1,11 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Notifications.Create;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Features.Notifications.Commands.Create;
+using FEA.URVP.Application.Features.Users.Mappings;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Notifications.NotifyRoleAssigned;
+namespace FEA.URVP.Application.Features.Notifications.Commands.NotifyRoleAssigned;
 
 public sealed record NotifyRoleAssignedCommand(Guid UserId) : IRequest<int>;
 

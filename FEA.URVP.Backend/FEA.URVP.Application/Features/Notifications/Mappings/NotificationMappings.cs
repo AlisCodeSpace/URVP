@@ -1,8 +1,8 @@
-using FEA.URVP.Application.DTOs.Notifications;
+using FEA.URVP.Application.Features.Notifications.DTOs;
 using FEA.URVP.Domain.Entities.Notifications;
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.Notifications.Mappings;
 
 public static class NotificationMappings
 {

@@ -1,9 +1,9 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.News.Create;
-using FEA.URVP.Application.Commands.News.Delete;
-using FEA.URVP.Application.Commands.News.Update;
-using FEA.URVP.Application.Queries.News.GetById;
-using FEA.URVP.Application.Queries.News.List;
+using FEA.URVP.Application.Features.News.Commands.Create;
+using FEA.URVP.Application.Features.News.Commands.Delete;
+using FEA.URVP.Application.Features.News.Commands.Update;
+using FEA.URVP.Application.Features.News.Queries.GetById;
+using FEA.URVP.Application.Features.News.Queries.List;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

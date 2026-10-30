@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Workshops;
+using FEA.URVP.Application.Features.Workshops.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Workshops.Create;
+namespace FEA.URVP.Application.Features.Workshops.Commands.Create;
 
 public sealed class CreateWorkshopCommand : IRequest<WorkshopDto>
 {

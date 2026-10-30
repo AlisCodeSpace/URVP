@@ -1,4 +1,5 @@
-namespace FEA.URVP.Application.Exports;
+using FEA.URVP.Application.Common.Exports;
+namespace FEA.URVP.Application.Features.Users.Exports;
 
 public sealed record UserExportRow(string Name, string Email, string Role);
 

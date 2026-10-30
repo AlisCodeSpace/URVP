@@ -1,14 +1,14 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Workshops;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Notifications;
+using FEA.URVP.Application.Features.Workshops.DTOs;
+using FEA.URVP.Application.Features.Workshops.Mappings;
 using FEA.URVP.Domain.Entities.Workshops;
 using FEA.URVP.Domain.Events.Workshops;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Workshops.Create;
+namespace FEA.URVP.Application.Features.Workshops.Commands.Create;
 
 public sealed class CreateWorkshopCommandHandler
     : BaseCommandHandler<CreateWorkshopCommand, WorkshopDto>

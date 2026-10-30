@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Projects.ResearchAssistants.Remove;
+namespace FEA.URVP.Application.Features.Projects.Commands.ResearchAssistants.Remove;
 
 public sealed class RemoveProjectResearchAssistantCommand : IRequest<Unit>
 {

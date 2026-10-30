@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.Options;
+namespace FEA.URVP.Application.Common.Options;
 
 public sealed class EmailOptions
 {

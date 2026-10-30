@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Projects.Create;
+using FEA.URVP.Application.Features.Projects.Commands.Create;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Enums;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.Projects;
+namespace FEA.URVP.Application.Features.Projects.Validators;
 
 public sealed class CreateProjectCommandValidator : AbstractValidator<CreateProjectCommand>
 {

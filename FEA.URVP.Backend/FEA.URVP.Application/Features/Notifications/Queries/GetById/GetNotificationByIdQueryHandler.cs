@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Notifications;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Services.Notifications;
+using FEA.URVP.Application.Features.Notifications.DTOs;
+using FEA.URVP.Application.Features.Notifications.Mappings;
+using FEA.URVP.Application.Features.Notifications.Services;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Notifications.GetById;
+namespace FEA.URVP.Application.Features.Notifications.Queries.GetById;
 
 public sealed class GetNotificationByIdQueryHandler
     : IRequestHandler<GetNotificationByIdQuery, NotificationDto>

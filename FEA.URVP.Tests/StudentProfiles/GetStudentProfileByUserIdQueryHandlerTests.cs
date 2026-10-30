@@ -1,6 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Queries.StudentProfiles.GetByUserId;
-using FEA.URVP.Application.StudentProfiles;
+using FEA.URVP.Application.Features.StudentProfiles;
+using FEA.URVP.Application.Features.StudentProfiles.Queries.GetByUserId;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 using NSubstitute;

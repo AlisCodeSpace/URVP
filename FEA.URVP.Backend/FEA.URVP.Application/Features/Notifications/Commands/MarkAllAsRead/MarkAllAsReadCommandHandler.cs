@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Notifications;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Common;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Notifications.MarkAllAsRead;
+namespace FEA.URVP.Application.Features.Notifications.Commands.MarkAllAsRead;
 
 public sealed class MarkAllAsReadCommandHandler : BaseCommandHandler<MarkAllAsReadCommand, int>
 {

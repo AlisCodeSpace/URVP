@@ -1,7 +1,7 @@
-using FEA.URVP.Application.Commands.Projects.ResearchAssistants.Add;
-using FEA.URVP.Application.Commands.Projects.ResearchAssistants.Remove;
-using FEA.URVP.Application.Queries.Projects.ListAssistedProjects;
-using FEA.URVP.Application.Queries.Projects.ListResearchAssistants;
+using FEA.URVP.Application.Features.Projects.Commands.ResearchAssistants.Add;
+using FEA.URVP.Application.Features.Projects.Commands.ResearchAssistants.Remove;
+using FEA.URVP.Application.Features.Projects.Queries.ListAssistedProjects;
+using FEA.URVP.Application.Features.Projects.Queries.ListResearchAssistants;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Entities.Users;

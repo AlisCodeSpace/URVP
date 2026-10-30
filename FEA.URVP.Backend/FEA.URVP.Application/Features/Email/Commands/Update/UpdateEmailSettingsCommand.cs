@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Email;
+using FEA.URVP.Application.Features.Email.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Email.Update;
+namespace FEA.URVP.Application.Features.Email.Commands.Update;
 
 public sealed class UpdateEmailSettingsCommand : IRequest<EmailSettingsDto>
 {

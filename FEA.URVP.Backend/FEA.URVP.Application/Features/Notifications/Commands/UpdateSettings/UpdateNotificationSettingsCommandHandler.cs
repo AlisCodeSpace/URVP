@@ -1,14 +1,13 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Notifications;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Notifications.DTOs;
+using FEA.URVP.Application.Features.Notifications.Mappings;
 using FEA.URVP.Domain.Entities.Notifications;
 using FEA.URVP.Domain.Events.Notifications;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Notifications.UpdateSettings;
+namespace FEA.URVP.Application.Features.Notifications.Commands.UpdateSettings;
 
 public sealed class UpdateNotificationSettingsCommandHandler
     : BaseCommandHandler<UpdateNotificationSettingsCommand, UserNotificationSettingsDto>

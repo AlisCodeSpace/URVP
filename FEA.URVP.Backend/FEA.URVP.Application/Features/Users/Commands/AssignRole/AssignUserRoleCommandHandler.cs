@@ -1,14 +1,14 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Users;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Notifications;
+using FEA.URVP.Application.Features.Users.DTOs;
+using FEA.URVP.Application.Features.Users.Mappings;
 using FEA.URVP.Domain.Enums;
 using FEA.URVP.Domain.Events.Users;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Users.AssignRole;
+namespace FEA.URVP.Application.Features.Users.Commands.AssignRole;
 
 public sealed class AssignUserRoleCommandHandler
     : BaseCommandHandler<AssignUserRoleCommand, UserDto>

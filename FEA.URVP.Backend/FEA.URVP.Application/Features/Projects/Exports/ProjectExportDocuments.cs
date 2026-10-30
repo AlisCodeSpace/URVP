@@ -1,4 +1,5 @@
-namespace FEA.URVP.Application.Exports;
+using FEA.URVP.Application.Common.Exports;
+namespace FEA.URVP.Application.Features.Projects.Exports;
 
 public sealed record ProjectExportRow(
     string Title,

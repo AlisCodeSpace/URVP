@@ -2,7 +2,7 @@ using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Auth.AzureAd;
+namespace FEA.URVP.Application.Features.Auth.Commands.AzureAd;
 
 /// <summary>
 /// Creates or updates a user from Azure AD (AUB SSO) authentication.

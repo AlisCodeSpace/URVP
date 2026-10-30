@@ -1,7 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Queries.Users.Export;
+using FEA.URVP.Application.Features.Users.Queries.Export;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.StudentProfiles;
@@ -283,7 +283,7 @@ public sealed class ExportUsersQueryHandlerTests
             Arg.Any<CancellationToken>());
     }
 
-    private static async Task<FEA.URVP.Application.DTOs.Users.UserExportFileDto> Handle(string format)
+    private static async Task<FEA.URVP.Application.Features.Users.DTOs.UserExportFileDto> Handle(string format)
     {
         var handler = Handler(Users());
         return await handler.Handle(new ExportUsersQuery(format), CancellationToken.None);

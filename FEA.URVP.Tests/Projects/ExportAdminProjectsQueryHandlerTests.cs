@@ -1,8 +1,8 @@
 using System.IO.Compression;
 using System.Text;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Projects;
-using FEA.URVP.Application.Queries.Projects.Export;
+using FEA.URVP.Application.Features.Projects;
+using FEA.URVP.Application.Features.Projects.Queries.Export;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Users;

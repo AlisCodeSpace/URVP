@@ -1,7 +1,8 @@
 using System.Globalization;
-using FEA.URVP.Application.DTOs.AdminOverview;
+using FEA.URVP.Application.Common.Exports;
+using FEA.URVP.Application.Features.AdminOverview.DTOs;
 
-namespace FEA.URVP.Application.Exports;
+namespace FEA.URVP.Application.Features.AdminOverview.Exports;
 
 /// <summary>
 /// One row per overview fact. Pipeline steps and attention items are left out

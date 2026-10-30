@@ -1,19 +1,19 @@
 using FEA.URVP.Application.Abstractions.Notifications;
-using FEA.URVP.Application.Commands.Notifications.Create;
-using FEA.URVP.Application.Commands.Notifications.Delete;
-using FEA.URVP.Application.Commands.Notifications.MarkAllAsRead;
-using FEA.URVP.Application.Commands.Notifications.MarkAsRead;
-using FEA.URVP.Application.Commands.Notifications.UpdateSettings;
-using FEA.URVP.Application.DTOs.Notifications;
-using FEA.URVP.Application.Queries.Notifications.GetById;
-using FEA.URVP.Application.Queries.Notifications.GetSettings;
-using FEA.URVP.Application.Queries.Notifications.GetUnreadCount;
-using FEA.URVP.Application.Queries.Notifications.GetUserNotifications;
+using FEA.URVP.Application.Features.Notifications.Commands.Create;
+using FEA.URVP.Application.Features.Notifications.Commands.Delete;
+using FEA.URVP.Application.Features.Notifications.Commands.MarkAllAsRead;
+using FEA.URVP.Application.Features.Notifications.Commands.MarkAsRead;
+using FEA.URVP.Application.Features.Notifications.Commands.UpdateSettings;
+using FEA.URVP.Application.Features.Notifications.DTOs;
+using FEA.URVP.Application.Features.Notifications.Queries.GetById;
+using FEA.URVP.Application.Features.Notifications.Queries.GetSettings;
+using FEA.URVP.Application.Features.Notifications.Queries.GetUnreadCount;
+using FEA.URVP.Application.Features.Notifications.Queries.GetUserNotifications;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Services.Notifications;
+namespace FEA.URVP.Application.Features.Notifications.Services;
 
 public sealed class NotificationApplicationService : INotificationApplicationService
 {

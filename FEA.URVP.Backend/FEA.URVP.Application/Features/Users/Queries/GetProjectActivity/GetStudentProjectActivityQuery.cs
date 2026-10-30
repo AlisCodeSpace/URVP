@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Users;
+using FEA.URVP.Application.Features.Users.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Users.GetProjectActivity;
+namespace FEA.URVP.Application.Features.Users.Queries.GetProjectActivity;
 
 public sealed record GetStudentProjectActivityQuery(Guid StudentUserId)
     : IRequest<StudentProjectActivityDto>;

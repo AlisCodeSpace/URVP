@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.News;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.News.DTOs;
+using FEA.URVP.Application.Features.News.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.News.GetById;
+namespace FEA.URVP.Application.Features.News.Queries.GetById;
 
 public sealed class GetNewsArticleByIdQueryHandler
     : IRequestHandler<GetNewsArticleByIdQuery, NewsArticleDto>

@@ -1,12 +1,12 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Directory;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Directory;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Auth.AzureAd;
+namespace FEA.URVP.Application.Features.Auth.Commands.AzureAd;
 
 public sealed class UpsertAzureAdUserCommandHandler
     : BaseCommandHandler<UpsertAzureAdUserCommand, User>

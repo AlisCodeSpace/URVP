@@ -1,7 +1,7 @@
 using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Services;
 using FEA.URVP.Application;
-using FEA.URVP.Application.Options;
+using FEA.URVP.Application.Common.Options;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Infrastructure;
 using Microsoft.AspNetCore.Http.Features;

@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Common;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.ValueLists.Delete;
+namespace FEA.URVP.Application.Features.ValueLists.Commands.Delete;
 
 public sealed class DeleteValueListItemCommandHandler
     : BaseCommandHandler<DeleteValueListItemCommand>

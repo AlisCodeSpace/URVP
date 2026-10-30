@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Matching;
+using FEA.URVP.Application.Features.Matching.DTOs;
 using FEA.URVP.Domain.Entities.Matching;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.Matching.Mappings;
 
 public static class MatchingMappings
 {

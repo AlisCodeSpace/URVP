@@ -1,9 +1,8 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Projects;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Features.Projects.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Projects.ListAlumni;
+namespace FEA.URVP.Application.Features.Projects.Queries.ListAlumni;
 
 public sealed class ListProjectAlumniQueryHandler
     : IRequestHandler<ListProjectAlumniQuery, IReadOnlyList<ProjectAlumniDto>>

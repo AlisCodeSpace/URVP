@@ -1,9 +1,9 @@
-using FEA.URVP.Application.DTOs.ProjectRankings;
+using FEA.URVP.Application.Features.ProjectRankings.DTOs;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.ProjectRankings.Mappings;
 
 public static class ProjectRankingMappings
 {

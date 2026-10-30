@@ -2,7 +2,7 @@ using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Domain.Events;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Notifications;
+namespace FEA.URVP.Application.Features.Notifications;
 
 internal static class NotificationEventPublish
 {

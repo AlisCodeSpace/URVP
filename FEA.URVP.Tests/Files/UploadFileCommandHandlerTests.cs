@@ -1,8 +1,8 @@
 using FEA.URVP.Application.Abstractions.Files;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Files.Upload;
-using FEA.URVP.Application.Files;
-using FEA.URVP.Application.Options;
+using FEA.URVP.Application.Common.Options;
+using FEA.URVP.Application.Features.Files;
+using FEA.URVP.Application.Features.Files.Commands.Upload;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.Files;
 using FEA.URVP.Domain.Entities.Semesters;

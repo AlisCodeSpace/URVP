@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.News;
+using FEA.URVP.Application.Features.News.DTOs;
 using FEA.URVP.Domain.Entities.News;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.News.Mappings;
 
 public static class NewsArticleMappings
 {

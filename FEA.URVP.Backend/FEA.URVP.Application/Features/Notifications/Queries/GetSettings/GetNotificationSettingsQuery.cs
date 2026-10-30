@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Notifications;
+using FEA.URVP.Application.Features.Notifications.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Notifications.GetSettings;
+namespace FEA.URVP.Application.Features.Notifications.Queries.GetSettings;
 
 public sealed record GetNotificationSettingsQuery(Guid UserId)
     : IRequest<UserNotificationSettingsDto?>;

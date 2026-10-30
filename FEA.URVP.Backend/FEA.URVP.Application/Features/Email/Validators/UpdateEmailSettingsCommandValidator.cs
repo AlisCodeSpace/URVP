@@ -1,8 +1,8 @@
-using FEA.URVP.Application.Commands.Email.Update;
+using FEA.URVP.Application.Features.Email.Commands.Update;
 using FluentValidation;
 using EmailSettingsRow = FEA.URVP.Domain.Entities.Email.EmailSettings;
 
-namespace FEA.URVP.Application.Validators.Email;
+namespace FEA.URVP.Application.Features.Email.Validators;
 
 public sealed class UpdateEmailSettingsCommandValidator
     : AbstractValidator<UpdateEmailSettingsCommand>

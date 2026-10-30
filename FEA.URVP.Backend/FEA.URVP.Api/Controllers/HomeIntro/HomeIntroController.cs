@@ -1,6 +1,6 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.HomeIntro.Update;
-using FEA.URVP.Application.Queries.HomeIntro;
+using FEA.URVP.Application.Features.HomeIntro.Commands.Update;
+using FEA.URVP.Application.Features.HomeIntro.Queries;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

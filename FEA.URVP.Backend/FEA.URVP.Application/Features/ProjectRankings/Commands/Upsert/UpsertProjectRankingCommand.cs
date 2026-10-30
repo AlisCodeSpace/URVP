@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.ProjectRankings;
+using FEA.URVP.Application.Features.ProjectRankings.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.ProjectRankings.Upsert;
+namespace FEA.URVP.Application.Features.ProjectRankings.Commands.Upsert;
 
 public sealed class UpsertProjectRankingCommand : IRequest<ProjectRankingDto>
 {

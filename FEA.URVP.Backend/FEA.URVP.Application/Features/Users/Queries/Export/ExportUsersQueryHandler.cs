@@ -1,13 +1,14 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Users;
-using FEA.URVP.Application.Exports;
+using FEA.URVP.Application.Common.Exports;
+using FEA.URVP.Application.Features.Users.DTOs;
+using FEA.URVP.Application.Features.Users.Exports;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Users.Export;
+namespace FEA.URVP.Application.Features.Users.Queries.Export;
 
 public sealed class ExportUsersQueryHandler : IRequestHandler<ExportUsersQuery, UserExportFileDto>
 {

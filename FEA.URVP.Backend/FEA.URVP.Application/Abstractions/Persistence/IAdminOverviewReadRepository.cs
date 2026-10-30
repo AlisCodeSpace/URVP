@@ -1,4 +1,4 @@
-using FEA.URVP.Application.Queries.AdminOverview;
+using FEA.URVP.Application.Features.AdminOverview.Queries;
 
 namespace FEA.URVP.Application.Abstractions.Persistence;
 

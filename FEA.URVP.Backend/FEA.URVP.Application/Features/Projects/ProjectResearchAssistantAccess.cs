@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.FacultyCandidateRankings;
+using FEA.URVP.Application.Features.FacultyCandidateRankings;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Users;
 
-namespace FEA.URVP.Application.Projects;
+namespace FEA.URVP.Application.Features.Projects;
 
 public sealed class ProjectResearchAssistantAccess
 {

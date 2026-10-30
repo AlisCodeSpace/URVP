@@ -1,8 +1,8 @@
-using FEA.URVP.Application.Options;
+using FEA.URVP.Application.Common.Options;
 using FEA.URVP.Domain.Catalog;
 using Microsoft.AspNetCore.Http;
 
-namespace FEA.URVP.Application.Files;
+namespace FEA.URVP.Application.Features.Files;
 
 /// <summary>
 /// Shared signature, extension, and size rules used by the upload handler.

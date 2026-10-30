@@ -1,6 +1,6 @@
 using FEA.URVP.Domain.Entities.Semesters;
 
-namespace FEA.URVP.Application.Commands.Semesters;
+namespace FEA.URVP.Application.Features.Semesters;
 
 internal static class ApplicationWindowRules
 {

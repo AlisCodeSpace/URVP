@@ -1,8 +1,8 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Abstractions.Security;
-using FEA.URVP.Application.Commands.Email.Update;
-using FEA.URVP.Application.DTOs.Email;
-using FEA.URVP.Application.Queries.Email;
+using FEA.URVP.Application.Features.Email.Commands.Update;
+using FEA.URVP.Application.Features.Email.DTOs;
+using FEA.URVP.Application.Features.Email.Queries;
 using FEA.URVP.Domain.Entities.Email;
 using MediatR;
 using Microsoft.Extensions.Logging.Abstractions;

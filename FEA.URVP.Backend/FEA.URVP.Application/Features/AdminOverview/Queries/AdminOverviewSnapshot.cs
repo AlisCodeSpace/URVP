@@ -1,7 +1,7 @@
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.Semesters;
 
-namespace FEA.URVP.Application.Queries.AdminOverview;
+namespace FEA.URVP.Application.Features.AdminOverview.Queries;
 
 public sealed record AdminOverviewSnapshot
 {

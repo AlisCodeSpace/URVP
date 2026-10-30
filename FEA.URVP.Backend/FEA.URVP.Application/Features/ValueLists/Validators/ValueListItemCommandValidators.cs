@@ -1,8 +1,8 @@
-using FEA.URVP.Application.Commands.ValueLists.Create;
-using FEA.URVP.Application.Commands.ValueLists.Update;
+using FEA.URVP.Application.Features.ValueLists.Commands.Create;
+using FEA.URVP.Application.Features.ValueLists.Commands.Update;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.ValueLists;
+namespace FEA.URVP.Application.Features.ValueLists.Validators;
 
 public sealed class CreateValueListItemCommandValidator
     : AbstractValidator<CreateValueListItemCommand>

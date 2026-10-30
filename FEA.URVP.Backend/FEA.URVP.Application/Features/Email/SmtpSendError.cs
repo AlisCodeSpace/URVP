@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.Email;
+namespace FEA.URVP.Application.Features.Email;
 
 /// <summary>
 /// Formats SMTP failures for EmailLog so the admin page shows the host and the

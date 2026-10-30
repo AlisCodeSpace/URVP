@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.ProjectRankings;
+using FEA.URVP.Application.Features.ProjectRankings.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.ProjectRankings.ListByProject;
+namespace FEA.URVP.Application.Features.ProjectRankings.Queries.ListByProject;
 
 public sealed record ListProjectRankingsQuery(
     Guid ProjectId,

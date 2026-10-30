@@ -1,5 +1,5 @@
-using FEA.URVP.Application.Commands.Email.Update;
-using FEA.URVP.Application.Validators.Email;
+using FEA.URVP.Application.Features.Email.Commands.Update;
+using FEA.URVP.Application.Features.Email.Validators;
 using FEA.URVP.Domain.Entities.Email;
 
 namespace FEA.URVP.Tests.Email;

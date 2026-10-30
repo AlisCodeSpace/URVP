@@ -1,4 +1,4 @@
-using FEA.URVP.Application.Queries.Matching.ListAssignmentCandidates;
+using FEA.URVP.Application.Features.Matching.Queries.ListAssignmentCandidates;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.Projects;

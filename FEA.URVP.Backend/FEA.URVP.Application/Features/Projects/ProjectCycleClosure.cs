@@ -5,7 +5,7 @@ using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Projects;
+namespace FEA.URVP.Application.Features.Projects;
 
 /// <summary>
 /// When an academic cycle's end date has passed, mark its projects inactive

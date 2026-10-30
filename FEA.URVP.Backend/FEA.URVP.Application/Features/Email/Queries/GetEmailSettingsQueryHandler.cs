@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Email;
-using FEA.URVP.Application.Options;
+using FEA.URVP.Application.Common.Options;
+using FEA.URVP.Application.Features.Email.DTOs;
 using MediatR;
 using Microsoft.Extensions.Options;
 
-namespace FEA.URVP.Application.Queries.Email;
+namespace FEA.URVP.Application.Features.Email.Queries;
 
 public sealed class GetEmailSettingsQueryHandler
     : IRequestHandler<GetEmailSettingsQuery, EmailSettingsDto>

@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Users;
+namespace FEA.URVP.Application.Features.Users.DTOs;
 
 public sealed class UserExportFileDto
 {

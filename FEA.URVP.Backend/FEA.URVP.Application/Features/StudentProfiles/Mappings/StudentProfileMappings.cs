@@ -1,8 +1,8 @@
-using FEA.URVP.Application.DTOs.StudentProfiles;
+using FEA.URVP.Application.Features.StudentProfiles.DTOs;
 using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Entities.Users;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.StudentProfiles.Mappings;
 
 public static class StudentProfileMappings
 {

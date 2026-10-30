@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Semesters;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Semesters.DTOs;
+using FEA.URVP.Application.Features.Semesters.Mappings;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Semesters.SetRegistrationWindow;
+namespace FEA.URVP.Application.Features.Semesters.Commands.SetRegistrationWindow;
 
 public sealed class SetRegistrationWindowCommandHandler
     : BaseCommandHandler<SetRegistrationWindowCommand, SemesterDto>

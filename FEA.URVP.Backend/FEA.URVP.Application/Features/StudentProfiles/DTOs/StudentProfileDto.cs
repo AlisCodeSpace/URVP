@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.StudentProfiles;
+namespace FEA.URVP.Application.Features.StudentProfiles.DTOs;
 
 public sealed class DayAvailabilityDto
 {

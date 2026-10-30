@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace FEA.URVP.Application.Matching;
+namespace FEA.URVP.Application.Features.Matching;
 
 /// <summary>
 /// Compares a project's research areas and written qualifications with a student profile.

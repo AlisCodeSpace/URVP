@@ -1,8 +1,8 @@
-using FEA.URVP.Application.DTOs.Users;
+using FEA.URVP.Application.Features.Users.DTOs;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.Users.Mappings;
 
 public static class UserMappings
 {

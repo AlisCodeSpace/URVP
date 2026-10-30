@@ -1,13 +1,13 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Semesters;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Notifications;
+using FEA.URVP.Application.Features.Semesters.DTOs;
+using FEA.URVP.Application.Features.Semesters.Mappings;
 using FEA.URVP.Domain.Events.Semesters;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Semesters.SetActive;
+namespace FEA.URVP.Application.Features.Semesters.Commands.SetActive;
 
 public sealed class SetSemesterActiveCommandHandler
     : BaseCommandHandler<SetSemesterActiveCommand, SemesterDto>

@@ -1,10 +1,10 @@
-using FEA.URVP.Application.Queries.Notifications.GetById;
-using FEA.URVP.Application.Queries.Notifications.GetSettings;
-using FEA.URVP.Application.Queries.Notifications.GetUnreadCount;
-using FEA.URVP.Application.Queries.Notifications.GetUserNotifications;
+using FEA.URVP.Application.Features.Notifications.Queries.GetById;
+using FEA.URVP.Application.Features.Notifications.Queries.GetSettings;
+using FEA.URVP.Application.Features.Notifications.Queries.GetUnreadCount;
+using FEA.URVP.Application.Features.Notifications.Queries.GetUserNotifications;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.Notifications;
+namespace FEA.URVP.Application.Features.Notifications.Validators;
 
 public sealed class GetUserNotificationsQueryValidator : AbstractValidator<GetUserNotificationsQuery>
 {

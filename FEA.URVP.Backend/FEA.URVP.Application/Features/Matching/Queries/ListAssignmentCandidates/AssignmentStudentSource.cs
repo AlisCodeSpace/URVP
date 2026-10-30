@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.Queries.Matching.ListAssignmentCandidates;
+namespace FEA.URVP.Application.Features.Matching.Queries.ListAssignmentCandidates;
 
 /// <summary>Slim student row used to score and page assignment candidates.</summary>
 public sealed record AssignmentStudentSource(

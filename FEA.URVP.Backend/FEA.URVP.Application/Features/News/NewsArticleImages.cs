@@ -2,7 +2,7 @@ using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.Files;
 using FEA.URVP.Domain.Entities.News;
 
-namespace FEA.URVP.Application.News;
+namespace FEA.URVP.Application.Features.News;
 
 public static class NewsArticleImages
 {

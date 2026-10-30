@@ -1,10 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.StudentProfiles;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.StudentProfiles;
+using FEA.URVP.Application.Features.StudentProfiles.DTOs;
+using FEA.URVP.Application.Features.StudentProfiles.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.StudentProfiles.GetMine;
+namespace FEA.URVP.Application.Features.StudentProfiles.Queries.GetMine;
 
 public sealed class GetMyStudentProfileQueryHandler
     : IRequestHandler<GetMyStudentProfileQuery, StudentProfileDto>

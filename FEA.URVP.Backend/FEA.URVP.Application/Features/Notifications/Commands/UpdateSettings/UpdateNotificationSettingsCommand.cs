@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Notifications;
+using FEA.URVP.Application.Features.Notifications.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Notifications.UpdateSettings;
+namespace FEA.URVP.Application.Features.Notifications.Commands.UpdateSettings;
 
 public sealed record UpdateNotificationSettingsCommand(
     Guid UserId,

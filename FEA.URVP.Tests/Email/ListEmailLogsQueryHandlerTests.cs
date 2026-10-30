@@ -1,5 +1,5 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Queries.EmailLogs.List;
+using FEA.URVP.Application.Features.Email.Queries.List;
 using FEA.URVP.Domain.Entities.Notifications;
 using NSubstitute;
 

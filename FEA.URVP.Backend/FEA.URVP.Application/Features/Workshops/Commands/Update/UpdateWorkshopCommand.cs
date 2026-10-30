@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Workshops;
+using FEA.URVP.Application.Features.Workshops.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Workshops.Update;
+namespace FEA.URVP.Application.Features.Workshops.Commands.Update;
 
 public sealed class UpdateWorkshopCommand : IRequest<WorkshopDto>
 {

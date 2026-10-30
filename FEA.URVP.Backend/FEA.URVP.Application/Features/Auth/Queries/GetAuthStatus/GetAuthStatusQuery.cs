@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using FEA.URVP.Application.DTOs.Auth;
+using FEA.URVP.Application.Features.Auth.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Auth.GetAuthStatus;
+namespace FEA.URVP.Application.Features.Auth.Queries.GetAuthStatus;
 
 public sealed class GetAuthStatusQuery : IRequest<AuthStatusResponseDto>
 {

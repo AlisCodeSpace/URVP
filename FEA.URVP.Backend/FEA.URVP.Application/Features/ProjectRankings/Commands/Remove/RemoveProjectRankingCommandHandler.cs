@@ -1,14 +1,13 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Commands.Semesters;
-using FEA.URVP.Application.Notifications;
-using FEA.URVP.Application.ProjectRankings;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Notifications;
+using FEA.URVP.Application.Features.Semesters;
 using FEA.URVP.Domain.Events.Rankings;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.ProjectRankings.Remove;
+namespace FEA.URVP.Application.Features.ProjectRankings.Commands.Remove;
 
 public sealed class RemoveProjectRankingCommandHandler
     : BaseCommandHandler<RemoveProjectRankingCommand>

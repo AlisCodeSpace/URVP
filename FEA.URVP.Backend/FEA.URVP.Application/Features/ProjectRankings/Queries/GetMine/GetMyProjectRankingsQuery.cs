@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.ProjectRankings;
+using FEA.URVP.Application.Features.ProjectRankings.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.ProjectRankings.GetMine;
+namespace FEA.URVP.Application.Features.ProjectRankings.Queries.GetMine;
 
 public sealed record GetMyProjectRankingsQuery(Guid CurrentUserId)
     : IRequest<IReadOnlyList<ProjectRankingDto>>;

@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
+using FEA.URVP.Application.Common;
 using FEA.URVP.Domain.Catalog;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.News.Delete;
+namespace FEA.URVP.Application.Features.News.Commands.Delete;
 
 public sealed class DeleteNewsArticleCommandHandler
     : BaseCommandHandler<DeleteNewsArticleCommand>

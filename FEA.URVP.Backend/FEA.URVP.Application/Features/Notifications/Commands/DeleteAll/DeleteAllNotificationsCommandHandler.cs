@@ -1,11 +1,10 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Common;
 using FEA.URVP.Domain.Events.Notifications;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Notifications.DeleteAll;
+namespace FEA.URVP.Application.Features.Notifications.Commands.DeleteAll;
 
 public sealed class DeleteAllNotificationsCommandHandler : BaseCommandHandler<DeleteAllNotificationsCommand, int>
 {

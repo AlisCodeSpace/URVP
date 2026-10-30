@@ -1,9 +1,9 @@
 using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.Users.AssignRole;
-using FEA.URVP.Application.Queries.Users.Export;
-using FEA.URVP.Application.Queries.Users.GetProjectActivity;
-using FEA.URVP.Application.Queries.Users.List;
+using FEA.URVP.Application.Features.Users.Commands.AssignRole;
+using FEA.URVP.Application.Features.Users.Queries.Export;
+using FEA.URVP.Application.Features.Users.Queries.GetProjectActivity;
+using FEA.URVP.Application.Features.Users.Queries.List;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

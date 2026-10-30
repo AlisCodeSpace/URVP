@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Email;
+namespace FEA.URVP.Application.Features.Email.DTOs;
 
 /// <summary>
 /// Admin-facing SMTP settings. The password itself is never included.

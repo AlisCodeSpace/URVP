@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.News.Delete;
+namespace FEA.URVP.Application.Features.News.Commands.Delete;
 
 public sealed class DeleteNewsArticleCommand : IRequest<Unit>
 {

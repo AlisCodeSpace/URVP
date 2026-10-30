@@ -1,6 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Options;
-using FEA.URVP.Application.Queries.Email;
+using FEA.URVP.Application.Common.Options;
+using FEA.URVP.Application.Features.Email.Queries;
 using FEA.URVP.Domain.Entities.Email;
 using Microsoft.Extensions.Options;
 using NSubstitute;

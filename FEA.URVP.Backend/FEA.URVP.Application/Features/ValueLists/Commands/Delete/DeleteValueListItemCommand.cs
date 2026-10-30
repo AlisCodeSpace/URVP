@@ -1,7 +1,7 @@
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.ValueLists.Delete;
+namespace FEA.URVP.Application.Features.ValueLists.Commands.Delete;
 
 public sealed class DeleteValueListItemCommand : IRequest<Unit>
 {

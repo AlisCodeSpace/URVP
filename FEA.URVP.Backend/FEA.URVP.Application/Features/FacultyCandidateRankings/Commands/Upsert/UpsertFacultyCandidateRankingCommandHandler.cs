@@ -1,14 +1,14 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Commands.Semesters;
-using FEA.URVP.Application.DTOs.FacultyCandidateRankings;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.FacultyCandidateRankings.DTOs;
+using FEA.URVP.Application.Features.FacultyCandidateRankings.Mappings;
+using FEA.URVP.Application.Features.Projects;
+using FEA.URVP.Application.Features.Semesters;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FEA.URVP.Domain.Enums;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.FacultyCandidateRankings.Upsert;
+namespace FEA.URVP.Application.Features.FacultyCandidateRankings.Commands.Upsert;
 
 public sealed class UpsertFacultyCandidateRankingCommandHandler
     : BaseCommandHandler<UpsertFacultyCandidateRankingCommand, FacultyCandidateRankingDto>

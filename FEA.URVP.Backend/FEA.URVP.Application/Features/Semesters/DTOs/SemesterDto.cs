@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Semesters;
+namespace FEA.URVP.Application.Features.Semesters.DTOs;
 
 public sealed class SemesterDto
 {

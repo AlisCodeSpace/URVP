@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Email;
+using FEA.URVP.Application.Features.Email.DTOs;
 using FEA.URVP.Domain.Entities.Notifications;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.Email.Mappings;
 
 public static class EmailLogMappings
 {

@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.HomeIntro;
+using FEA.URVP.Application.Features.HomeIntro.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.HomeIntro.Update;
+namespace FEA.URVP.Application.Features.HomeIntro.Commands.Update;
 
 public sealed class UpdateHomeIntroCommand : IRequest<HomeIntroDto>
 {

@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.StudentProfiles.Upsert;
+using FEA.URVP.Application.Features.StudentProfiles.Commands.Upsert;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Enums;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.StudentProfiles;
+namespace FEA.URVP.Application.Features.StudentProfiles.Validators;
 
 public sealed class UpsertStudentProfileCommandValidator
     : AbstractValidator<UpsertStudentProfileCommand>

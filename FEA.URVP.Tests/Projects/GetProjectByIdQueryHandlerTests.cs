@@ -1,6 +1,6 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Projects;
-using FEA.URVP.Application.Queries.Projects.GetById;
+using FEA.URVP.Application.Features.Projects;
+using FEA.URVP.Application.Features.Projects.Queries.GetById;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Enums;

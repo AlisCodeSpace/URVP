@@ -1,8 +1,8 @@
-using FEA.URVP.Application.DTOs.Users;
+using FEA.URVP.Application.Features.Users.DTOs;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Users.List;
+namespace FEA.URVP.Application.Features.Users.Queries.List;
 
 public sealed class ListUsersQuery : IRequest<(IReadOnlyList<UserDto> Items, int TotalCount)>
 {

@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Semesters;
+using FEA.URVP.Application.Features.Semesters.DTOs;
 using FEA.URVP.Domain.Entities.Semesters;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.Semesters.Mappings;
 
 public static class SemesterMappings
 {

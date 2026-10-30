@@ -1,7 +1,7 @@
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Notifications.Create;
+namespace FEA.URVP.Application.Features.Notifications.Commands.Create;
 
 public sealed record CreateNotificationCommand(
     Guid UserId,

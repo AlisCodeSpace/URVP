@@ -1,7 +1,7 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Matching;
+namespace FEA.URVP.Application.Features.Matching;
 
 /// <summary>
 /// Keeps <c>Project.VolunteersFilled</c> equal to the number of confirmed placements,

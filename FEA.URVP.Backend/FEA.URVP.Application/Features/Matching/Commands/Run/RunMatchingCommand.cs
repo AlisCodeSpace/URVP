@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Matching;
+using FEA.URVP.Application.Features.Matching.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Matching.Run;
+namespace FEA.URVP.Application.Features.Matching.Commands.Run;
 
 /// <summary>
 /// Executes a dry run of the matching algorithm and stores it as a draft.

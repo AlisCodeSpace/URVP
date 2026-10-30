@@ -1,11 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Notifications.Create;
-using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Features.Notifications.Commands.Create;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Notifications.NotifyPlacementDeclined;
+namespace FEA.URVP.Application.Features.Notifications.Commands.NotifyPlacementDeclined;
 
 public sealed record NotifyPlacementDeclinedCommand(Guid PlacementId) : IRequest<int>;
 

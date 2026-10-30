@@ -1,5 +1,5 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Auth.AzureAd;
+using FEA.URVP.Application.Features.Auth.Commands.AzureAd;
 using FEA.URVP.Domain.Entities.Users;
 using FEA.URVP.Domain.Enums;
 using Microsoft.Extensions.Configuration;

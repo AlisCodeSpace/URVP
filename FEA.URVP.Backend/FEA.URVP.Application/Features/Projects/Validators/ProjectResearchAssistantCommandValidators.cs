@@ -1,8 +1,8 @@
-using FEA.URVP.Application.Commands.Projects.ResearchAssistants.Add;
-using FEA.URVP.Application.Commands.Projects.ResearchAssistants.Remove;
+using FEA.URVP.Application.Features.Projects.Commands.ResearchAssistants.Add;
+using FEA.URVP.Application.Features.Projects.Commands.ResearchAssistants.Remove;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.Projects;
+namespace FEA.URVP.Application.Features.Projects.Validators;
 
 public sealed class AddProjectResearchAssistantCommandValidator
     : AbstractValidator<AddProjectResearchAssistantCommand>

@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Matching;
-using FEA.URVP.Application.DTOs.Semesters;
+using FEA.URVP.Application.Features.Matching.DTOs;
+using FEA.URVP.Application.Features.Semesters.DTOs;
 
-namespace FEA.URVP.Application.DTOs.AdminOverview;
+namespace FEA.URVP.Application.Features.AdminOverview.DTOs;
 
 public sealed class AdminOverviewDto
 {

@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.ValueLists;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.ValueLists.DTOs;
+using FEA.URVP.Application.Features.ValueLists.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.ValueLists.List;
+namespace FEA.URVP.Application.Features.ValueLists.Queries.List;
 
 public sealed class ListValueListItemsQueryHandler
     : IRequestHandler<ListValueListItemsQuery, (IReadOnlyList<ValueListItemDto> Items, int TotalCount)>

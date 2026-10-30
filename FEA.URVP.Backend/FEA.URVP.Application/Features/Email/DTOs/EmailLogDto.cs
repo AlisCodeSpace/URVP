@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Email;
+namespace FEA.URVP.Application.Features.Email.DTOs;
 
 public sealed class EmailLogDto
 {

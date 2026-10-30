@@ -1,7 +1,7 @@
-using FEA.URVP.Application.Commands.Users.AssignRole;
+using FEA.URVP.Application.Features.Users.Commands.AssignRole;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.Users;
+namespace FEA.URVP.Application.Features.Users.Validators;
 
 public sealed class AssignUserRoleCommandValidator : AbstractValidator<AssignUserRoleCommand>
 {

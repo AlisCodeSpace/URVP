@@ -1,8 +1,8 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.ValueLists.Create;
-using FEA.URVP.Application.Commands.ValueLists.Delete;
-using FEA.URVP.Application.Commands.ValueLists.Update;
-using FEA.URVP.Application.Queries.ValueLists.List;
+using FEA.URVP.Application.Features.ValueLists.Commands.Create;
+using FEA.URVP.Application.Features.ValueLists.Commands.Delete;
+using FEA.URVP.Application.Features.ValueLists.Commands.Update;
+using FEA.URVP.Application.Features.ValueLists.Queries.List;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

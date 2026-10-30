@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Matching;
-using FEA.URVP.Application.DTOs.ProjectRankings;
+using FEA.URVP.Application.Features.Matching.DTOs;
+using FEA.URVP.Application.Features.ProjectRankings.DTOs;
 
-namespace FEA.URVP.Application.DTOs.Users;
+namespace FEA.URVP.Application.Features.Users.DTOs;
 
 public sealed class StudentProjectActivityDto
 {

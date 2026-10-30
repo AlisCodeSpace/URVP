@@ -1,7 +1,7 @@
 using FEA.URVP.Application.Abstractions.Notifications;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Options;
-using FEA.URVP.Application.Services.Notifications;
+using FEA.URVP.Application.Common.Options;
+using FEA.URVP.Application.Features.Notifications.Services;
 using FEA.URVP.Infrastructure.Email;
 using FEA.URVP.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;

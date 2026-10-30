@@ -1,8 +1,8 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.AdminOverview;
+using FEA.URVP.Application.Features.AdminOverview.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.AdminOverview;
+namespace FEA.URVP.Application.Features.AdminOverview.Queries;
 
 public sealed class GetAdminOverviewQueryHandler
     : IRequestHandler<GetAdminOverviewQuery, AdminOverviewDto>

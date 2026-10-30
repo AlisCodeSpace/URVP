@@ -1,4 +1,4 @@
-using FEA.URVP.Application.Directory;
+using FEA.URVP.Application.Features.Directory;
 using FEA.URVP.Domain.Enums;
 
 namespace FEA.URVP.Tests.Auth;

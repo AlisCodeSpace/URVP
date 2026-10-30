@@ -1,7 +1,7 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.StudentProfiles.Upsert;
-using FEA.URVP.Application.Queries.StudentProfiles.GetByUserId;
-using FEA.URVP.Application.Queries.StudentProfiles.GetMine;
+using FEA.URVP.Application.Features.StudentProfiles.Commands.Upsert;
+using FEA.URVP.Application.Features.StudentProfiles.Queries.GetByUserId;
+using FEA.URVP.Application.Features.StudentProfiles.Queries.GetMine;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

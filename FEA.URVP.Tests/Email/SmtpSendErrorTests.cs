@@ -1,4 +1,4 @@
-using FEA.URVP.Application.Email;
+using FEA.URVP.Application.Features.Email;
 
 namespace FEA.URVP.Tests.Email;
 

@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Workshops;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.Workshops.DTOs;
+using FEA.URVP.Application.Features.Workshops.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Workshops.List;
+namespace FEA.URVP.Application.Features.Workshops.Queries.List;
 
 public sealed class ListWorkshopsQueryHandler
     : IRequestHandler<ListWorkshopsQuery, (IReadOnlyList<WorkshopDto> Items, int TotalCount)>

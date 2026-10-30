@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.ProjectRankings.Remove;
+namespace FEA.URVP.Application.Features.ProjectRankings.Commands.Remove;
 
 public sealed class RemoveProjectRankingCommand : IRequest<Unit>
 {

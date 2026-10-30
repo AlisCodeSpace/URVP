@@ -2,7 +2,7 @@ using FEA.URVP.Application.Abstractions.Notifications;
 using FEA.URVP.Application.Abstractions.Persistence;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Notifications.GetUnreadCount;
+namespace FEA.URVP.Application.Features.Notifications.Queries.GetUnreadCount;
 
 public sealed class GetUnreadCountQueryHandler : IRequestHandler<GetUnreadCountQuery, int>
 {

@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Semesters;
+using FEA.URVP.Application.Features.Semesters.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Semesters.SetActive;
+namespace FEA.URVP.Application.Features.Semesters.Commands.SetActive;
 
 /// <summary>
 /// Activates or deactivates a semester cycle.

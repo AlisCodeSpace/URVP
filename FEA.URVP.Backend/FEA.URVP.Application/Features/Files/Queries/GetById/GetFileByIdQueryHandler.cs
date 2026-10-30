@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Files;
-using FEA.URVP.Application.StudentProfiles;
+using FEA.URVP.Application.Features.Files.DTOs;
+using FEA.URVP.Application.Features.StudentProfiles;
 using FEA.URVP.Domain.Catalog;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Files.GetById;
+namespace FEA.URVP.Application.Features.Files.Queries.GetById;
 
 public sealed class GetFileByIdQueryHandler : IRequestHandler<GetFileByIdQuery, FileContentDto>
 {

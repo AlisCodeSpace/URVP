@@ -1,4 +1,4 @@
-using FEA.URVP.Application.DTOs.Notifications;
+using FEA.URVP.Application.Features.Notifications.DTOs;
 using FEA.URVP.Domain.Enums;
 
 namespace FEA.URVP.Application.Abstractions.Notifications;

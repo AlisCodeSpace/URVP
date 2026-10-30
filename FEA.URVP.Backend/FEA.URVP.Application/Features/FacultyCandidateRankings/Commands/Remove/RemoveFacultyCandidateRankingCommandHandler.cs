@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Commands.Semesters;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Projects;
+using FEA.URVP.Application.Features.Semesters;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.FacultyCandidateRankings.Remove;
+namespace FEA.URVP.Application.Features.FacultyCandidateRankings.Commands.Remove;
 
 public sealed class RemoveFacultyCandidateRankingCommandHandler
     : BaseCommandHandler<RemoveFacultyCandidateRankingCommand>

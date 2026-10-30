@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using FEA.URVP.Api.Services;
 using FEA.URVP.Application.Abstractions.Directory;
-using FEA.URVP.Application.Commands.Auth.AzureAd;
+using FEA.URVP.Application.Features.Auth.Commands.AzureAd;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 

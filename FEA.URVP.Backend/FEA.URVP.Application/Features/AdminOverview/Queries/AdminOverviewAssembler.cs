@@ -1,10 +1,11 @@
-using FEA.URVP.Application.DTOs.AdminOverview;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.AdminOverview.DTOs;
+using FEA.URVP.Application.Features.Matching.Mappings;
+using FEA.URVP.Application.Features.Semesters.Mappings;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Queries.AdminOverview;
+namespace FEA.URVP.Application.Features.AdminOverview.Queries;
 
 public static class AdminOverviewAssembler
 {

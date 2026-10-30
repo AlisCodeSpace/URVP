@@ -1,10 +1,10 @@
-using FEA.URVP.Application.Commands.Files.Upload;
-using FEA.URVP.Application.Options;
+using FEA.URVP.Application.Common.Options;
+using FEA.URVP.Application.Features.Files.Commands.Upload;
 using FEA.URVP.Domain.Catalog;
 using FluentValidation;
 using Microsoft.Extensions.Options;
 
-namespace FEA.URVP.Application.Validators.Files;
+namespace FEA.URVP.Application.Features.Files.Validators;
 
 public sealed class UploadFileCommandValidator : AbstractValidator<UploadFileCommand>
 {

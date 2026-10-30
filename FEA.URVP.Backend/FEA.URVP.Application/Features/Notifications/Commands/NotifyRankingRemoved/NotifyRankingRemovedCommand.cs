@@ -1,10 +1,9 @@
-using FEA.URVP.Application.Commands.Notifications.Create;
-using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Features.Notifications.Commands.Create;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Notifications.NotifyRankingRemoved;
+namespace FEA.URVP.Application.Features.Notifications.Commands.NotifyRankingRemoved;
 
 public sealed record NotifyRankingRemovedCommand(
     Guid ProjectId,

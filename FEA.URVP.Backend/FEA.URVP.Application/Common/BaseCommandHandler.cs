@@ -4,7 +4,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Base;
+namespace FEA.URVP.Application.Common;
 
 /// <summary>
 /// Base handler for commands that return a response.

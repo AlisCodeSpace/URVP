@@ -1,11 +1,11 @@
 using FEA.URVP.Application.Abstractions.Events;
-using FEA.URVP.Application.Commands.Notifications.NotifyPlacementCancelled;
-using FEA.URVP.Application.Commands.Notifications.NotifyPlacementConfirmed;
-using FEA.URVP.Application.Commands.Notifications.NotifyPlacementDeclined;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyPlacementCancelled;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyPlacementConfirmed;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyPlacementDeclined;
 using FEA.URVP.Domain.Events.Matching;
 using MediatR;
 
-namespace FEA.URVP.Application.Events.Matching;
+namespace FEA.URVP.Application.Features.Matching.Events;
 
 public sealed class PlacementAssignedEventHandler : IEventHandler<PlacementAssignedEvent>
 {

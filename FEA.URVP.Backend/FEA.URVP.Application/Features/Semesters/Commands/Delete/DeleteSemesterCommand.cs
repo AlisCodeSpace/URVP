@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Semesters.Delete;
+namespace FEA.URVP.Application.Features.Semesters.Commands.Delete;
 
 public sealed class DeleteSemesterCommand : IRequest<Unit>
 {

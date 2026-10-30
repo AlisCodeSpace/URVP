@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Semesters;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.Semesters.DTOs;
+using FEA.URVP.Application.Features.Semesters.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Semesters.GetActive;
+namespace FEA.URVP.Application.Features.Semesters.Queries.GetActive;
 
 public sealed class GetActiveSemesterQueryHandler
     : IRequestHandler<GetActiveSemesterQuery, SemesterDto?>

@@ -1,8 +1,7 @@
-using FEA.URVP.Application.Notifications;
 using FEA.URVP.Domain.Entities.Notifications;
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Services.Notifications;
+namespace FEA.URVP.Application.Features.Notifications.Services;
 
 public sealed class NotificationValidationService
 {

@@ -1,11 +1,11 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Semesters;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Semesters.DTOs;
+using FEA.URVP.Application.Features.Semesters.Mappings;
 using FEA.URVP.Domain.Entities.Semesters;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Semesters.Create;
+namespace FEA.URVP.Application.Features.Semesters.Commands.Create;
 
 public sealed class CreateSemesterCommandHandler
     : BaseCommandHandler<CreateSemesterCommand, SemesterDto>

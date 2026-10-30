@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Users;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.Users.DTOs;
+using FEA.URVP.Application.Features.Users.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Users.List;
+namespace FEA.URVP.Application.Features.Users.Queries.List;
 
 public sealed class ListUsersQueryHandler
     : IRequestHandler<ListUsersQuery, (IReadOnlyList<UserDto> Items, int TotalCount)>

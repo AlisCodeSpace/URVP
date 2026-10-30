@@ -1,11 +1,11 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Matching;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.ProjectRankings;
+using FEA.URVP.Application.Features.Matching.DTOs;
+using FEA.URVP.Application.Features.Matching.Mappings;
+using FEA.URVP.Application.Features.ProjectRankings;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Queries.Matching.GetMine;
+namespace FEA.URVP.Application.Features.Matching.Queries.GetMine;
 
 public sealed class GetMyPlacementsQueryHandler
     : IRequestHandler<GetMyPlacementsQuery, IReadOnlyList<MyPlacementDto>>

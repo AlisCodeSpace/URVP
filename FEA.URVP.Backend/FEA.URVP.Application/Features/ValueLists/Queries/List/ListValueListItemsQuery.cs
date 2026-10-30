@@ -1,8 +1,8 @@
-using FEA.URVP.Application.DTOs.ValueLists;
+using FEA.URVP.Application.Features.ValueLists.DTOs;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.ValueLists.List;
+namespace FEA.URVP.Application.Features.ValueLists.Queries.List;
 
 public sealed class ListValueListItemsQuery
     : IRequest<(IReadOnlyList<ValueListItemDto> Items, int TotalCount)>

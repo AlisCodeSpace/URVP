@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Email;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.Email.DTOs;
+using FEA.URVP.Application.Features.Email.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.EmailLogs.List;
+namespace FEA.URVP.Application.Features.Email.Queries.List;
 
 public sealed class ListEmailLogsQueryHandler
     : IRequestHandler<ListEmailLogsQuery, (IReadOnlyList<EmailLogDto> Items, int TotalCount)>

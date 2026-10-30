@@ -1,6 +1,6 @@
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.DTOs.ValueLists;
+namespace FEA.URVP.Application.Features.ValueLists.DTOs;
 
 public sealed class ValueListItemDto
 {

@@ -1,10 +1,10 @@
-using FEA.URVP.Application.Commands.Semesters.Create;
-using FEA.URVP.Application.Commands.Semesters.SetApplicationWindow;
-using FEA.URVP.Application.Commands.Semesters.SetRegistrationWindow;
-using FEA.URVP.Application.Commands.Semesters.Update;
+using FEA.URVP.Application.Features.Semesters.Commands.Create;
+using FEA.URVP.Application.Features.Semesters.Commands.SetApplicationWindow;
+using FEA.URVP.Application.Features.Semesters.Commands.SetRegistrationWindow;
+using FEA.URVP.Application.Features.Semesters.Commands.Update;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.Semesters;
+namespace FEA.URVP.Application.Features.Semesters.Validators;
 
 public sealed class CreateSemesterCommandValidator
     : AbstractValidator<CreateSemesterCommand>

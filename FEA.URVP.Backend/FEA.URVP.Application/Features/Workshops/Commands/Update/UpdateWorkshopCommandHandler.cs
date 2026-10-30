@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Workshops;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Workshops.DTOs;
+using FEA.URVP.Application.Features.Workshops.Mappings;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Workshops.Update;
+namespace FEA.URVP.Application.Features.Workshops.Commands.Update;
 
 public sealed class UpdateWorkshopCommandHandler
     : BaseCommandHandler<UpdateWorkshopCommand, WorkshopDto>

@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Files;
+using FEA.URVP.Application.Features.Files.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
-namespace FEA.URVP.Application.Commands.Files.Upload;
+namespace FEA.URVP.Application.Features.Files.Commands.Upload;
 
 public sealed class UploadFileCommand : IRequest<FileMetadataDto>
 {

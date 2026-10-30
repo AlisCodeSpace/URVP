@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.News;
+using FEA.URVP.Application.Features.News.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.News.GetById;
+namespace FEA.URVP.Application.Features.News.Queries.GetById;
 
 public sealed class GetNewsArticleByIdQuery : IRequest<NewsArticleDto>
 {

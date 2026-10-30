@@ -1,12 +1,12 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.HomeIntro;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.HomeIntro.DTOs;
+using FEA.URVP.Application.Features.HomeIntro.Mappings;
 using FEA.URVP.Domain.Catalog;
 using Microsoft.Extensions.Logging;
 using HomeIntroRow = FEA.URVP.Domain.Entities.HomeIntro.HomeIntro;
 
-namespace FEA.URVP.Application.Commands.HomeIntro.Update;
+namespace FEA.URVP.Application.Features.HomeIntro.Commands.Update;
 
 public sealed class UpdateHomeIntroCommandHandler
     : BaseCommandHandler<UpdateHomeIntroCommand, HomeIntroDto>

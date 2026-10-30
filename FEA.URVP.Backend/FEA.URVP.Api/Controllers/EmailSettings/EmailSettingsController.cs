@@ -1,7 +1,7 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.Email.Update;
-using FEA.URVP.Application.Queries.Email;
-using FEA.URVP.Application.Queries.EmailLogs.List;
+using FEA.URVP.Application.Features.Email.Commands.Update;
+using FEA.URVP.Application.Features.Email.Queries;
+using FEA.URVP.Application.Features.Email.Queries.List;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

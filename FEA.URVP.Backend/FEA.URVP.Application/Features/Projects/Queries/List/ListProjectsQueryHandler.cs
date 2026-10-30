@@ -1,11 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Semesters;
-using FEA.URVP.Application.DTOs.Projects;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Features.Projects.DTOs;
+using FEA.URVP.Application.Features.Projects.Mappings;
+using FEA.URVP.Application.Features.Semesters;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Projects.List;
+namespace FEA.URVP.Application.Features.Projects.Queries.List;
 
 public sealed class ListProjectsQueryHandler
     : IRequestHandler<ListProjectsQuery, (IReadOnlyList<ProjectDto> Items, int TotalCount)>

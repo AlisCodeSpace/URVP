@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Semesters;
+using FEA.URVP.Application.Features.Semesters.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Semesters.Create;
+namespace FEA.URVP.Application.Features.Semesters.Commands.Create;
 
 public sealed class CreateSemesterCommand : IRequest<SemesterDto>
 {

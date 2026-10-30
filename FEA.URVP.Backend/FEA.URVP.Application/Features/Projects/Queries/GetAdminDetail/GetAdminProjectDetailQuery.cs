@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Projects;
+using FEA.URVP.Application.Features.Projects.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Projects.GetAdminDetail;
+namespace FEA.URVP.Application.Features.Projects.Queries.GetAdminDetail;
 
 public sealed class GetAdminProjectDetailQuery : IRequest<AdminProjectDetailDto>
 {

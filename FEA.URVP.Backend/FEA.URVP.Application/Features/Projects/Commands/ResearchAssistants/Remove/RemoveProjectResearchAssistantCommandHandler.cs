@@ -1,9 +1,8 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Common;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Projects.ResearchAssistants.Remove;
+namespace FEA.URVP.Application.Features.Projects.Commands.ResearchAssistants.Remove;
 
 public sealed class RemoveProjectResearchAssistantCommandHandler
     : BaseCommandHandler<RemoveProjectResearchAssistantCommand>

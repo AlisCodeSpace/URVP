@@ -1,5 +1,5 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Queries.Auth.GetAuthStatus;
+using FEA.URVP.Application.Features.Auth.Queries.GetAuthStatus;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

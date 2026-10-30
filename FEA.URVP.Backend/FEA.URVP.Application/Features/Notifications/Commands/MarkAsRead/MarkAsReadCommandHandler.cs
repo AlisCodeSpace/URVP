@@ -1,12 +1,11 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Notifications;
-using FEA.URVP.Application.Services.Notifications;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Notifications.Services;
 using FEA.URVP.Domain.Events.Notifications;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Notifications.MarkAsRead;
+namespace FEA.URVP.Application.Features.Notifications.Commands.MarkAsRead;
 
 public sealed class MarkAsReadCommandHandler : BaseCommandHandler<MarkAsReadCommand, bool>
 {

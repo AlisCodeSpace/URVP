@@ -1,15 +1,14 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Projects;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Notifications;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Notifications;
+using FEA.URVP.Application.Features.Projects.DTOs;
+using FEA.URVP.Application.Features.Projects.Mappings;
 using FEA.URVP.Domain.Enums;
 using FEA.URVP.Domain.Events.Projects;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Projects.Update;
+namespace FEA.URVP.Application.Features.Projects.Commands.Update;
 
 public sealed class UpdateProjectCommandHandler
     : BaseCommandHandler<UpdateProjectCommand, ProjectDto>

@@ -1,12 +1,11 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Projects;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Projects.DTOs;
+using FEA.URVP.Application.Features.Projects.Mappings;
 using FEA.URVP.Domain.Entities.Projects;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Projects.ResearchAssistants.Add;
+namespace FEA.URVP.Application.Features.Projects.Commands.ResearchAssistants.Add;
 
 public sealed class AddProjectResearchAssistantCommandHandler
     : BaseCommandHandler<AddProjectResearchAssistantCommand, ProjectResearchAssistantDto>

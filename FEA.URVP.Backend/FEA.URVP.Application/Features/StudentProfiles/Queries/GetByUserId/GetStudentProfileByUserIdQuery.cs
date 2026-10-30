@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.StudentProfiles;
+using FEA.URVP.Application.Features.StudentProfiles.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.StudentProfiles.GetByUserId;
+namespace FEA.URVP.Application.Features.StudentProfiles.Queries.GetByUserId;
 
 public sealed class GetStudentProfileByUserIdQuery : IRequest<StudentProfileDto>
 {

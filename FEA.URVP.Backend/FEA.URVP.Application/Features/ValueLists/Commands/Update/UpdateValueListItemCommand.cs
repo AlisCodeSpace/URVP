@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.ValueLists;
+using FEA.URVP.Application.Features.ValueLists.DTOs;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.ValueLists.Update;
+namespace FEA.URVP.Application.Features.ValueLists.Commands.Update;
 
 public sealed class UpdateValueListItemCommand : IRequest<ValueListItemDto>
 {

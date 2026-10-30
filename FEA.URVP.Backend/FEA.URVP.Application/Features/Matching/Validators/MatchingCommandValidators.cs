@@ -1,11 +1,11 @@
-using FEA.URVP.Application.Commands.Matching.Assign;
-using FEA.URVP.Application.Commands.Matching.Confirm;
-using FEA.URVP.Application.Commands.Matching.UpdatePlacementStatus;
-using FEA.URVP.Application.Commands.Notifications.NotifyMatchingConfirmed;
+using FEA.URVP.Application.Features.Matching.Commands.Assign;
+using FEA.URVP.Application.Features.Matching.Commands.Confirm;
+using FEA.URVP.Application.Features.Matching.Commands.UpdatePlacementStatus;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyMatchingConfirmed;
 using FEA.URVP.Domain.Enums;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.Matching;
+namespace FEA.URVP.Application.Features.Matching.Validators;
 
 public sealed class AssignStudentToProjectCommandValidator : AbstractValidator<AssignStudentToProjectCommand>
 {

@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Matching;
+using FEA.URVP.Application.Features.Matching.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Matching.Assign;
+namespace FEA.URVP.Application.Features.Matching.Commands.Assign;
 
 /// <summary>
 /// Assigns a student to a project immediately. Occupies a seat and notifies the student and faculty.

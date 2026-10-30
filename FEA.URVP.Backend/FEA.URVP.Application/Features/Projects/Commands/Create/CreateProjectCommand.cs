@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Projects;
+using FEA.URVP.Application.Features.Projects.DTOs;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Projects.Create;
+namespace FEA.URVP.Application.Features.Projects.Commands.Create;
 
 public sealed class CreateProjectCommand : IRequest<ProjectDto>
 {

@@ -1,7 +1,7 @@
 using System.Text;
 using FEA.URVP.Application.Abstractions.Notifications;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Options;
+using FEA.URVP.Application.Common.Options;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

@@ -1,7 +1,7 @@
 using FEA.URVP.Application.Abstractions.Notifications;
 using FEA.URVP.Application.Abstractions.Persistence;
 
-namespace FEA.URVP.Application.Services.Notifications;
+namespace FEA.URVP.Application.Features.Notifications.Services;
 
 public sealed class UserEmailService : IUserEmailService
 {

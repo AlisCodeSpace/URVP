@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Events;
-using FEA.URVP.Application.Commands.Notifications.NotifyRoleAssigned;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyRoleAssigned;
 using FEA.URVP.Domain.Events.Users;
 using MediatR;
 
-namespace FEA.URVP.Application.Events.Users;
+namespace FEA.URVP.Application.Features.Users.Events;
 
 public sealed class UserRoleAssignedEventHandler : IEventHandler<UserRoleAssignedEvent>
 {

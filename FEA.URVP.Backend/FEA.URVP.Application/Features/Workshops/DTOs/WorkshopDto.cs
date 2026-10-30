@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Workshops;
+namespace FEA.URVP.Application.Features.Workshops.DTOs;
 
 public sealed class WorkshopDto
 {

@@ -1,7 +1,7 @@
 using FEA.URVP.Api.Configuration.Security;
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.Files.Upload;
-using FEA.URVP.Application.Queries.Files.GetById;
+using FEA.URVP.Application.Features.Files.Commands.Upload;
+using FEA.URVP.Application.Features.Files.Queries.GetById;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Enums;
 using MediatR;

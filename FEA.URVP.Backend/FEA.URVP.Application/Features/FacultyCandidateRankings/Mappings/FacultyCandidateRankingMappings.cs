@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.FacultyCandidateRankings;
+using FEA.URVP.Application.Features.FacultyCandidateRankings.DTOs;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 
-namespace FEA.URVP.Application.Mappings;
+namespace FEA.URVP.Application.Features.FacultyCandidateRankings.Mappings;
 
 public static class FacultyCandidateRankingMappings
 {

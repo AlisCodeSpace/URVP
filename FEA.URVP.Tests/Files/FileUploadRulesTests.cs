@@ -1,6 +1,6 @@
 using AUB.MimeDetective;
-using FEA.URVP.Application.Files;
-using FEA.URVP.Application.Options;
+using FEA.URVP.Application.Common.Options;
+using FEA.URVP.Application.Features.Files;
 
 namespace FEA.URVP.Tests.Files;
 

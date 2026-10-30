@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.Notifications;
+namespace FEA.URVP.Application.Features.Notifications.DTOs;
 
 public sealed class NotificationCountDto
 {

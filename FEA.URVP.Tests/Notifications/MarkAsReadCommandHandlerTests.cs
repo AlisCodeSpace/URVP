@@ -1,8 +1,8 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Notifications.MarkAsRead;
-using FEA.URVP.Application.Options;
-using FEA.URVP.Application.Services.Notifications;
+using FEA.URVP.Application.Common.Options;
+using FEA.URVP.Application.Features.Notifications.Commands.MarkAsRead;
+using FEA.URVP.Application.Features.Notifications.Services;
 using FEA.URVP.Domain.Entities.Notifications;
 using FEA.URVP.Domain.Enums;
 using FEA.URVP.Domain.Events.Notifications;

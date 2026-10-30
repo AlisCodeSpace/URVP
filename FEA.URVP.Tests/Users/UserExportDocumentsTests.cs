@@ -1,7 +1,8 @@
 using System.IO.Compression;
 using System.Text;
 using System.Xml.Linq;
-using FEA.URVP.Application.Exports;
+using FEA.URVP.Application.Common.Exports;
+using FEA.URVP.Application.Features.Users.Exports;
 
 namespace FEA.URVP.Tests.Users;
 

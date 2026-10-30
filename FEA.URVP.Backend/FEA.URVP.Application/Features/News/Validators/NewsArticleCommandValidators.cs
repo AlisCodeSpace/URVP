@@ -1,9 +1,9 @@
-using FEA.URVP.Application.Commands.News.Create;
-using FEA.URVP.Application.Commands.News.Update;
+using FEA.URVP.Application.Features.News.Commands.Create;
+using FEA.URVP.Application.Features.News.Commands.Update;
 using FEA.URVP.Domain.Catalog;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.News;
+namespace FEA.URVP.Application.Features.News.Validators;
 
 public sealed class CreateNewsArticleCommandValidator
     : AbstractValidator<CreateNewsArticleCommand>

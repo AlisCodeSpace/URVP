@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Events;
-using FEA.URVP.Application.Commands.Notifications.NotifyStudentProfileSubmitted;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyStudentProfileSubmitted;
 using FEA.URVP.Domain.Events.StudentProfiles;
 using MediatR;
 
-namespace FEA.URVP.Application.Events.StudentProfiles;
+namespace FEA.URVP.Application.Features.StudentProfiles.Events;
 
 public sealed class StudentProfileSubmittedEventHandler : IEventHandler<StudentProfileSubmittedEvent>
 {

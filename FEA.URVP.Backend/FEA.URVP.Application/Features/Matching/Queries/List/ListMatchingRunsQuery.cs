@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Matching;
+using FEA.URVP.Application.Features.Matching.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Matching.List;
+namespace FEA.URVP.Application.Features.Matching.Queries.List;
 
 public sealed record ListMatchingRunsQuery(Guid? SemesterId, bool IncludeManual = false)
     : IRequest<IReadOnlyList<MatchingRunDto>>;

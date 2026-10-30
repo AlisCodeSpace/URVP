@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.Email;
+namespace FEA.URVP.Application.Features.Email;
 
 /// <summary>
 /// Resolves SMTP AUTH credentials. A stored (admin) password takes precedence

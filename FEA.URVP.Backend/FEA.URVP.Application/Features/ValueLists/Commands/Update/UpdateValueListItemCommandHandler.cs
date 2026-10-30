@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.ValueLists;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.ValueLists.DTOs;
+using FEA.URVP.Application.Features.ValueLists.Mappings;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.ValueLists.Update;
+namespace FEA.URVP.Application.Features.ValueLists.Commands.Update;
 
 public sealed class UpdateValueListItemCommandHandler
     : BaseCommandHandler<UpdateValueListItemCommand, ValueListItemDto>

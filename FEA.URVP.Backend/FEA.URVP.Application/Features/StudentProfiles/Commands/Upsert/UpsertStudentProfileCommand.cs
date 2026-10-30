@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.StudentProfiles;
+using FEA.URVP.Application.Features.StudentProfiles.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.StudentProfiles.Upsert;
+namespace FEA.URVP.Application.Features.StudentProfiles.Commands.Upsert;
 
 public sealed class DayAvailabilityInput
 {

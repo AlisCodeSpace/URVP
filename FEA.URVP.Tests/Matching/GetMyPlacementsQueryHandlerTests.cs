@@ -1,5 +1,5 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Queries.Matching.GetMine;
+using FEA.URVP.Application.Features.Matching.Queries.GetMine;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;

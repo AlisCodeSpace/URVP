@@ -1,6 +1,6 @@
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.StudentProfiles;
+namespace FEA.URVP.Application.Features.StudentProfiles;
 
 internal static class StudentProfileAccess
 {

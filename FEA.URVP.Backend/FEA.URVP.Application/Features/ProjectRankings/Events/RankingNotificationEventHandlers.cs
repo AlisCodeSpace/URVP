@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Events;
-using FEA.URVP.Application.Commands.Notifications.NotifyRankingRemoved;
-using FEA.URVP.Application.Commands.Notifications.NotifyRankingSubmitted;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyRankingRemoved;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyRankingSubmitted;
 using FEA.URVP.Domain.Events.Rankings;
 using MediatR;
 
-namespace FEA.URVP.Application.Events.Rankings;
+namespace FEA.URVP.Application.Features.ProjectRankings.Events;
 
 public sealed class ProjectRankingSubmittedEventHandler : IEventHandler<ProjectRankingSubmittedEvent>
 {

@@ -1,6 +1,6 @@
-using FEA.URVP.Application.DTOs.Email;
+using FEA.URVP.Application.Features.Email.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Email;
+namespace FEA.URVP.Application.Features.Email.Queries;
 
 public sealed record GetEmailSettingsQuery : IRequest<EmailSettingsDto>;

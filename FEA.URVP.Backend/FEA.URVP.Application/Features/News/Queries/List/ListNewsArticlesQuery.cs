@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.News;
+using FEA.URVP.Application.Features.News.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.News.List;
+namespace FEA.URVP.Application.Features.News.Queries.List;
 
 public sealed class ListNewsArticlesQuery
     : IRequest<(IReadOnlyList<NewsArticleDto> Items, int TotalCount)>

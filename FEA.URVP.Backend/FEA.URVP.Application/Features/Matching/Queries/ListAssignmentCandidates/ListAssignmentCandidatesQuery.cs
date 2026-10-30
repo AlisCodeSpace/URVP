@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Matching;
+using FEA.URVP.Application.Features.Matching.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Matching.ListAssignmentCandidates;
+namespace FEA.URVP.Application.Features.Matching.Queries.ListAssignmentCandidates;
 
 public sealed record ListAssignmentCandidatesQuery(
     Guid ProjectId,

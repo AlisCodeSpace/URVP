@@ -1,9 +1,9 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.Workshops.Create;
-using FEA.URVP.Application.Commands.Workshops.Delete;
-using FEA.URVP.Application.Commands.Workshops.Update;
-using FEA.URVP.Application.Queries.Workshops.GetById;
-using FEA.URVP.Application.Queries.Workshops.List;
+using FEA.URVP.Application.Features.Workshops.Commands.Create;
+using FEA.URVP.Application.Features.Workshops.Commands.Delete;
+using FEA.URVP.Application.Features.Workshops.Commands.Update;
+using FEA.URVP.Application.Features.Workshops.Queries.GetById;
+using FEA.URVP.Application.Features.Workshops.Queries.List;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

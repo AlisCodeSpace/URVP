@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Users;
+using FEA.URVP.Application.Features.Users.DTOs;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Users.AssignRole;
+namespace FEA.URVP.Application.Features.Users.Commands.AssignRole;
 
 public sealed class AssignUserRoleCommand : IRequest<UserDto>
 {

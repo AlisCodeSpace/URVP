@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Projects;
+using FEA.URVP.Application.Features.Projects.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Projects.ResearchAssistants.Add;
+namespace FEA.URVP.Application.Features.Projects.Commands.ResearchAssistants.Add;
 
 /// <summary>
 /// Adds a research assistant by email. The person need not have signed in yet; they are

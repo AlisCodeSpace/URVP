@@ -1,11 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Users;
-using FEA.URVP.Application.Exports;
-using FEA.URVP.Application.Projects;
-using FEA.URVP.Application.Queries.Users.Export;
+using FEA.URVP.Application.Features.Projects.Exports;
+using FEA.URVP.Application.Features.Users.DTOs;
+using FEA.URVP.Application.Features.Users.Queries.Export;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Projects.Export;
+namespace FEA.URVP.Application.Features.Projects.Queries.Export;
 
 public sealed class ExportAdminProjectsQueryHandler
     : IRequestHandler<ExportAdminProjectsQuery, UserExportFileDto>

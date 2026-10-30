@@ -1,4 +1,4 @@
-namespace FEA.URVP.Application.DTOs.ProjectRankings;
+namespace FEA.URVP.Application.Features.ProjectRankings.DTOs;
 
 public sealed class ProjectRankingDto
 {

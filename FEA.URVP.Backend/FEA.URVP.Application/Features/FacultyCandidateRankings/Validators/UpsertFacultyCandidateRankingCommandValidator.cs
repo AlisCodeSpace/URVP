@@ -1,8 +1,8 @@
-using FEA.URVP.Application.Commands.FacultyCandidateRankings.Upsert;
+using FEA.URVP.Application.Features.FacultyCandidateRankings.Commands.Upsert;
 using FEA.URVP.Domain.Entities.FacultyCandidateRankings;
 using FluentValidation;
 
-namespace FEA.URVP.Application.Validators.FacultyCandidateRankings;
+namespace FEA.URVP.Application.Features.FacultyCandidateRankings.Validators;
 
 public sealed class UpsertFacultyCandidateRankingCommandValidator
     : AbstractValidator<UpsertFacultyCandidateRankingCommand>

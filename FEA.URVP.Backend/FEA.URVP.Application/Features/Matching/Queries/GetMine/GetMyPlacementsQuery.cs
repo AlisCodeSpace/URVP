@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Matching;
+using FEA.URVP.Application.Features.Matching.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Matching.GetMine;
+namespace FEA.URVP.Application.Features.Matching.Queries.GetMine;
 
 public sealed record GetMyPlacementsQuery(Guid CurrentUserId)
     : IRequest<IReadOnlyList<MyPlacementDto>>;

@@ -1,6 +1,6 @@
-using FEA.URVP.Application.DTOs.Users;
+using FEA.URVP.Application.Features.Users.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.AdminOverview;
+namespace FEA.URVP.Application.Features.AdminOverview.Queries;
 
 public sealed record ExportAdminOverviewQuery : IRequest<UserExportFileDto>;

@@ -1,6 +1,6 @@
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Directory;
+namespace FEA.URVP.Application.Features.Directory;
 
 /// <summary>
 /// Last-resort Student vs Faculty mapping from the Azure AD mailbox domain

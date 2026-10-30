@@ -1,15 +1,15 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.News;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Notifications;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.News.DTOs;
+using FEA.URVP.Application.Features.News.Mappings;
+using FEA.URVP.Application.Features.Notifications;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.News;
 using FEA.URVP.Domain.Events.News;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.News.Create;
+namespace FEA.URVP.Application.Features.News.Commands.Create;
 
 public sealed class CreateNewsArticleCommandHandler
     : BaseCommandHandler<CreateNewsArticleCommand, NewsArticleDto>

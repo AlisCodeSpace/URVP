@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Files;
+using FEA.URVP.Application.Features.Files.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Files.GetById;
+namespace FEA.URVP.Application.Features.Files.Queries.GetById;
 
 public sealed class GetFileByIdQuery : IRequest<FileContentDto>
 {

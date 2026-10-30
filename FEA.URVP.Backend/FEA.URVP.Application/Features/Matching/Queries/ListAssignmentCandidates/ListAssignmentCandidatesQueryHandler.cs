@@ -1,9 +1,8 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Matching;
-using FEA.URVP.Application.Matching;
+using FEA.URVP.Application.Features.Matching.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Matching.ListAssignmentCandidates;
+namespace FEA.URVP.Application.Features.Matching.Queries.ListAssignmentCandidates;
 
 public sealed class ListAssignmentCandidatesQueryHandler
     : IRequestHandler<ListAssignmentCandidatesQuery, (IReadOnlyList<AssignmentCandidateDto> Items, int TotalCount)>

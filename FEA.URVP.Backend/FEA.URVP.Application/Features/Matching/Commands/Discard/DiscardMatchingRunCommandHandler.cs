@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Matching;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Matching.DTOs;
+using FEA.URVP.Application.Features.Matching.Mappings;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.Matching.Discard;
+namespace FEA.URVP.Application.Features.Matching.Commands.Discard;
 
 public sealed class DiscardMatchingRunCommandHandler
     : BaseCommandHandler<DiscardMatchingRunCommand, MatchingRunDto>

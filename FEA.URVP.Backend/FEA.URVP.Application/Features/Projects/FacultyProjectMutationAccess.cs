@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Semesters;
+using FEA.URVP.Application.Features.Semesters;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Projects;
+namespace FEA.URVP.Application.Features.Projects;
 
 public sealed class FacultyProjectMutationAccess
 {

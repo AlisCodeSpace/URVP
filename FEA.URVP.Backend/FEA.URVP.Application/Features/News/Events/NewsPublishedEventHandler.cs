@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Events;
-using FEA.URVP.Application.Commands.Notifications.NotifyNewsPublished;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyNewsPublished;
 using FEA.URVP.Domain.Events.News;
 using MediatR;
 
-namespace FEA.URVP.Application.Events.News;
+namespace FEA.URVP.Application.Features.News.Events;
 
 public sealed class NewsPublishedEventHandler : IEventHandler<NewsPublishedEvent>
 {

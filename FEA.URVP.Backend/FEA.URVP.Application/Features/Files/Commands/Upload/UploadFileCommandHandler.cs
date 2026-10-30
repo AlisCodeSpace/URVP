@@ -1,20 +1,19 @@
 using System.Security.Cryptography;
 using FEA.URVP.Application.Abstractions.Files;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Commands.Semesters;
-using FEA.URVP.Application.DTOs.Files;
-using FEA.URVP.Application.Files;
-using FEA.URVP.Application.News;
-using FEA.URVP.Application.Options;
-using FEA.URVP.Application.StudentProfiles;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Common.Options;
+using FEA.URVP.Application.Features.Files.DTOs;
+using FEA.URVP.Application.Features.News;
+using FEA.URVP.Application.Features.Semesters;
+using FEA.URVP.Application.Features.StudentProfiles;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.Files;
 using FEA.URVP.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace FEA.URVP.Application.Commands.Files.Upload;
+namespace FEA.URVP.Application.Features.Files.Commands.Upload;
 
 public sealed class UploadFileCommandHandler
     : BaseCommandHandler<UploadFileCommand, FileMetadataDto>

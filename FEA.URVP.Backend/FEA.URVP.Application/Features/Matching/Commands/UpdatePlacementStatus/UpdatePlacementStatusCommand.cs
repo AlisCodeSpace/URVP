@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Matching;
+using FEA.URVP.Application.Features.Matching.DTOs;
 using FEA.URVP.Domain.Enums;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Matching.UpdatePlacementStatus;
+namespace FEA.URVP.Application.Features.Matching.Commands.UpdatePlacementStatus;
 
 /// <summary>
 /// Releases a confirmed seat when a student declines or an admin withdraws a placement.

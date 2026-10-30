@@ -1,13 +1,13 @@
 using FEA.URVP.Application.Abstractions.Persistence;
 using FEA.URVP.Application.Abstractions.Security;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.DTOs.Email;
-using FEA.URVP.Application.Queries.Email;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Email.DTOs;
+using FEA.URVP.Application.Features.Email.Queries;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using EmailSettingsRow = FEA.URVP.Domain.Entities.Email.EmailSettings;
 
-namespace FEA.URVP.Application.Commands.Email.Update;
+namespace FEA.URVP.Application.Features.Email.Commands.Update;
 
 public sealed class UpdateEmailSettingsCommandHandler
     : BaseCommandHandler<UpdateEmailSettingsCommand, EmailSettingsDto>

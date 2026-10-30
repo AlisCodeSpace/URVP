@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Matching;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.Matching.DTOs;
+using FEA.URVP.Application.Features.Matching.Mappings;
 using FEA.URVP.Domain.Entities.Matching;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Matching.List;
+namespace FEA.URVP.Application.Features.Matching.Queries.List;
 
 public sealed class ListMatchingRunsQueryHandler
     : IRequestHandler<ListMatchingRunsQuery, IReadOnlyList<MatchingRunDto>>

@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.Semesters;
+using FEA.URVP.Application.Features.Semesters.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.Semesters.SetApplicationWindow;
+namespace FEA.URVP.Application.Features.Semesters.Commands.SetApplicationWindow;
 
 /// <summary>
 /// Opens or closes the student application window for a semester.

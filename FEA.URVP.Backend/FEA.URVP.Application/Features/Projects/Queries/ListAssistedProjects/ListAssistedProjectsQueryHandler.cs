@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.Projects;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.Projects.DTOs;
+using FEA.URVP.Application.Features.Projects.Mappings;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.Projects.ListAssistedProjects;
+namespace FEA.URVP.Application.Features.Projects.Queries.ListAssistedProjects;
 
 public sealed class ListAssistedProjectsQueryHandler
     : IRequestHandler<ListAssistedProjectsQuery, IReadOnlyList<AssistedProjectDto>>

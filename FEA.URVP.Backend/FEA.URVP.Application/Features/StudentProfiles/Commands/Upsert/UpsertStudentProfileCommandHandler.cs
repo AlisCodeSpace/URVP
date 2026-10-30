@@ -1,17 +1,16 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Commands.Semesters;
-using FEA.URVP.Application.DTOs.StudentProfiles;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Notifications;
-using FEA.URVP.Application.StudentProfiles;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Notifications;
+using FEA.URVP.Application.Features.Semesters;
+using FEA.URVP.Application.Features.StudentProfiles.DTOs;
+using FEA.URVP.Application.Features.StudentProfiles.Mappings;
 using FEA.URVP.Domain.Catalog;
 using FEA.URVP.Domain.Entities.StudentProfiles;
 using FEA.URVP.Domain.Events.StudentProfiles;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.StudentProfiles.Upsert;
+namespace FEA.URVP.Application.Features.StudentProfiles.Commands.Upsert;
 
 public sealed class UpsertStudentProfileCommandHandler
     : BaseCommandHandler<UpsertStudentProfileCommand, StudentProfileDto>

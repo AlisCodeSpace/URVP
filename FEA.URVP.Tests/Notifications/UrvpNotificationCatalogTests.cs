@@ -1,7 +1,7 @@
-using FEA.URVP.Application.Commands.Notifications.NotifyProjectOpen;
-using FEA.URVP.Application.Commands.Notifications.NotifyRankingSubmitted;
-using FEA.URVP.Application.Events.Projects;
-using FEA.URVP.Application.Events.Rankings;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyProjectOpen;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyRankingSubmitted;
+using FEA.URVP.Application.Features.ProjectRankings.Events;
+using FEA.URVP.Application.Features.Projects.Events;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Entities.Semesters;
 using FEA.URVP.Domain.Events.Projects;
@@ -75,14 +75,14 @@ public sealed class UrvpNotificationCatalogTests
     {
         Assert.DoesNotContain(
             typeof(FEA.URVP.Application.Abstractions.Notifications.IEmailService),
-            typeof(FEA.URVP.Application.Commands.Matching.Confirm.ConfirmMatchingRunCommandHandler)
+            typeof(FEA.URVP.Application.Features.Matching.Commands.Confirm.ConfirmMatchingRunCommandHandler)
                 .GetConstructors()
                 .SelectMany(c => c.GetParameters())
                 .Select(p => p.ParameterType));
 
         Assert.DoesNotContain(
             typeof(FEA.URVP.Application.Abstractions.Notifications.IEmailService),
-            typeof(FEA.URVP.Application.Commands.Projects.Create.CreateProjectCommandHandler)
+            typeof(FEA.URVP.Application.Features.Projects.Commands.Create.CreateProjectCommandHandler)
                 .GetConstructors()
                 .SelectMany(c => c.GetParameters())
                 .Select(p => p.ParameterType));

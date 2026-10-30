@@ -1,18 +1,17 @@
 using FEA.URVP.Application.Abstractions.Events;
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.Commands.Base;
-using FEA.URVP.Application.Commands.Semesters;
-using FEA.URVP.Application.DTOs.ProjectRankings;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Notifications;
-using FEA.URVP.Application.ProjectRankings;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Common;
+using FEA.URVP.Application.Features.Notifications;
+using FEA.URVP.Application.Features.ProjectRankings.DTOs;
+using FEA.URVP.Application.Features.ProjectRankings.Mappings;
+using FEA.URVP.Application.Features.Projects;
+using FEA.URVP.Application.Features.Semesters;
 using FEA.URVP.Domain.Entities.ProjectRankings;
 using FEA.URVP.Domain.Enums;
 using FEA.URVP.Domain.Events.Rankings;
 using Microsoft.Extensions.Logging;
 
-namespace FEA.URVP.Application.Commands.ProjectRankings.Upsert;
+namespace FEA.URVP.Application.Features.ProjectRankings.Commands.Upsert;
 
 public sealed class UpsertProjectRankingCommandHandler
     : BaseCommandHandler<UpsertProjectRankingCommand, ProjectRankingDto>

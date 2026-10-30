@@ -1,8 +1,8 @@
-using FEA.URVP.Application.Commands.HomeIntro.Update;
+using FEA.URVP.Application.Features.HomeIntro.Commands.Update;
 using FluentValidation;
 using HomeIntroRow = FEA.URVP.Domain.Entities.HomeIntro.HomeIntro;
 
-namespace FEA.URVP.Application.Validators.HomeIntro;
+namespace FEA.URVP.Application.Features.HomeIntro.Validators;
 
 public sealed class UpdateHomeIntroCommandValidator
     : AbstractValidator<UpdateHomeIntroCommand>

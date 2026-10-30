@@ -1,6 +1,6 @@
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.ProjectRankings;
+namespace FEA.URVP.Application.Features.ProjectRankings;
 
 internal static class ProjectRankingAccess
 {

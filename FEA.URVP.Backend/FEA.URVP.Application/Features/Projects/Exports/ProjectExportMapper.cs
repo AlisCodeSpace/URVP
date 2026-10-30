@@ -1,10 +1,10 @@
 using System.Globalization;
-using FEA.URVP.Application.Mappings;
+using FEA.URVP.Application.Features.Projects.Mappings;
 using FEA.URVP.Domain.Entities.Matching;
 using FEA.URVP.Domain.Entities.Projects;
 using FEA.URVP.Domain.Enums;
 
-namespace FEA.URVP.Application.Exports;
+namespace FEA.URVP.Application.Features.Projects.Exports;
 
 public static class ProjectExportMapper
 {

@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
-using FEA.URVP.Application.DTOs.News;
+using FEA.URVP.Application.Features.News.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.News.Update;
+namespace FEA.URVP.Application.Features.News.Commands.Update;
 
 public sealed class UpdateNewsArticleCommand : IRequest<NewsArticleDto>
 {

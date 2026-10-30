@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.FacultyCandidateRankings;
+using FEA.URVP.Application.Features.FacultyCandidateRankings.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Commands.FacultyCandidateRankings.Upsert;
+namespace FEA.URVP.Application.Features.FacultyCandidateRankings.Commands.Upsert;
 
 public sealed class UpsertFacultyCandidateRankingCommand : IRequest<FacultyCandidateRankingDto>
 {

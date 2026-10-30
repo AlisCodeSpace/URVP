@@ -1,9 +1,9 @@
 using FEA.URVP.Application.Abstractions.Events;
-using FEA.URVP.Application.Commands.Notifications.NotifyMatchingConfirmed;
+using FEA.URVP.Application.Features.Notifications.Commands.NotifyMatchingConfirmed;
 using FEA.URVP.Domain.Events.Matching;
 using MediatR;
 
-namespace FEA.URVP.Application.Events.Matching;
+namespace FEA.URVP.Application.Features.Matching.Events;
 
 public sealed class MatchingRunConfirmedEventHandler : IEventHandler<MatchingRunConfirmedEvent>
 {

@@ -1,10 +1,10 @@
 using FEA.URVP.Application.Abstractions.Persistence;
-using FEA.URVP.Application.DTOs.ProjectRankings;
-using FEA.URVP.Application.Mappings;
-using FEA.URVP.Application.Projects;
+using FEA.URVP.Application.Features.ProjectRankings.DTOs;
+using FEA.URVP.Application.Features.ProjectRankings.Mappings;
+using FEA.URVP.Application.Features.Projects;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.ProjectRankings.ListByProject;
+namespace FEA.URVP.Application.Features.ProjectRankings.Queries.ListByProject;
 
 public sealed class ListProjectRankingsQueryHandler
     : IRequestHandler<ListProjectRankingsQuery, IReadOnlyList<ProjectRankingStudentDto>>

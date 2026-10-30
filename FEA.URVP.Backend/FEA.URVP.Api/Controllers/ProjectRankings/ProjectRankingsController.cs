@@ -1,8 +1,8 @@
 using FEA.URVP.Api.Controllers.Base;
-using FEA.URVP.Application.Commands.ProjectRankings.Remove;
-using FEA.URVP.Application.Commands.ProjectRankings.Upsert;
-using FEA.URVP.Application.Queries.Matching.GetMine;
-using FEA.URVP.Application.Queries.ProjectRankings.GetMine;
+using FEA.URVP.Application.Features.Matching.Queries.GetMine;
+using FEA.URVP.Application.Features.ProjectRankings.Commands.Remove;
+using FEA.URVP.Application.Features.ProjectRankings.Commands.Upsert;
+using FEA.URVP.Application.Features.ProjectRankings.Queries.GetMine;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

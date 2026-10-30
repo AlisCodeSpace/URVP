@@ -25,7 +25,7 @@ Role and ownership checks live in command/query handlers, not in the frontend. F
 | --- | --- |
 | `FEA.URVP.Backend/` | Host web project (`net10.0`) and nested libraries |
 | `FEA.URVP.Backend/FEA.URVP.Api/` | Controllers, middleware, auth, OpenAPI |
-| `FEA.URVP.Backend/FEA.URVP.Application/` | Commands, queries, validators (MediatR + FluentValidation) |
+| `FEA.URVP.Backend/FEA.URVP.Application/` | Commands, queries, validators (MediatR + FluentValidation), organized by feature under `Features/<Feature>/{Commands,Queries,DTOs,Validators,Events,Mappings,Services}`; shared code in `Abstractions/`, `Behaviors/`, `Common/` |
 | `FEA.URVP.Backend/FEA.URVP.Domain/` | Entities, enums, catalogs |
 | `FEA.URVP.Backend/FEA.URVP.Infrastructure/` | EF Core, SQL Server, LDAP, email, files |
 | `FEA.URVP.Frontend/` | Next.js 16 App Router (static export) |

@@ -1,7 +1,7 @@
-using FEA.URVP.Application.DTOs.Email;
+using FEA.URVP.Application.Features.Email.DTOs;
 using MediatR;
 
-namespace FEA.URVP.Application.Queries.EmailLogs.List;
+namespace FEA.URVP.Application.Features.Email.Queries.List;
 
 public sealed class ListEmailLogsQuery
     : IRequest<(IReadOnlyList<EmailLogDto> Items, int TotalCount)>
